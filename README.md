@@ -130,10 +130,13 @@ than bitwise agreement, and `eq_var_oi` additionally against the published block
 more cheaply.
 
 The archive itself is not affected by any of this. `replications/<paper>/legacy/` is never
-edited, and CI checks every tree against its `as-published` tag on each push.
+edited, and CI checks every tree against its `as-published` tag on each push. CI also runs
+the unit suite, and then `setup.m` and every example in a fresh session. Both can be run
+locally:
 
 ```matlab
 run tests/unit/run_unit_tests.m
+run tests/run_examples.m
 ```
 
 `tests/golden/` holds captured output from the original packages (the log marginal likelihoods,

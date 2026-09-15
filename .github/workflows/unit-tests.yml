@@ -1,34 +1,18 @@
-# Runs the unit suite on every push and pull request. Each test runs the
-# corresponding published legacy code beside the consolidated function and
-# requires identical output - bitwise, draw for draw under a fixed seed - so this
-# is the job that keeps the repository's central claim honest between releases.
+# Runs on pushes to main and on pull requests, in two steps: the unit suite
+# (tests/unit/run_unit_tests.m), then setup.m and every example
+# (tests/run_examples.m). The second step runs even if the first fails. The
+# standards the unit tests hold each function to are set out under Verification
+# in the README.
 #
-# MATLAB is licensed automatically here because this repository is PUBLIC:
-# matlab-actions licenses all products for public projects, with no token and no
-# account. A private fork would need an MLM_LICENSE_TOKEN secret instead.
+# MATLAB is licensed automatically because the repository is public; a private
+# fork needs an MLM_LICENSE_TOKEN secret.
 #
-# TWO TESTS ARE SKIPPED, deliberately and visibly, for the same single reason:
-# both run legacy code that calls xlsread WITH A RANGE ARGUMENT. Without Excel
-# installed - which no hosted runner has, on any OS - MATLAB falls back to basic
-# import mode, which reads only XLS(X/M) and rejects a range argument outright.
-# Both tests are therefore impossible on a runner rather than merely failing on
-# one, and they stay local tests.
+# Two unit tests are skipped because they call xlsread with a range argument,
+# which needs Excel, and no hosted runner has it. The unit runner names and counts
+# the skipped tests.
 #
-#   test_forecast_iterate_springer - twenty xlsread range calls over the
-#     Springer real-time vintages, six against genuine OLE2/BIFF .xls and a .csv.
-#   test_hybtvp_equivalence - main_HYB_TVPSV.m reads macrodata_Q_2018Q4.csv as
-#     xlsread(file,'A1:IN238'). The functionized run_all keeps that exact call
-#     on purpose: readmatrix disagrees with xlsread in the last bit of some
-#     cells here, which is enough to break the draw-for-draw guarantee the test
-#     exists to check. Fidelity to the published code and runnability on a
-#     hosted runner are simply in conflict for this package, and fidelity wins.
-#
-# The runner prints each skip and the summary line counts them, so a green tick
-# here never reads as full coverage.
-#
-# Restricted to pushes to main. An unfiltered `on: push` also fires when an
-# as-published/<slug> tag is pushed, which re-runs this eight-minute suite over
-# content the same push already tested on main.
+# Pushes are filtered to main because an unfiltered trigger also fires on every
+# as-published/<slug> tag, which would re-run the suite on content already tested.
 name: Unit tests
 
 on:
@@ -57,3 +41,9 @@ jobs:
           BVAR_SKIP_TESTS: test_forecast_iterate_springer,test_hybtvp_equivalence
         with:
           command: run('tests/unit/run_unit_tests.m')
+
+      - name: Run setup.m and the examples
+        if: ${{ !cancelled() }}
+        uses: matlab-actions/run-command@v2
+        with:
+          command: run('tests/run_examples.m')

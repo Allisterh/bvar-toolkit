@@ -8,7 +8,7 @@
 %
 % Skipped tests are named individually in the output and counted in the summary,
 % so a run that covers less than the whole suite says so rather than reporting a
-% clean sweep. The CI workflow uses this for the one test that cannot run on a
+% clean sweep. The CI workflow uses this for the two tests that cannot run on a
 % hosted runner (see .github/workflows/unit-tests.yml). Skipping is for tests
 % that CANNOT run in an environment, never for tests that fail in it.
 

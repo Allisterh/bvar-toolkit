@@ -28,6 +28,8 @@
 % under a licensing agreement, so these numbers are close to but not identical to
 % the published ones. The prior is the asymmetric conjugate prior of Chan (2022),
 % the package's model 1; its model 2 needs sample_BSig_NCP, which is not core.
+% That prior has a closed-form marginal likelihood, which section 1 uses to compare
+% the shrinkage hyperparameters and the lag length with the values that maximize it.
 %
 % See:
 % Uhlig, H. (2005). What are the Effects of Monetary Policy on Output? Results
@@ -36,6 +38,8 @@
 % Rubio-Ramirez, J.F., Waggoner, D.F. and Zha, T. (2010). Structural Vector
 % Autoregressions: Theory of Identification and Algorithms for Inference,
 % Review of Economic Studies, 77(2): 665-696.
+% Chan, J.C.C. (2022). Asymmetric Conjugate Priors for Large Bayesian VARs,
+% Quantitative Economics, 13(3): 1145-1169.
 % Chan, J.C.C., Matthes, C. and Yu, X. (2026). Large Structural VARs with
 % Multiple Sign and Ranking Restrictions, Quantitative Economics, 17(3): 709-740.
 
@@ -65,6 +69,30 @@ prior_redu = bvar.priors.acp_redu(n, p, kappa, sig2, idx_ns);
 vnames = ["GDP" "deflator" "comm. prices" "nonborr. res." "total res." "FFR"];
 fprintf('\nsample: T = %d months, n = %d variables, p = %d lags (k = %d per equation)\n', ...
     T, n, p, n*p+1);
+
+    % The asymmetric conjugate prior has a closed-form marginal likelihood, so the
+    % settings above can be compared with alternatives before any draw is made.
+[~, Z] = bvar.util.build_lags([Y0(end-p+1:end,:); Y], p);
+lml = bvar.ml.acp(p, Y, Z, prior_redu);
+[lml_asym, kappa_asym] = bvar.priors.acp_opt_kappa(Y0, Y, Z, p, kappa(1:2), 'redu', idx_ns);
+[lml_sym, kappa_sym] = bvar.priors.acp_opt_kappa(Y0, Y, Z, p, [], 'redu', idx_ns, 'symmetric', true);
+
+lml_p = zeros(p, 1);          % the same Y for every lag length, since Y0 holds 12 rows
+for pp = 1:p
+    [~, Zp] = bvar.util.build_lags([Y0(end-pp+1:end,:); Y], pp);
+    lml_p(pp) = bvar.ml.acp(pp, Y, Zp, bvar.priors.acp_redu(n, pp, kappa, sig2, idx_ns));
+end
+[~, pbest] = max(lml_p);
+
+fprintf('\nlog marginal likelihood, in closed form\n');
+fprintf('  at the kappa used below                : %.1f, at (%g, %g)\n', lml, kappa(1), kappa(2));
+fprintf('  kappa1 and kappa2 chosen to maximize it: %.1f, at (%.3g, %.3g)\n', ...
+    lml_asym, kappa_asym(1), kappa_asym(2));
+fprintf('  the same with kappa1 = kappa2 imposed  : %.1f, at %.3g\n', lml_sym, kappa_sym(1));
+fprintf('  lag length with the highest value      : p = %d of 1..%d\n', pbest, p);
+fprintf('separate shrinkage for own and other lags raises it by %.1f log points,\n', ...
+    lml_asym - lml_sym);
+fprintf('and the kappa used below is within %.1f of the maximum\n', lml_asym - lml);
 
 %% ------------------------------------------------------------------
 %  2. The restrictions. One shock, restricted over K+1 horizons.

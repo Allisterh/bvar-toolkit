@@ -50,7 +50,7 @@ Useful if you are looking for a worked call of a particular core function.
 | ex04 | `bvar.priors.minn`, `bvar.priors.impact_B0`, `bvar.samplers.alp_tri_cs`, `bvar.sv.ksc_ar1_mean`, `bvar.sv.sv_params`, `bvar.sv.init_approx1N`, `bvar.util.build_lags`, `bvar.util.vec` | simulated |
 | ex05 | `replications/chan2020_jbes_kronecker/run_ml.m`, which calls the `bvar.ml.*` evaluators | that package's `data_Q.csv` |
 | ex06 | `bvar.priors.resid_var_ar4`, `bvar.priors.acp_redu`, `bvar.samplers.acp_theta_sig`, `bvar.structural.reduced_form`, `bvar.structural.qr_sign`, `bvar.structural.sign_restrict`, `bvar.structural.sign_assign` | `replications/chan_matthes_yu2026_qe_svarsign/legacy/data/database_2019Q4.csv`, read-only |
-| ex07 | the same seven, plus `bvar.structural.irf_redu` — the only example that computes an impulse response | that package's `data/Uhlig_monthly.csv`, read-only |
+| ex07 | the same seven, plus `bvar.structural.irf_redu` — the only example that computes an impulse response — and `bvar.ml.acp`, `bvar.priors.acp_opt_kappa` and `bvar.util.build_lags` for the marginal likelihood | that package's `data/Uhlig_monthly.csv`, read-only |
 | ex08 | `bvar.forecast.iterate`, `bvar.forecast.tables`, `bvar.samplers.eq_gauss`, `bvar.samplers.gig_shrinkage`, `bvar.samplers.nu_psi_ng`, `bvar.priors.minnesota_C`, `bvar.priors.vtheta`, `bvar.priors.resid_var_ar4`, `bvar.sv.ksc_rw_h0`, `bvar.util.build_lags` | `replications/chan2021_ijf_mahp/legacy/macrodata_Q_2018Q4.csv`, read-only |
 
 We note two points about reading these scripts. First, ex01 and ex04 spell out inline what a

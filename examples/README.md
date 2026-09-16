@@ -1,8 +1,8 @@
 # Examples
 
-Nine short scripts that build up from the one computational idea the toolkit rests on
-to model comparison, structural identification, forecast evaluation and the effect of
-the variable ordering. They are teaching material, not
+Ten short scripts that build up from the one computational idea the toolkit rests on
+to model comparison, structural identification, forecast evaluation, the effect of the
+variable ordering, and a factor structure for the covariance. They are teaching material, not
 replications: each works on data small enough that you can check the numbers against the
 truth, and each prints its reasoning as it goes. For reproducing a published table, use
 `replications/<paper>/` instead.
@@ -27,6 +27,7 @@ Read them in order. Each one uses what the last one built.
 | 7 | `ex07_dynamic_sign_restrictions.m` | Sign restrictions imposed over a stretch of the impulse response rather than on impact alone — Uhlig's (2005) agnostic identification of a monetary shock. Collects 1000 accepted draws under each acceptance rule and compares the resulting credible bands: the two rules have different acceptance rates and produce the same bands. | &mdash; | 13 s |
 | 8 | `ex08_forecast_evaluation.m` | A recursive forecasting exercise end to end: the structural VAR with stochastic volatility and the Minnesota-type adaptive hierarchical prior of Chan (2021), estimated at each vintage, forecast one and four quarters ahead, and scored by RMSFE and log predictive likelihood. The only example that uses `bvar.forecast`. | Ch. 14 | 15 s |
 | 9 | `ex09_variable_ordering_sv.m` | Whether the estimates depend on the order of the variables: the Cholesky SV model of ex04 against the order-invariant model of Chan, Koop and Yu (2024), each run in the published order and reversed, with a second seed as a Monte Carlo yardstick. On four FRED-MD series the ordering moves the Cholesky correlation paths by up to 0.11 and the order-invariant ones by no more than their own simulation noise. | Ch. 13, 14 | 34 s |
+| 10 | `ex10_factor_sv.m` | A VAR whose errors load on two latent factors, with stochastic volatility on each factor and each idiosyncratic error, so the covariance of eight variables moves with 10 volatility paths and 13 free loadings instead of 36 free elements at every date. On simulated data the factors come back with correlations near 0.97, the loadings track their true values, and the 68% bands cover the truth in about two thirds of the element-dates. | Ch. 14 | 8 s |
 
 Timings are from one warm R2025b session on a desktop machine; treat them as orders of
 magnitude. ex01 to ex04, ex07 and ex08 draw figures as well as printing. The chapter column
@@ -55,6 +56,7 @@ Useful if you are looking for a worked call of a particular core function.
 | ex07 | the same seven, plus `bvar.structural.irf_redu` — the only example that computes an impulse response — and `bvar.ml.acp`, `bvar.priors.acp_opt_kappa` and `bvar.util.build_lags` for the marginal likelihood | that package's `data/Uhlig_monthly.csv`, read-only |
 | ex08 | `bvar.forecast.iterate`, `bvar.forecast.tables`, `bvar.samplers.eq_gauss`, `bvar.samplers.gig_shrinkage`, `bvar.samplers.nu_psi_ng`, `bvar.priors.minnesota_C`, `bvar.priors.vtheta`, `bvar.priors.resid_var_ar4`, `bvar.sv.ksc_rw_h0`, `bvar.util.build_lags` | `replications/chan2021_ijf_mahp/legacy/macrodata_Q_2018Q4.csv`, read-only |
 | ex09 | `bvar.structural.b0_row_sampler`, `bvar.structural.construct_Sigt`, `bvar.samplers.eq_var_oi`, `bvar.samplers.eq_tri_cs`, `bvar.samplers.alp_tri_cs`, `bvar.samplers.horseshoe_kappa_psi`, `bvar.sv.ksc_ar1_mean`, `bvar.sv.sv0_params`, `bvar.sv.sv_params`, `bvar.priors.resid_var_ar4`, `bvar.priors.minnesota_C`, `bvar.priors.vtheta`, `bvar.util.build_lags` | `replications/chan_koop_yu2024_jbes_oisv/legacy/FRED_MD_20vars.csv`, read-only |
+| ex10 | `bvar.samplers.factor_fsv`, `bvar.samplers.eq_fsv_load`, `bvar.sv.ksc_ar1_mean`, `bvar.sv.sv_params`, `bvar.sv.init_approx1N`, `bvar.priors.minn`, `bvar.util.build_lags` | simulated |
 
 We note two points about reading these scripts. First, ex01 and ex04 spell out inline what a
 core function would otherwise do in one call: the precision-sampler draw in ex01, and the

@@ -3,43 +3,24 @@
 % BOOK: Chapter 14, Large VARs with Stochastic Volatility, in Bayesian
 % Macroeconometrics: Methods and Applications (Chapman & Hall/CRC, forthcoming).
 %
-% This example carries a model through to a forecast comparison: estimate on
-% data up to a vintage, forecast one and four quarters ahead, score the forecast
-% against the outturn, move the vintage forward and repeat. bvar.forecast holds
-% the two pieces that do the work, iterate for one draw and tables for the
-% accumulation and the summary.
+% THE MODEL. The large BVAR with stochastic volatility of Chan (2021), in
+% structural form: A0 y_t = b + B_1 y_{t-1} + ... + B_p y_{t-p} + eps_t, with A0
+% unit lower triangular and eps_it ~ N(0, exp(h_it)). The prior is the
+% Minnesota-type normal-gamma prior, model 1 of the paper: lag coefficient j has
 %
-% THE MODEL. The large BVAR with stochastic volatility of Chan (2021), written
-% in STRUCTURAL form: A0 y_t = b + B_1 y_{t-1} + ... + B_p y_{t-p} + eps_t, with
-% A0 unit lower triangular and eps_it ~ N(0, exp(h_it)). Equation i therefore
-% regresses y_i on the lags AND on the contemporaneous y_1..y_{i-1}, which is
-% why Xi = [Z -Y(:,1:i-1)] appears inside bvar.samplers.eq_gauss. Two blocks of
-% coefficients follow: beta, the n^2 p + n lag coefficients, and alp, the
-% n(n-1)/2 free elements of A0.
+%       beta_j | psi_j ~ N(0, kappa C_j psi_j),   psi_j ~ Gamma(nu_psi, 2/nu_psi),
 %
-% THE PRIOR. The Minnesota-type normal-gamma prior, model 1 of the paper, which
-% is normal-gamma in the exact sense: lag coefficient j has
+% with kappa1 on own lags and kappa2 on cross lags, and kappa1, kappa2, every
+% psi_j and nu_psi estimated.
 %
-%     beta_j | psi_j ~ N(0, kappa * C_j * psi_j),   psi_j ~ Gamma(nu_psi, 2/nu_psi),
-%
-% so integrating out psi_j leaves heavier tails and more mass at zero than a
-% normal. Minnesota-TYPE refers to two things the paper's plain normal-gamma
-% (model 2) does without: C, from bvar.priors.minnesota_C, carrying the decay in
-% lag order and the residual-variance ratio across equations, and a global
-% shrinkage split in two, kappa1 on own lags and kappa2 on cross lags, with Gamma
-% priors of mean .04 and .0016. kappa1, kappa2, every psi_j and nu_psi are all
-% estimated, where a standard Minnesota prior fixes kappa and sets psi_j to one.
-% The generalized inverse Gaussian is the CONDITIONAL POSTERIOR of psi_j and of
-% the kappas, not part of the prior; bvar.samplers.gig_shrinkage draws it.
-%
-% SETTINGS. Twelve variables, twelve vintages and 200 draws after a burn-in of
-% 100. The published exercise uses 23 variables, about 139 vintages and 20000
-% draws; see replications/chan2021_ijf_mahp. Twelve vintages is far too few for
-% the RMSFEs below to rank anything, and they are printed to show the machinery.
+% The script estimates the model at each vintage, forecasts one and four quarters
+% ahead with bvar.forecast.iterate, and scores the forecasts by RMSFE and log
+% predictive likelihood with bvar.forecast.tables.
 %
 % DATA. Read-only from replications/chan2021_ijf_mahp/legacy/
-% macrodata_Q_2018Q4.csv, the quarterly US panel of Chan (2021), first twelve of
-% the paper's twenty-three series.
+% macrodata_Q_2018Q4.csv, the first twelve of the paper's 23 quarterly US series.
+% Twelve vintages and 200 draws after a burn-in of 100, against about 139
+% vintages and 20,000 draws in the paper.
 %
 % See:
 % Chan, J.C.C. (2021). Minnesota-Type Adaptive Hierarchical Priors for Large

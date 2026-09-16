@@ -1,41 +1,23 @@
-%% ex10 - Identifying a SVAR by sign restrictions, and why the search matters
+%% ex10 - Identifying a structural VAR by sign restrictions
 %
-% THE PROBLEM. A reduced-form VAR pins down Sigma but not the impact matrix. Any
-% L with L*L' = Sigma is admissible, and they are related by rotation: given one
-% Cholesky factor L0, every candidate is L0*Q for some orthogonal Q. Sign
-% restrictions pick out the economically meaningful ones - a monetary
-% contraction raises the interest rate and lowers output and prices, and so on.
-% Since no finite set of sign restrictions leaves a single L, the object of
-% inference is a SET, explored by drawing rotations at random and keeping those
-% that satisfy the restrictions.
+% THE PROBLEM. A reduced-form VAR identifies Sigma but not the impact matrix:
+% every L0*Q with L0*L0' = Sigma and Q orthogonal is admissible. Sign
+% restrictions keep the rotations whose impact responses have the required
+% signs, and the set of accepted rotations is the object of inference.
+% bvar.structural.qr_sign draws Q uniformly from the orthogonal group, and two
+% rules decide acceptance:
 %
-% WHERE THE ROTATIONS COME FROM. bvar.structural.qr_sign draws Q uniformly from
-% the orthogonal group, via the QR decomposition of a Gaussian matrix. The two
-% rules below differ in what is done with it, and that acceptance step is where
-% the computation goes.
-%
-%   bvar.structural.sign_restrict   requires column i to satisfy shock i and
-%                                   rejects at the first shock that fails - the
+%   bvar.structural.sign_restrict   requires column i to satisfy shock i - the
 %                                   accept-reject algorithm of Rubio-Ramirez,
-%                                   Waggoner and Zha (2010).
+%                                   Waggoner and Zha (2010)
+%   bvar.structural.sign_assign     accepts whenever every shock has at least one
+%                                   admissible column, then draws an assignment -
+%                                   the algorithm of Chan, Matthes and Yu (2026)
 %
-%   bvar.structural.sign_assign     tabulates which columns admit which shocks,
-%                                   accepts whenever every shock has at least
-%                                   one, and then draws an assignment - the
-%                                   algorithm of Chan, Matthes and Yu (2026).
-%
-% The labelling of the columns of Q is arbitrary. A rotation whose fourth column
-% satisfies the monetary restrictions is just as admissible as one where the
-% first column satisfies them, and accept-reject discards the former. Both target
-% the same identified set, and their acceptance rates differ widely: the run behind
-% this repository's tests/golden/chan2022_qe_acp/main_ACP_apps_15var capture needed
-% 3.8 million draws for each acceptance at n = 15.
-%
-% WHAT THIS SCRIPT DOES. Draws one batch from the posterior of a 6-variable VAR
-% under the asymmetric conjugate prior, then runs BOTH acceptance rules over the
-% same batch, so the comparison is of the rules and not of the sampling. It
-% prints the two acceptance rates and checks that the accepted draws satisfy the
-% restrictions they were selected for.
+% Both rules target the same identified set. The script draws one batch from the
+% posterior of a 6-variable VAR under the asymmetric conjugate prior, runs both
+% rules over the same batch, prints the two acceptance rates, and checks that the
+% accepted draws satisfy the restrictions.
 %
 % DATA. Read-only from replications/chan_matthes_yu2026_qe_svarsign/legacy/data/
 % database_2019Q4.csv, the quarterly US panel of Chan, Matthes and Yu (2026),

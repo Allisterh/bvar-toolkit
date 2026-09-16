@@ -1,44 +1,24 @@
 %% ex01 - The precision sampler: drawing a whole state path in one block
 %
 % BOOK: Chapter 9, Linear Gaussian State Space Models, in Bayesian
-% Macroeconometrics: Methods and Applications (Chapman & Hall/CRC,
-% forthcoming).
+% Macroeconometrics: Methods and Applications (Chapman & Hall/CRC, forthcoming).
 %
-% This is the computational foundation of everything else in the toolkit.
+% THE MODEL. A local-level model: y_t = tau_t + eps_t, with the random-walk
+% state tau_t = tau_{t-1} + u_t, u_t ~ N(0, sig2_tau). Stacked over t, the state
+% equation is H*tau = alpha + u with H the first-difference matrix, so the
+% precision of tau is tridiagonal both before and after conditioning on y, and
+% the whole path is one Gaussian draw from a banded Cholesky factor, at a cost
+% linear in T.
 %
-% THE IDEA (Chan and Jeliazkov, 2009). A linear Gaussian state space model can
-% be written without any filtering recursion at all. Stack the states into one
-% long vector and note that the state equation
+% The script draws the path this way, puts the draw inside a Gibbs sampler that
+% also estimates the two variances, times the sparse and dense factorizations as
+% T grows, and builds the same construction for a k-dimensional state with
+% bvar.util.surform. The estimates are compared with the simulated truth.
 %
-%       tau_t = tau_{t-1} + u_t,     u_t ~ N(0, sig2_tau)
-%
-% is, for the whole path at once, just a linear map:  H*tau = alpha + u, with
-%
-%       H = |  1                |          (first difference matrix)
-%           | -1   1            |
-%           |     -1   1        |
-%           |          .   .    |
-%
-% so tau ~ N(H\alpha, (H' S^-1 H)^-1). The prior precision K_tau = H'S^-1H is
-% TRIDIAGONAL, and adding the (diagonal) measurement precision keeps it
-% tridiagonal. A banded Cholesky factorization costs O(T) flops, not O(T^3),
-% and the whole path is drawn in ONE multivariate normal draw. No Kalman
-% filter, no forward-backward pass, no loop over t.
-%
-% Everything in core/+bvar/+sv/ (bvar.sv.ksc_rw_h0, bvar.sv.ksc_rw_diffuse,
-% bvar.sv.ksc_ar1_mean, bvar.sv.csv_armh) is this same three-line construction
-% with a different H and a different diagonal.
-%
-% WHAT TO LOOK AT when you run this:
-%   1. the sparsity numbers: K has ~3T nonzeros out of T^2;
-%   2. the timing table: doubling T roughly doubles the time (sparse) but
-%      multiplies it by ~8 (dense) - that is O(T) versus O(T^3);
-%   3. the last section: bvar.util.surform builds the same machinery for a
-%      k-dimensional state (a time-varying-parameter regression).
-%
-% See: Chan, J.C.C. and I. Jeliazkov (2009). Efficient Simulation and
-% Integrated Likelihood Estimation in State Space Models, International
-% Journal of Mathematical Modelling and Numerical Optimisation, 1: 101-120.
+% See:
+% Chan, J.C.C. and Jeliazkov, I. (2009). Efficient Simulation and Integrated
+% Likelihood Estimation in State Space Models, International Journal of
+% Mathematical Modelling and Numerical Optimisation, 1: 101-120.
 
 run(fullfile(fileparts(fileparts(mfilename('fullpath'))),'setup.m'))
 

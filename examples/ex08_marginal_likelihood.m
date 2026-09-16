@@ -3,45 +3,22 @@
 % BOOK: Chapter 5, Bayesian Model Comparison, in Bayesian Macroeconometrics:
 % Methods and Applications (Chapman & Hall/CRC, forthcoming).
 %
-% THE QUANTITY. The marginal likelihood of a model M is
-%
-%       p(y | M) = INT p(y | theta, M) p(theta | M) d theta,
-%
-% the prior-predictive density of the data actually observed. Ratios of
-% marginal likelihoods are Bayes factors, so this one number is what ranks the
-% competing error specifications in Chan (2020, JBES). It is not a by-product
-% of the MCMC: computing it takes a second pass over the stored draws. The
-% method here is Chib's - evaluate the likelihood and the prior at one
-% "starred" parameter point (the posterior means), then divide by the
-% posterior ordinate at that same point, which the chain lets you estimate:
+% THE QUANTITY. The marginal likelihood p(y | M), the integral of the likelihood
+% against the prior, computed by Chib's method at theta*, the posterior means:
 %
 %       log p(y) = log p(y | theta*) + log p(theta*) - log p(theta* | y).
 %
-% Each piece is a density evaluated at theta*, so the accounting is exact and
-% every term is worth inspecting separately - this example prints them.
+% The script compares three error specifications of Chan (2020, JBES), with the
+% VAR and the prior held fixed: iid Gaussian errors (BVAR), Student-t errors
+% (BVAR-t) and a common stochastic volatility factor (BVAR-CSV). It runs
+% replications/chan2020_jbes_kronecker/run_ml.m for each model and prints the
+% three terms for BVAR-t separately. The chains are a few hundred draws, against
+% 30,000 in the paper.
 %
-% WHAT IS IN THE TOOLKIT. core/+bvar/+ml/ holds one function per model of that
-% paper (kron_bvar, kron_bvar_t, ..., kron_bvar_csv_t_ma), the shared density
-% pieces (lniwpdf, linvgammpdf, llike_ma, llike_csv_ma) and four
-% importance-sampling evaluators (intlike_*) for the models whose likelihood
-% has no closed form because the volatility path must be integrated out.
-% replications/chan2020_jbes_kronecker/run_ml.m runs the estimation and then
-% the matching ML computation on ONE continuous random-number stream, exactly
-% as the legacy scripts do.
+% DATA. That package's quarterly US panel, data_Q.csv, read-only.
 %
-% THREE MODELS. We compare the error specification, holding the VAR and the
-% prior fixed:
-%   1  BVAR      iid Gaussian errors
-%   2  BVAR-t    Student-t errors (fat tails, no time variation)
-%   3  BVAR-CSV  a common stochastic volatility factor (time variation)
-% Model 1's marginal likelihood is available in closed form; models 2 and 3
-% need the chain.
-%
-% Sizes here are deliberately tiny (a few hundred draws). The published run
-% uses 30000 - do not read the numbers below as results. Their ORDER is
-% already informative, but a real comparison needs the full settings.
-%
-% See: Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error
+% See:
+% Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error
 % covariance structure, Journal of Business and Economic Statistics, 38(1), 68-79.
 
 run(fullfile(fileparts(fileparts(mfilename('fullpath'))),'setup.m'))

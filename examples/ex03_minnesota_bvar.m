@@ -3,44 +3,25 @@
 % BOOK: Chapter 12, Vector Autoregressions, in Bayesian Macroeconometrics:
 % Methods and Applications (Chapman & Hall/CRC, forthcoming).
 %
-% THE MODEL. A VAR(p) with an intercept, written a row at a time:
+% THE MODEL. A VAR(p) with an intercept:
 %
-%       y_t' = z_t' A + eps_t',      eps_t ~ N(0, Sig),
-%       z_t  = [1, y_{t-1}', ..., y_{t-p}']'
+%       y_t' = z_t' A + eps_t',   eps_t ~ N(0, Sig),   z_t = [1, y_{t-1}', ..., y_{t-p}']',
 %
-% so A is the k x n coefficient matrix (k = 1 + n*p) and Sig the n x n error
-% covariance. With n = 20 variables and p = 4 lags there are k*n = 1620
-% coefficients for ~200 observations, which is why a shrinkage prior is not
-% optional. This example uses n = 3 so you can read the numbers.
+% with A the k x n coefficient matrix, k = 1 + n*p.
 %
-% THE PRIOR. Two constructors in core/+bvar/+priors/, and it is worth being
-% clear about how they differ:
+% THE PRIORS. bvar.priors.minn gives each coefficient its own variance: c1/l^2 on
+% own lag l, c2*sig2_i/(l^2*sig2_j) on lag l of variable j in equation i, and c3
+% on the intercept. bvar.priors.niw is the natural-conjugate prior,
+% A | Sig ~ MN(A0, diag(VA0), Sig) and Sig ~ IW(nu0, S0), whose variances do not
+% depend on the equation, so its posterior is analytic and is sampled directly.
+% Both scale by the AR(4) residual variances sig2 from bvar.priors.resid_var_ar4.
 %
-%   bvar.priors.minn  - the classic Minnesota prior. Each coefficient gets its
-%       OWN prior variance: c1/l^2 on own lag l, c2*sig2_i/(l^2*sig2_j) on the
-%       lag of variable j in equation i, c3 on the intercept. Because the
-%       variance depends on the equation i, this prior does NOT factor as a
-%       Kronecker product, so Sig must be fixed (or drawn separately) and the
-%       posterior is not available in closed form.
-%
-%   bvar.priors.niw   - the natural-conjugate (normal-inverse-Wishart) prior:
-%       A | Sig ~ MN(A0, diag(VA0), Sig),  Sig ~ IW(nu0, S0). The prior
-%       variance c1/(l^2*sig2_j) drops the equation index i, which is exactly
-%       the restriction that yields the Kronecker structure - and with it an
-%       ANALYTIC posterior: samples are directly drawn from it, no MCMC at all.
-%
-% Both scale their hyperparameters by sig2, the residual variances of
-% univariate AR(4) fits (bvar.priors.resid_var_ar4). That is what makes a
-% single scalar c1 mean the same thing for an interest rate and for GDP growth.
+% The script compares the two priors' variances, samples the natural-conjugate
+% posterior, and scores a one-step-ahead forecast of the held-out last quarter.
 %
 % DATA. Read-only from replications/chan2020_jbes_kronecker/legacy/data_Q.csv,
-% the quarterly US macro panel of Chan (2020, JBES), 1959Q1-2013Q4. We take
-% the first three columns of that file and hold out the LAST observation to
-% score a one-step-ahead forecast against.
-%
-% WHAT TO LOOK AT: the prior-variance comparison in section 3 (how much the
-% Kronecker restriction costs you in flexibility), the posterior coefficient
-% table, and the one-step forecast intervals against the realized values.
+% the quarterly US panel of Chan (2020, JBES), 1959Q1-2013Q4, first three
+% columns.
 
 run(fullfile(fileparts(fileparts(mfilename('fullpath'))),'setup.m'))
 

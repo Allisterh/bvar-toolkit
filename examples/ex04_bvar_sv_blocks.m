@@ -1,60 +1,35 @@
-%% ex04 - A REDUCED-FORM BVAR with stochastic volatility, equation by equation
+%% ex04 - A reduced-form BVAR with stochastic volatility, equation by equation
 %
 % BOOK: Chapter 14, Large VARs with Stochastic Volatility, in Bayesian
 % Macroeconometrics: Methods and Applications (Chapman & Hall/CRC, forthcoming).
 %
-% This example teaches the sampler of
-%
-%       replications/chan2023_joe_mlvarsv/legacy/VAR_ARSV_redu.m
-%
-% (Chan, 2023, JoE 235(2): 1419-1446), on simulated data small enough to check
-% every number against the truth.
-%
-% THE MODEL. The VAR is in reduced form, as in ex03 - each equation's regressors
-% are lags only - with two additions:
+% THE MODEL. The sampler of replications/chan2023_joe_mlvarsv/legacy/
+% VAR_ARSV_redu.m:
 %
 %       Y = X*A + E,        A is k x n,  k = 1 + n*p,  intercept first,
-%       B0*eps_t = u_t,     u_{it} ~ N(0, exp(h_{it})),
-%       h_{it} = mu_i + phi_i*(h_{i,t-1} - mu_i) + v_{it},  v_{it} ~ N(0, sig2_i),
-%       h_{i1} ~ N(mu_i, sig2_i/(1 - phi_i^2)).
+%       B0*eps_t = u_t,     u_it ~ N(0, exp(h_it)),  B0 lower unitriangular,
+%       h_it = mu_i + phi_i*(h_{i,t-1} - mu_i) + v_it,  v_it ~ N(0, sig2_i).
 %
-% B0 is lower unitriangular, so the reduced-form errors are correlated,
-% Var(eps_t) = B0^{-1} diag(exp(h_t)) B0^{-1}', and the orthogonalized errors
-% B0*eps_t carry the n independent AR(1) log-volatilities.
-%
-% WHY IT IS DRAWN EQUATION BY EQUATION. ex03 has a closed-form posterior because
-% the natural-conjugate prior keeps the Kronecker structure and the errors are
-% homoskedastic; neither survives once the volatilities are equation-specific.
-% The conditional for the whole of A is then a k*n x k*n system - 21 x 21 here,
-% 3660 x 3660 at the paper's n = 15, p = 4 - and factorizing that every sweep is
-% what the equation-by-equation draw avoids, at n Choleskys of size k x k.
-% Triangularity is what keeps each one small; see the comment in block 1.
-%
-% LAYOUT. A is k x n with beta = vec(A), the convention of the legacy code and
-% of this toolkit, so equation ii's coefficients are COLUMN ii of A:
-% Y(:,ii) = X*A(:,ii) + error. Keeping that layout is what makes this script
-% diff line by line against the legacy file. The four blocks:
+% A is drawn equation by equation, n Cholesky factorizations of size k x k in
+% place of one of size kn x kn; equation ii's coefficients are column ii of A.
+% The four blocks per sweep:
 %
 %   1. A equation by equation       (inline here; also bvar.samplers.eq_var_redu_tri)
 %   2. the free elements of B0      bvar.samplers.alp_tri_cs
 %   3. the n log-volatility paths   bvar.sv.ksc_ar1_mean
 %   4. (mu, phi, sig2) per equation bvar.sv.sv_params
 %
-% ONE CAVEAT. This script illustrates VAR_ARSV_redu rather than reproducing it
-% bitwise: the shrinkage hyperparameters kappa are held fixed at the paper's
-% preset values, where VAR_ARSV_redu draws them from generalized-inverse-Gaussian
-% conditionals every sweep. replications/chan2021_ijf_mahp/run_all.m shows that
-% block switched on.
+% The shrinkage hyperparameters are held at the paper's values, where
+% VAR_ARSV_redu.m draws them. Variable names follow the legacy file, in which
+% alp is vec(A) and beta holds the free elements of B0, the reverse of the MAHP
+% convention in bvar.priors.vtheta.
 %
-% A NAMING TRAP. In this paper's code `alp` is vec(A), the VAR coefficients, and
-% `beta` collects the free elements of B0 - the opposite of the MAHP convention
-% used in replications/chan2021_ijf_mahp and in bvar.priors.vtheta. The names
-% below follow the legacy file, and each block comment states which object its
-% variables hold.
+% DATA. Simulated with n = 3, p = 2, T = 200, so every estimate can be checked
+% against the truth.
 %
-% WHAT TO LOOK AT: the row-count line printed in block 1, the coefficient RMSE
-% against ordinary least squares, the recovered B0 elements, and the correlation
-% between the estimated and true log-volatility paths.
+% See:
+% Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large
+% Bayesian VARs, Journal of Econometrics, 235(2), 1419-1446.
 run(fullfile(fileparts(fileparts(mfilename('fullpath'))),'setup.m'))
 
 rng(20260903, 'twister')

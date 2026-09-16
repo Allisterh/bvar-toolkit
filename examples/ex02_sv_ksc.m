@@ -4,42 +4,24 @@
 % Macroeconometrics: Methods and Applications (Chapman & Hall/CRC,
 % forthcoming); the auxiliary mixture itself is Chapter 4, Mixture Models.
 %
-% THE MODEL (random-walk stochastic volatility, known initial log-volatility):
+% THE MODEL. Random-walk stochastic volatility with a known initial value:
 %
-%       y_t = exp(h_t/2) * eps_t,     eps_t ~ N(0,1)
-%       h_t = h_{t-1} + u_t,          u_t   ~ N(0, sigh2)
-%       h_1 ~ N(h0, sigh2)
+%       y_t = exp(h_t/2) eps_t,   eps_t ~ N(0,1),
+%       h_t = h_{t-1} + u_t,      u_t ~ N(0, sigh2),   h_1 ~ N(h0, sigh2).
 %
-% h_t is the log variance at time t. The model is nonlinear in the states, so
-% the ex01 machinery does not apply directly. The Kim, Shephard and Chib
-% (1998) trick makes it apply anyway:
+% Writing log(y_t^2) = h_t + log(eps_t^2) and approximating the log-chi-squared
+% error by a seven-component normal mixture makes the model linear and Gaussian
+% given the component indicators, so bvar.sv.ksc_rw_h0 draws the whole path with
+% the precision sampler of ex01.
 %
-%   1. square and log the data:  ystar_t = log(y_t^2) = h_t + log(eps_t^2).
-%      This is LINEAR in h_t. The catch is that log(eps_t^2) is log-chi^2(1),
-%      not normal.
-%   2. approximate that log-chi^2(1) density by a 7-component mixture of
-%      normals (the KSC constants, hard-coded in the sampler).
-%   3. conditional on which mixture component applies at each t, the model IS
-%      linear and Gaussian - so draw the whole h path with the ex01 precision
-%      sampler, and draw the component indicators from a 7-point distribution.
+% The script simulates the model, estimates h and sigh2 against the truth, and
+% shows how the offset c in log(y_t^2 + c) distorts the estimates when the data
+% are small in scale.
 %
-% bvar.sv.ksc_rw_h0 does steps 2 and 3 in one call. Its whole body is 20 lines:
-% a T x 7 table of mixture weights, then exactly the banded-precision draw of
-% ex01. It consumes one rand(T,1) and one randn(T,1) per call.
-%
-% SIBLINGS IN core/+bvar/+sv/ (same idea, different state equation):
-%   bvar.sv.ksc_rw_h0      random walk, KNOWN initial value h_1 ~ N(h0,sigh2)   <- here
-%   bvar.sv.ksc_rw_diffuse random walk, diffuse start h_1 ~ N(0,Vh); returns S too
-%   bvar.sv.ksc_ar1_mean   stationary AR(1) with a mean, h_t - mu = phi(h_{t-1}-mu) + u
-%   bvar.sv.csv_armh       common (scalar) stochastic volatility for an n-variate
-%                         VAR, drawn by an accept-reject Metropolis-Hastings step
-%   bvar.sv.sv_params /
-%   bvar.sv.sv0_params     draw (mu, phi, sigh2) for the AR(1) specifications
-%
-% WHAT TO LOOK AT: the posterior mean of h should track the simulated truth
-% closely (correlation well above 0.9), the posterior of sigh2 should cover the
-% true value, and the LAST section shows a trap that catches people - the
-% offset inside log(y^2 + c) is not scale-free.
+% See:
+% Kim, S., Shephard, N. and Chib, S. (1998). Stochastic Volatility: Likelihood
+% Inference and Comparison with ARCH Models, Review of Economic Studies, 65(3):
+% 361-393.
 
 run(fullfile(fileparts(fileparts(mfilename('fullpath'))),'setup.m'))
 

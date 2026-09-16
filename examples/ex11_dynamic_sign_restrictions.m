@@ -1,35 +1,25 @@
 %% ex11 - Dynamic sign restrictions and impulse responses: Uhlig (2005)
 %
-% ex10 restricted the impact responses only. Uhlig (2005) restricts a stretch of
-% the impulse response instead: a monetary contraction raises the funds rate and
-% lowers prices, commodity prices and nonborrowed reserves for K months, not just
-% on impact. Output is left free, which is what makes the identification
-% agnostic.
+% Uhlig (2005) identifies a monetary contraction by restricting the impulse
+% responses at horizons 0 to K: the funds rate rises, and prices, commodity
+% prices and nonborrowed reserves fall. Output is unrestricted.
 %
-% THE ACCEPTANCE TEST. The impact restrictions are tested first, which is
-% where the two rules differ - sign_restrict is the accept-reject algorithm of
-% Rubio-Ramirez, Waggoner and Zha (2010), sign_assign the search of Chan,
-% Matthes and Yu (2026), both applied to rotations that qr_sign draws uniformly
-% from the orthogonal group. The impulse responses at horizons 1..K are tested
-% second, which is plain rejection under both. So the 2026 algorithm accelerates
-% the impact stage; it does not impose the dynamic restrictions. That is the
-% structure of Application_Uhlig2005.m in the replication package.
-%
-% This script runs both rules over the SAME candidates until each has 1000
-% accepted draws. Their acceptance rates differ by a wide margin. Proposition 1
-% says the assignment rule still targets a uniform rotation, so both give the
-% same answer, and the script checks that against a Monte Carlo yardstick rather
-% than asserting it.
+% The impact restrictions are tested first, by sign_restrict (Rubio-Ramirez,
+% Waggoner and Zha, 2010) or sign_assign (Chan, Matthes and Yu, 2026) on
+% rotations drawn uniformly by qr_sign; the responses at horizons 1 to K are then
+% tested by plain rejection under both, as in Application_Uhlig2005.m of the
+% replication package. The script runs both rules over the same candidates until
+% each has 1000 accepted draws, and compares the resulting bands against a Monte
+% Carlo yardstick. Section 1 compares the shrinkage hyperparameters and the lag
+% length with the values that maximize the prior's closed-form marginal
+% likelihood.
 %
 % DATA. Read-only from replications/chan_matthes_yu2026_qe_svarsign/legacy/data/
 % Uhlig_monthly.csv, monthly US data on GDP, the GDP deflator, commodity prices,
 % nonborrowed reserves, total reserves and the federal funds rate, the first five
-% in logs. The package records that commodity prices were perturbed with noise
-% under a licensing agreement, so these numbers are close to but not identical to
-% the published ones. The prior is the asymmetric conjugate prior of Chan (2022),
-% the package's model 1; its model 2 needs sample_BSig_NCP, which is not core.
-% That prior has a closed-form marginal likelihood, which section 1 uses to compare
-% the shrinkage hyperparameters and the lag length with the values that maximize it.
+% in logs. The package's commodity prices carry added noise under a licensing
+% agreement, so results differ slightly from the published ones. The prior is the
+% asymmetric conjugate prior of Chan (2022), the package's model 1.
 %
 % See:
 % Uhlig, H. (2005). What are the Effects of Monetary Policy on Output? Results

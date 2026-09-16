@@ -20,7 +20,7 @@ Read them in order; each group builds on the ones before it.
 
 | | Script | What it teaches | Book | Runs in |
 |---|---|---|---|---|
-| 1 | `ex01_precision_sampler.m` | Drawing an entire state path in one block, with no filtering recursion — the Chan–Jeliazkov (2009) precision sampler. Derives it from the banded precision matrix, checks the draws against the Kalman smoother, and shows the sparse structure that makes it linear in *T*. | Ch. 9 | 11 s |
+| 1 | `ex01_precision_sampler.m` | Drawing an entire state path in one block, with no filtering recursion — the Chan–Jeliazkov (2009) precision sampler. Derives it from the banded precision matrix, checks the estimated path against the simulated truth, and shows the sparse structure that makes it linear in *T*. | Ch. 9 | 11 s |
 | 2 | `ex02_sv_ksc.m` | Stochastic volatility by the Kim–Shephard–Chib auxiliary mixture: how squaring and logging the data turns a nonlinear model into the linear Gaussian one ex01 already solves, and what the seven-component mixture is for. | Ch. 10 | 5 s |
 
 ### VAR specifications

@@ -1,4 +1,4 @@
-%% ex09 - Identifying a SVAR by sign restrictions, and why the search matters
+%% ex10 - Identifying a SVAR by sign restrictions, and why the search matters
 %
 % THE PROBLEM. A reduced-form VAR pins down Sigma but not the impact matrix. Any
 % L with L*L' = Sigma is admissible, and they are related by rotation: given one
@@ -53,7 +53,7 @@ run(fullfile(fileparts(fileparts(mfilename('fullpath'))),'setup.m'))
 
 rng(20260908, 'twister')
 repo = fileparts(fileparts(mfilename('fullpath')));
-fprintf('\n=== ex09: sign restrictions, and the cost of the search ===\n');
+fprintf('\n=== ex10: sign restrictions, and the cost of the search ===\n');
 
 %% ------------------------------------------------------------------
 %  1. Data and prior
@@ -161,7 +161,7 @@ if ~isempty(Lkept)
     fprintf('rotation gives them.\n');
 end
 
-fprintf('\nex09 done. The identified set is explored by repeating section 4 until\n');
+fprintf('\nex10 done. The identified set is explored by repeating section 4 until\n');
 fprintf('enough draws are kept, one draw per accepted candidate: two assignments\n');
 fprintf('from the same rotation differ only by a permutation and sign flips, so\n');
 fprintf('they would not be independent. replications/chan_matthes_yu2026_qe_svarsign/\n');

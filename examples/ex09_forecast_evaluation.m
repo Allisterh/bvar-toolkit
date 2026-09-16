@@ -1,4 +1,4 @@
-%% ex08 - Recursive forecasting and predictive evaluation
+%% ex09 - Recursive forecasting and predictive evaluation
 %
 % BOOK: Chapter 14, Large VARs with Stochastic Volatility, in Bayesian
 % Macroeconometrics: Methods and Applications (Chapman & Hall/CRC, forthcoming).
@@ -48,7 +48,7 @@
 run(fullfile(fileparts(fileparts(mfilename('fullpath'))),'setup.m'))
 
 repo = fileparts(fileparts(mfilename('fullpath')));
-fprintf('\n=== ex08: recursive forecasting and predictive evaluation ===\n');
+fprintf('\n=== ex09: recursive forecasting and predictive evaluation ===\n');
 
 %% ------------------------------------------------------------------
 %  1. Data and sizes
@@ -154,7 +154,7 @@ fprintf(['tables trims the evaluation window the way the paper does: the h = 1\n
 %% ------------------------------------------------------------------
 %  5. The prior adapting
 %  ------------------------------------------------------------------
-figure('Name','ex08: shrinkage learned at each vintage','Position',[100 100 760 320]);
+figure('Name','ex09: shrinkage learned at each vintage','Position',[100 100 760 320]);
 subplot(1,2,1); plot(t_first:(t_first+nvintage-1), kappa_path(:,1), 'k-o', 'LineWidth', 1.1);
 title('kappa_1  (own lags)'); xlabel('vintage t'); grid on
 subplot(1,2,2); plot(t_first:(t_first+nvintage-1), kappa_path(:,2), 'k-o', 'LineWidth', 1.1);
@@ -166,7 +166,7 @@ fprintf(['\nThe two panels show the posterior mean of each shrinkage\n' ...
          'kappa2 sits about thirty times below kappa1 throughout, so cross-lag\n' ...
          'coefficients are shrunk much harder than own lags.\n']);
 
-fprintf('\nex08 done. For the published exercise use\n');
+fprintf('\nex09 done. For the published exercise use\n');
 fprintf('  replications/chan2021_ijf_mahp/legacy/main_forecasting.m\n');
 fprintf('at its own settings: 23 variables, nsim = 20000, T0 = 91.\n');
 

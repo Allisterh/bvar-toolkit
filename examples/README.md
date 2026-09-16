@@ -1,7 +1,7 @@
 # Examples
 
-Ten short scripts in four groups: the two computational building blocks the toolkit rests
-on, VARs with increasingly flexible error covariances, model comparison and forecasting with
+Eleven short scripts in four groups: the two computational building blocks the toolkit rests
+on, VAR specifications of increasing flexibility, model comparison and forecasting with
 an estimated VAR, and structural identification by sign restrictions. They are teaching material, not
 replications: each works on data small enough that you can check the numbers against the
 truth, and each prints its reasoning as it goes. For reproducing a published table, use
@@ -23,7 +23,7 @@ Read them in order; each group builds on the ones before it.
 | 1 | `ex01_precision_sampler.m` | Drawing an entire state path in one block, with no filtering recursion — the Chan–Jeliazkov (2009) precision sampler. Derives it from the banded precision matrix, checks the draws against the Kalman smoother, and shows the sparse structure that makes it linear in *T*. | Ch. 9 | 11 s |
 | 2 | `ex02_sv_ksc.m` | Stochastic volatility by the Kim–Shephard–Chib auxiliary mixture: how squaring and logging the data turns a nonlinear model into the linear Gaussian one ex01 already solves, and what the seven-component mixture is for. | Ch. 10 | 5 s |
 
-### VARs and their error covariance
+### VAR specifications
 
 | | Script | What it teaches | Book | Runs in |
 |---|---|---|---|---|
@@ -31,23 +31,24 @@ Read them in order; each group builds on the ones before it.
 | 4 | `ex04_bvar_sv_blocks.m` | Assembling a reduced-form BVAR with stochastic volatility from core blocks, drawn equation by equation — the sampler of `VAR_ARSV_redu.m` from Chan (2023, JoE), on simulated data with the truth known. | Ch. 14 | 4 s |
 | 5 | `ex05_variable_ordering_sv.m` | Whether the estimates depend on the order of the variables: the Cholesky SV model of ex04 against the order-invariant model of Chan, Koop and Yu (2024), each run in the published order and reversed, with a second seed as a Monte Carlo yardstick. On four FRED-MD series the ordering moves the Cholesky correlation paths by up to 0.11 and the order-invariant ones by no more than their own simulation noise. | Ch. 13, 14 | 34 s |
 | 6 | `ex06_factor_sv.m` | A VAR whose errors load on two latent factors, with stochastic volatility on each factor and each idiosyncratic error, so the covariance of eight variables moves with 10 volatility paths and 13 free loadings instead of 36 free elements at every date. On simulated data the factors come back with correlations near 0.97, the loadings track their true values, and the 68% bands cover the truth in about two thirds of the element-dates. | Ch. 14 | 8 s |
+| 7 | `ex07_hybrid_tvp_var.m` | A hybrid TVP-VAR in the structural form of Chan (2023, JBES): each equation has two switches, for whether its VAR coefficients and its impact-matrix elements vary over time, drawn with the state paths integrated out. On simulated data with a different configuration planted in each equation, the posterior puts 1.00, 0.85 and 1.00 on the planted configurations. The prior on the size of the time variation is wider than the paper's preset, as the header states. | Ch. 13 | 14 s |
 
 ### Using an estimated VAR
 
 | | Script | What it teaches | Book | Runs in |
 |---|---|---|---|---|
-| 7 | `ex07_marginal_likelihood.m` | Marginal likelihoods and model comparison: the three pieces of Chib's identity, why the posterior ordinate is *subtracted* (the Ockham factor), and a three-model comparison from Chan (2020, JBES). | Ch. 5 | 1 s |
-| 8 | `ex08_forecast_evaluation.m` | A recursive forecasting exercise end to end: the structural VAR with stochastic volatility and the Minnesota-type adaptive hierarchical prior of Chan (2021), estimated at each vintage, forecast one and four quarters ahead, and scored by RMSFE and log predictive likelihood. The only example that uses `bvar.forecast`. | Ch. 14 | 15 s |
+| 8 | `ex08_marginal_likelihood.m` | Marginal likelihoods and model comparison: the three pieces of Chib's identity, why the posterior ordinate is *subtracted* (the Ockham factor), and a three-model comparison from Chan (2020, JBES). | Ch. 5 | 1 s |
+| 9 | `ex09_forecast_evaluation.m` | A recursive forecasting exercise end to end: the structural VAR with stochastic volatility and the Minnesota-type adaptive hierarchical prior of Chan (2021), estimated at each vintage, forecast one and four quarters ahead, and scored by RMSFE and log predictive likelihood. The only example that uses `bvar.forecast`. | Ch. 14 | 15 s |
 
 ### Structural identification
 
 | | Script | What it teaches | Book | Runs in |
 |---|---|---|---|---|
-| 9 | `ex09_sign_restrictions.m` | Identifying a structural VAR by sign restrictions, and the cost of the search: two acceptance rules run over the same posterior draws and the same rotations, one requiring each shock in its own column and one searching over assignments. | &mdash; | 5 s |
-| 10 | `ex10_dynamic_sign_restrictions.m` | Sign restrictions imposed over a stretch of the impulse response rather than on impact alone — Uhlig's (2005) agnostic identification of a monetary shock. Collects 1000 accepted draws under each acceptance rule and compares the resulting credible bands: the two rules have different acceptance rates and produce the same bands. | &mdash; | 13 s |
+| 10 | `ex10_sign_restrictions.m` | Identifying a structural VAR by sign restrictions, and the cost of the search: two acceptance rules run over the same posterior draws and the same rotations, one requiring each shock in its own column and one searching over assignments. | &mdash; | 5 s |
+| 11 | `ex11_dynamic_sign_restrictions.m` | Sign restrictions imposed over a stretch of the impulse response rather than on impact alone — Uhlig's (2005) agnostic identification of a monetary shock. Collects 1000 accepted draws under each acceptance rule and compares the resulting credible bands: the two rules have different acceptance rates and produce the same bands. | &mdash; | 13 s |
 
 Timings are from one warm R2025b session on a desktop machine; treat them as orders of
-magnitude. All but ex07 and ex09 draw figures as well as printing. The chapter column
+magnitude. All but ex08 and ex10 draw figures as well as printing. The chapter column
 refers to *Bayesian Macroeconometrics: Methods and Applications* (Chan, Chapman &
 Hall/CRC, forthcoming), whose [sample chapters](https://joshuachan.org/papers/BayesMacroBook_sample.pdf)
 and [code repository](https://github.com/joshuaccchan/bayesian-macroeconometrics) are
@@ -55,8 +56,8 @@ online: 9 Linear Gaussian State Space Models, 10 Stochastic Volatility Models, 1
 Vector Autoregressions, 13 Time-Varying Vector Autoregressions, 14 Large VARs with
 Stochastic Volatility, 5 Bayesian Model Comparison. The auxiliary mixture ex02 uses is developed in Chapter 4, Mixture Models.
 Each script repeats its chapter in the header. Four scripts draw on Chapter 14: ex04 for
-the sampler, ex05 and ex06 for the order-invariant and factor models, and ex08 for the
-forecasting exercise. ex09 and ex10 have no entry because the book identifies structural
+the sampler, ex05 and ex06 for the order-invariant and factor models, and ex09 for the
+forecasting exercise. ex10 and ex11 have no entry because the book identifies structural
 VARs recursively, in Chapter 12, and cites sign restrictions only as further reading.
 
 ## What each one exercises
@@ -71,15 +72,16 @@ Useful if you are looking for a worked call of a particular core function.
 | ex04 | `bvar.priors.minn`, `bvar.priors.impact_B0`, `bvar.samplers.alp_tri_cs`, `bvar.sv.ksc_ar1_mean`, `bvar.sv.sv_params`, `bvar.sv.init_approx1N`, `bvar.util.build_lags`, `bvar.util.vec` | simulated |
 | ex05 | `bvar.structural.b0_row_sampler`, `bvar.structural.construct_Sigt`, `bvar.samplers.eq_var_oi`, `bvar.samplers.eq_tri_cs`, `bvar.samplers.alp_tri_cs`, `bvar.samplers.horseshoe_kappa_psi`, `bvar.sv.ksc_ar1_mean`, `bvar.sv.sv0_params`, `bvar.sv.sv_params`, `bvar.priors.resid_var_ar4`, `bvar.priors.minnesota_C`, `bvar.priors.vtheta`, `bvar.util.build_lags` | `replications/chan_koop_yu2024_jbes_oisv/legacy/FRED_MD_20vars.csv`, read-only |
 | ex06 | `bvar.samplers.factor_fsv`, `bvar.samplers.eq_fsv_load`, `bvar.sv.ksc_ar1_mean`, `bvar.sv.sv_params`, `bvar.sv.init_approx1N`, `bvar.priors.minn`, `bvar.util.build_lags` | simulated |
-| ex07 | `replications/chan2020_jbes_kronecker/run_ml.m`, which calls the `bvar.ml.*` evaluators | that package's `data_Q.csv` |
-| ex08 | `bvar.forecast.iterate`, `bvar.forecast.tables`, `bvar.samplers.eq_gauss`, `bvar.samplers.gig_shrinkage`, `bvar.samplers.nu_psi_ng`, `bvar.priors.minnesota_C`, `bvar.priors.vtheta`, `bvar.priors.resid_var_ar4`, `bvar.sv.ksc_rw_h0`, `bvar.util.build_lags` | `replications/chan2021_ijf_mahp/legacy/macrodata_Q_2018Q4.csv`, read-only |
-| ex09 | `bvar.priors.resid_var_ar4`, `bvar.priors.acp_redu`, `bvar.samplers.acp_theta_sig`, `bvar.structural.reduced_form`, `bvar.structural.qr_sign`, `bvar.structural.sign_restrict`, `bvar.structural.sign_assign` | `replications/chan_matthes_yu2026_qe_svarsign/legacy/data/database_2019Q4.csv`, read-only |
-| ex10 | the same seven, plus `bvar.structural.irf_redu` — the only example that computes an impulse response — and `bvar.ml.acp`, `bvar.priors.acp_opt_kappa` and `bvar.util.build_lags` for the marginal likelihood | that package's `data/Uhlig_monthly.csv`, read-only |
+| ex07 | `bvar.samplers.eq_hyb_tvp`, `bvar.sv.ksc_rw_h0`, `bvar.priors.resid_var_allvars_ridge`, `bvar.priors.minnesota_C`, `bvar.priors.vtheta` | simulated |
+| ex08 | `replications/chan2020_jbes_kronecker/run_ml.m`, which calls the `bvar.ml.*` evaluators | that package's `data_Q.csv` |
+| ex09 | `bvar.forecast.iterate`, `bvar.forecast.tables`, `bvar.samplers.eq_gauss`, `bvar.samplers.gig_shrinkage`, `bvar.samplers.nu_psi_ng`, `bvar.priors.minnesota_C`, `bvar.priors.vtheta`, `bvar.priors.resid_var_ar4`, `bvar.sv.ksc_rw_h0`, `bvar.util.build_lags` | `replications/chan2021_ijf_mahp/legacy/macrodata_Q_2018Q4.csv`, read-only |
+| ex10 | `bvar.priors.resid_var_ar4`, `bvar.priors.acp_redu`, `bvar.samplers.acp_theta_sig`, `bvar.structural.reduced_form`, `bvar.structural.qr_sign`, `bvar.structural.sign_restrict`, `bvar.structural.sign_assign` | `replications/chan_matthes_yu2026_qe_svarsign/legacy/data/database_2019Q4.csv`, read-only |
+| ex11 | the same seven, plus `bvar.structural.irf_redu` — the only example that computes an impulse response — and `bvar.ml.acp`, `bvar.priors.acp_opt_kappa` and `bvar.util.build_lags` for the marginal likelihood | that package's `data/Uhlig_monthly.csv`, read-only |
 
 We note two points about reading these scripts. First, ex01 and ex04 spell out inline what a
 core function would otherwise do in one call: the precision-sampler draw in ex01, and the
 equation-by-equation coefficient block in ex04. The construction is what these two scripts
 teach, and their headers name the packaged version to use in practice. Second, the settings in
-ex07 are far smaller than those of the published run, a few hundred draws against 30,000. The
+ex08 are far smaller than those of the published run, a few hundred draws against 30,000. The
 ranking of the three models is still informative, but the values are not those reported in
 the paper. The closing lines of that script give the settings for a full-length run.

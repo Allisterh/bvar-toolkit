@@ -25,12 +25,13 @@ chapter that develops it.
 
 ## Three ways to use this repo
 
-**Learn the methods.** `examples/` holds ten short scripts, each runnable in a minute or
+**Learn the methods.** `examples/` holds eleven short scripts, each runnable in a minute or
 less and each printing its reasoning as it goes, in four groups. The building blocks: the
-precision sampler and stochastic volatility by auxiliary mixture. VARs and their error
-covariance: a small BVAR end to end, a BVAR with stochastic volatility assembled from core
-blocks, what changes when its variables are put in a different order, and a factor structure
-that lets the error covariance of many variables move with few parameters. Using an
+precision sampler and stochastic volatility by auxiliary mixture. VAR specifications:
+a small BVAR end to end, a BVAR with stochastic volatility assembled from core blocks,
+what changes when its variables are put in a different order, a factor structure that lets
+the error covariance of many variables move with few parameters, and a hybrid TVP-VAR in
+which each equation's coefficients vary over time only where the data support it. Using an
 estimated VAR: marginal likelihoods and model comparison, and a recursive forecasting
 exercise scored by RMSFE and predictive likelihood. Structural identification: sign
 restrictions on impact and over a stretch of the impulse response. Each works on data small

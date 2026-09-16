@@ -1,12 +1,14 @@
 # Provenance
 
 Verbatim imports from joshuachan.org, one commit and one `as-published/<slug>` tag per package.
-Initial import 2026-09-01; `chan_matthes_yu2026_qe_svarsign` was added 2026-09-08.
+Initial import 2026-09-01; `chan_matthes_yu2026_qe_svarsign` was added 2026-09-08 and
+`chan_eisenstat2018_jae_mltvpsv` on 2026-09-15.
 `.gitattributes` sets `* -text` so git stores every byte unmodified.
 
 | Package (slug) | Original zip | MD5 of zip | Zip date | Files | Paper |
 |---|---|---|---|---|---|
 | `chan_jeliazkov2009_statespace` | [sp_code.zip](https://joshuachan.org/code/sp_code.zip) | `be21a9ec76126bb5af36c6df0a5938ee` | 2015-01-27 | 9 | Chan, J.C.C. and Jeliazkov, I. (2009). "Efficient Simulation and Integrated Likelihood Estimation in State Space Models," International Journal of Mathematical Modelling and Numerical Optimisation, 1, 101-120. |
+| `chan_eisenstat2018_jae_mltvpsv` | [ml_tvpsv_code.zip](https://joshuachan.org/code/ml_tvpsv_code.zip) | `8a9b02249a51a8f27be884d334db1e6e` | 2020-04-08 | 42 | Chan, J.C.C. and Eisenstat, E. (2018). "Bayesian Model Comparison for Time-Varying Parameter VARs with Stochastic Volatility," Journal of Applied Econometrics, 33(4): 509-532. Ten models, all in structural form: the free elements of the impact matrix enter the state vector, and in TVP-SV they are time-varying themselves. Marginal likelihood by importance sampling and DIC for each, plus three regime-switching VARs. The data is read with `xlsread` and a range argument, so equivalence tests for this package cannot run on a hosted runner. |
 | `cjz2018_ad_var` | [AD_VAR_code.zip](https://joshuachan.org/code/AD_VAR_code.zip) | `bca355e95f95ec3fdf235efae797aebd` | 2018-05-30 | 18 | Chan, J.C.C., Jacobi, L. and Zhu, D. (2019). "How Sensitive Are VAR Forecasts to Prior Hyperparameters? An Automated Sensitivity Analysis," Advances in Econometrics, 40A: 229-248. (Code headers cite CAMA Working Paper 25/2018.) |
 | `cjz2019_ad_opthyper` | [AD_OptHyper_code.zip](https://joshuachan.org/code/AD_OptHyper_code.zip) | `de1b9d3451c42f664ed1b6483df0d964` | 2019-06-28 | 47 | Chan, J.C.C., Jacobi, L. and Zhu, D. (2020). "Efficient Selection of Hyperparameters in Large Bayesian VARs Using Automatic Differentiation," Journal of Forecasting, 39(6): 934-943. (Code headers cite CAMA Working Paper 46/2019.) |
 | `chan2019wp_acp` | [BVAR_ACP_code.zip](https://joshuachan.org/code/BVAR_ACP_code.zip) | `8a35858d5b34843f82c53147feb97398` | 2019-10-12 | 10 | Chan, J.C.C. (2019). "Asymmetric Conjugate Priors for Large Bayesian VARs," CAMA Working Paper 51/2019; published as Chan (2022), Quantitative Economics, 13(3): 1145-1169. Full-sample estimation only, on 21 variables: the prior is built inline by `prior_ACPi` and the two optimizers carry their pre-revision signatures, so these routines are not interchangeable with the R1 package's. |

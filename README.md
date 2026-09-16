@@ -1,6 +1,6 @@
 # bvar-toolkit
 
-MATLAB code for large Bayesian VARs by [Joshua Chan](https://joshuachan.org) — the packages
+MATLAB code for Bayesian VARs by [Joshua Chan](https://joshuachan.org) — the packages
 distributed at [joshuachan.org/code.html](https://joshuachan.org/code.html), consolidated into a
 documented library with the original code preserved verbatim alongside it.
 
@@ -55,6 +55,7 @@ own. Call the blocks directly, or copy the nearest `run_all.m` as a template.
 | Asymmetric conjugate prior, closed-form ML, sign restrictions | Chan (2022, QE) | `chan2022_qe_acp` | `run_all`, `run_jointden` |
 | Which SV specification for a large VAR? | Chan (2023, JoE) | `chan2023_joe_mlvarsv` | `run_all('VAR-SV',…)`, `run_ml` |
 | Time-varying parameters, equation by equation | Chan (2023, JBES) | `chan2023_jbes_hybtvp` | `run_all` |
+| Which time-varying parameter VAR, by marginal likelihood or DIC | Chan & Eisenstat (2018, JAE) | `chan_eisenstat2018_jae_mltvpsv` | legacy only |
 | Forecast comparison across priors and volatility models | Chan (2020, Springer) | `chan2020_springer_largebvar` | legacy only |
 | The precision sampler for state space models | Chan & Jeliazkov (2009) | `chan_jeliazkov2009_statespace` | legacy only |
 | Sign and ranking restrictions in a large structural VAR | Chan, Matthes & Yu (2026, QE) | `chan_matthes_yu2026_qe_svarsign` | legacy; algorithm in `bvar.structural.sign_assign` |

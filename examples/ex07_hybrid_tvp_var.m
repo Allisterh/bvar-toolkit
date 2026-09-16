@@ -18,8 +18,8 @@
 % are drawn with the state paths integrated out, so each equation is estimated
 % in whichever of its four configurations the data support.
 %
-% DATA. Simulated with n = 3, p = 1, T = 300 and a different configuration
-% planted in each equation:
+% DATA. Simulated with n = 3, p = 1, T = 300, each equation from a different
+% configuration:
 %
 %       equation 1   beta constant (it has no alpha)
 %       equation 2   beta time-varying: the intercept and the own lag shift
@@ -92,7 +92,7 @@ Y0 = Yall(1:n0, :); Y = Yall(n0+1:end, :);
 beta_true = beta_true(n0+1:end, :); alp_true = alp_true(n0+1:end, :);
 X2 = [ones(T,1), [Y0(end,:); Y(1:end-1,:)]];
 
-fprintf('\nn = %d, p = %d, T = %d, with a different configuration planted in each equation\n', n, p, T);
+fprintf('\nn = %d, p = %d, T = %d, each equation simulated from a different configuration\n', n, p, T);
 
 %% ------------------------------------------------------------------
 %  2. Prior and settings: the package's preset, except the scale of the time
@@ -188,18 +188,18 @@ fprintf('%.0f s\n', toc(t0));
 %% ------------------------------------------------------------------
 %  4. Which configuration each equation was estimated in
 %  ------------------------------------------------------------------
-planted = [0 NaN; 1 0; 0 1];
-fprintf('\nposterior probability of each configuration (beta, alpha)\n');
-fprintf('%-12s %8s %8s %8s %8s   planted\n', '', '(0,0)', '(0,1)', '(1,0)', '(1,1)');
+true_cfg = [0 NaN; 1 0; 0 1];
+fprintf('\nposterior probability of each configuration (beta, alpha), 1 = time-varying, 0 = constant\n');
+fprintf('%-12s %8s %8s %8s %8s   true\n', '', '(0,0)', '(0,1)', '(1,0)', '(1,1)');
 for ii = 1:n
     g = squeeze(store_gam(:,ii,:));
     pr_cfg = [mean(g(:,1)==0 & g(:,2)==0), mean(g(:,1)==0 & g(:,2)==1), ...
               mean(g(:,1)==1 & g(:,2)==0), mean(g(:,1)==1 & g(:,2)==1)];
     if ii == 1
-        fprintf('  equation 1 %8.2f %8s %8.2f %8s   beta %d (no alpha)\n', ...
-            pr_cfg(1)+pr_cfg(2), '', pr_cfg(3)+pr_cfg(4), '', planted(1,1));
+        fprintf('  equation 1 %8.2f %8s %8.2f %8s   (%d,-)  no alpha in equation 1\n', ...
+            pr_cfg(1)+pr_cfg(2), '', pr_cfg(3)+pr_cfg(4), '', true_cfg(1,1));
     else
-        fprintf('  equation %d %8.2f %8.2f %8.2f %8.2f   (%d,%d)\n', ii, pr_cfg, planted(ii,:));
+        fprintf('  equation %d %8.2f %8.2f %8.2f %8.2f   (%d,%d)\n', ii, pr_cfg, true_cfg(ii,:));
     end
 end
 
@@ -208,14 +208,24 @@ end
 %     impact element
 %  ------------------------------------------------------------------
 figure('Name', 'ex07: hybrid TVP-VAR');
-panels = {store_b2own, beta_true(:, kb+3), 'equation 2: own lag, time-varying in the truth'; ...
-          store_b3own, beta_true(:, 2*kb+4), 'equation 3: own lag, constant in the truth'; ...
-          store_a31,   alp_true(:, 2),       'equation 3: alpha_{31}, time-varying in the truth'};
+panels = {store_b2own, beta_true(:, kb+3),  'Equation 2: coefficient on y_{2,t-1}, time-varying'; ...
+          store_b3own, beta_true(:, 2*kb+4), 'Equation 3: coefficient on y_{3,t-1}, constant'; ...
+          store_a31,   alp_true(:, 2),       'Equation 3: \alpha_{31}, time-varying'};
 for ip = 1:3
     subplot(3,1,ip); hold on; box off
-    plot(quantile(panels{ip,1}, [.16 .84])', 'Color', [.6 .6 .6]);
-    plot(mean(panels{ip,1}), 'k', 'LineWidth', 1);
-    plot(panels{ip,2}, 'r');
-    title([panels{ip,3} '; truth in red']); hold off
+    q = quantile(panels{ip,1}, [.16 .84]);
+    hb = shaded_band((1:T)', q(1,:)', q(2,:)');
+    hm = plot(mean(panels{ip,1}), 'k', 'LineWidth', 1);
+    ht = plot(panels{ip,2}, 'r', 'LineWidth', 1);
+    title(panels{ip,3}); hold off
+    if ip == 1
+        legend([hb hm ht], {'68% credible band', 'posterior mean', 'truth'}, 'Location', 'northwest');
+    end
 end
 drawnow
+
+function h = shaded_band(x, lo, hi, shade)
+% The shaded credible band of the book's code (chapter14/shaded_band.m).
+if nargin < 4, shade = .85; end
+h = fill([x(:); flipud(x(:))], [lo(:); flipud(hi(:))], shade*[1 1 1], 'EdgeColor', 'none');
+end

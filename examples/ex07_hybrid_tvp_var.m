@@ -214,7 +214,7 @@ panels = {store_b2own, beta_true(:, kb+3),  'Equation 2: coefficient on y_{2,t-1
 for ip = 1:3
     subplot(3,1,ip); hold on; box off
     q = quantile(panels{ip,1}, [.16 .84]);
-    hb = shaded_band((1:T)', q(1,:)', q(2,:)');
+    hb = bvar.util.shaded_band((1:T)', q(1,:)', q(2,:)');
     hm = plot(mean(panels{ip,1}), 'k', 'LineWidth', 1);
     ht = plot(panels{ip,2}, 'r', 'LineWidth', 1);
     title(panels{ip,3}); hold off
@@ -223,9 +223,3 @@ for ip = 1:3
     end
 end
 drawnow
-
-function h = shaded_band(x, lo, hi, shade)
-% The shaded credible band of the book's code (chapter14/shaded_band.m).
-if nargin < 4, shade = .85; end
-h = fill([x(:); flipud(x(:))], [lo(:); flipud(hi(:))], shade*[1 1 1], 'EdgeColor', 'none');
-end

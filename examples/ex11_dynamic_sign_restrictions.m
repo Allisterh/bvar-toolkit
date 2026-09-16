@@ -228,8 +228,7 @@ hh = 0:horizon-1;
 figure('Name','ex11: Uhlig (2005) impulse responses','Position',[100 100 900 520]);
 for i = 1:n
     subplot(2,3,i); hold on
-    fill([hh fliplr(hh)], [squeeze(qS(1,i,:))' fliplr(squeeze(qS(3,i,:))')], ...
-        [.85 .85 .85], 'EdgeColor','none');
+    bvar.util.shaded_band(hh, squeeze(qS(1,i,:)), squeeze(qS(3,i,:)));
     plot(hh, squeeze(qS(2,i,:)), 'k-',  'LineWidth', 1.2);
     plot(hh, squeeze(qA(1,i,:)), 'r--', 'LineWidth', .8);
     plot(hh, squeeze(qA(2,i,:)), 'r-',  'LineWidth', 1.2);

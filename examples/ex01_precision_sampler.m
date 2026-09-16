@@ -224,14 +224,14 @@ fprintf('    slope     b_2t : %.4f\n', sqrt(mean((b_mean(:,2)-b_true(:,2)).^2)))
 %  6. Figures (non-blocking)
 %  ------------------------------------------------------------------
 figure('Name','ex01 precision sampler');
-subplot(2,2,1)
-plot(1:T, y, 'Color', [.75 .75 .75]); hold on
-plot(1:T, tau_true, 'k', 'LineWidth', 1.2);
-plot(1:T, tau_mean, 'r', 'LineWidth', 1.2);
-plot(1:T, tau_ci, 'r:');
+subplot(2,2,1); hold on
+hy = plot(1:T, y, 'Color', [.6 .75 .9]);
+hb = bvar.util.shaded_band((1:T)', tau_ci(:,1), tau_ci(:,2));
+ht = plot(1:T, tau_true, 'k', 'LineWidth', 1.2);
+hm = plot(1:T, tau_mean, 'r', 'LineWidth', 1.2);
 hold off; box off
 title('local level: data, truth, posterior mean and 90% band')
-legend({'y_t','\tau_t true','posterior mean'}, 'Location','best'); legend boxoff
+legend([hy ht hm hb], {'y_t','\tau_t true','posterior mean','90% band'}, 'Location','northwest'); legend boxoff
 
 subplot(2,2,2)
 spy(K(1:60,1:60)); title('sparsity of K (first 60 x 60 block)')

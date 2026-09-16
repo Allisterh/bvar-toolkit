@@ -66,17 +66,17 @@ Useful if you are looking for a worked call of a particular core function.
 
 | Script | Core functions called | Data |
 |---|---|---|
-| ex01 | `bvar.util.surform` — the precision sampler itself is written out line by line, since deriving it is the point | simulated |
-| ex02 | `bvar.sv.ksc_rw_h0` | simulated |
+| ex01 | `bvar.util.surform`, `bvar.util.shaded_band` — the precision sampler itself is written out line by line, since deriving it is the point | simulated |
+| ex02 | `bvar.sv.ksc_rw_h0`, `bvar.util.shaded_band` | simulated |
 | ex03 | `bvar.priors.minn`, `bvar.priors.niw`, `bvar.priors.resid_var_ar4`, `bvar.util.build_lags` | `replications/chan2020_jbes_kronecker/legacy/data_Q.csv`, read-only |
-| ex04 | `bvar.priors.minn`, `bvar.priors.impact_B0`, `bvar.samplers.alp_tri_cs`, `bvar.sv.ksc_ar1_mean`, `bvar.sv.sv_params`, `bvar.sv.init_approx1N`, `bvar.util.build_lags`, `bvar.util.vec` | simulated |
+| ex04 | `bvar.priors.minn`, `bvar.priors.impact_B0`, `bvar.samplers.alp_tri_cs`, `bvar.sv.ksc_ar1_mean`, `bvar.sv.sv_params`, `bvar.sv.init_approx1N`, `bvar.util.build_lags`, `bvar.util.vec`, `bvar.util.shaded_band` | simulated |
 | ex05 | `bvar.structural.b0_row_sampler`, `bvar.structural.construct_Sigt`, `bvar.samplers.eq_var_oi`, `bvar.samplers.eq_tri_cs`, `bvar.samplers.alp_tri_cs`, `bvar.samplers.horseshoe_kappa_psi`, `bvar.sv.ksc_ar1_mean`, `bvar.sv.sv0_params`, `bvar.sv.sv_params`, `bvar.priors.resid_var_ar4`, `bvar.priors.minnesota_C`, `bvar.priors.vtheta`, `bvar.util.build_lags` | `replications/chan_koop_yu2024_jbes_oisv/legacy/FRED_MD_20vars.csv`, read-only |
-| ex06 | `bvar.samplers.factor_fsv`, `bvar.samplers.eq_fsv_load`, `bvar.sv.ksc_ar1_mean`, `bvar.sv.sv_params`, `bvar.sv.init_approx1N`, `bvar.priors.minn`, `bvar.util.build_lags` | simulated |
-| ex07 | `bvar.samplers.eq_hyb_tvp`, `bvar.sv.ksc_rw_h0`, `bvar.priors.resid_var_allvars_ridge`, `bvar.priors.minnesota_C`, `bvar.priors.vtheta` | simulated |
+| ex06 | `bvar.samplers.factor_fsv`, `bvar.samplers.eq_fsv_load`, `bvar.sv.ksc_ar1_mean`, `bvar.sv.sv_params`, `bvar.sv.init_approx1N`, `bvar.priors.minn`, `bvar.util.build_lags`, `bvar.util.shaded_band` | simulated |
+| ex07 | `bvar.samplers.eq_hyb_tvp`, `bvar.sv.ksc_rw_h0`, `bvar.priors.resid_var_allvars_ridge`, `bvar.priors.minnesota_C`, `bvar.priors.vtheta`, `bvar.util.shaded_band` | simulated |
 | ex08 | `replications/chan2020_jbes_kronecker/run_ml.m`, which calls the `bvar.ml.*` evaluators | that package's `data_Q.csv` |
 | ex09 | `bvar.forecast.iterate`, `bvar.forecast.tables`, `bvar.samplers.eq_gauss`, `bvar.samplers.gig_shrinkage`, `bvar.samplers.nu_psi_ng`, `bvar.priors.minnesota_C`, `bvar.priors.vtheta`, `bvar.priors.resid_var_ar4`, `bvar.sv.ksc_rw_h0`, `bvar.util.build_lags` | `replications/chan2021_ijf_mahp/legacy/macrodata_Q_2018Q4.csv`, read-only |
 | ex10 | `bvar.priors.resid_var_ar4`, `bvar.priors.acp_redu`, `bvar.samplers.acp_theta_sig`, `bvar.structural.reduced_form`, `bvar.structural.qr_sign`, `bvar.structural.sign_restrict`, `bvar.structural.sign_assign` | `replications/chan_matthes_yu2026_qe_svarsign/legacy/data/database_2019Q4.csv`, read-only |
-| ex11 | the same seven, plus `bvar.structural.irf_redu` — the only example that computes an impulse response — and `bvar.ml.acp`, `bvar.priors.acp_opt_kappa` and `bvar.util.build_lags` for the marginal likelihood | that package's `data/Uhlig_monthly.csv`, read-only |
+| ex11 | the same seven, plus `bvar.structural.irf_redu` — the only example that computes an impulse response — and `bvar.ml.acp`, `bvar.priors.acp_opt_kappa` and `bvar.util.build_lags` for the marginal likelihood, and `bvar.util.shaded_band` for the bands | that package's `data/Uhlig_monthly.csv`, read-only |
 
 We note two points about reading these scripts. First, ex01 and ex04 spell out inline what a
 core function would otherwise do in one call: the precision-sampler draw in ex01, and the

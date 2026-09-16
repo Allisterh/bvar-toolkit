@@ -36,7 +36,8 @@ New functions with no legacy counterpart (behavior fixed by unit tests only):
 package - test reproduces the inline pattern exactly), `bvar.util.logsumexp`,
 `bvar.util.diffmat` (the state-equation difference matrix that makes the precision samplers
 banded), `bvar.util.igrnd`, `bvar.samplers.eq_var_oi` (2026-09-06; see the note at the end of
-this file). None of these is retrofitted into a legacy body: they exist for new code, and the
+this file), `bvar.util.shaded_band` (2026-09-17; the book's chapter14/shaded_band.m, used
+for the credible bands in the examples' figures). None of these is retrofitted into a legacy body: they exist for new code, and the
 legacy spellings they generalize stay as they are.
 
 Edits made during extraction, in full: provenance header prepended; function renamed where

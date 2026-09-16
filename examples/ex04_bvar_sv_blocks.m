@@ -352,12 +352,12 @@ fprintf('  coefficient draw uses is the SHAPE of h, and that is recovered well.\
 %  ------------------------------------------------------------------
 figure('Name','ex04 reduced-form BVAR-SV');
 for ii = 1:n
-    subplot(n,1,ii)
+    subplot(n,1,ii); hold on
     hq = squeeze(quantile(store_h(:,:,ii), [.05 .95]))';
-    plot(1:T, h_true(:,ii), 'k', 'LineWidth', 1.2); hold on
-    plot(1:T, h_hat(:,ii), 'r', 'LineWidth', 1.2);
-    plot(1:T, hq, 'r:'); hold off; box off
-    title(sprintf('orthogonalized error %d, log-volatility: truth (black), posterior mean + 90%% band (red)', ii))
+    bvar.util.shaded_band((1:T)', hq(:,1), hq(:,2));
+    plot(1:T, h_true(:,ii), 'k', 'LineWidth', 1.2);
+    plot(1:T, h_hat(:,ii), 'r', 'LineWidth', 1.2); hold off; box off
+    title(sprintf('orthogonalized error %d, log-volatility: truth (black), posterior mean (red), 90%% band (shaded)', ii))
 end
 drawnow
 

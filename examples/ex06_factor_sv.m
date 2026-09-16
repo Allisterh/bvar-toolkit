@@ -185,11 +185,14 @@ for j = 1:r
     title(sprintf('factor %d: truth in grey, posterior mean in black', j)); hold off
 end
 subplot(2,2,3); hold on; box off
-plot(quantile(store_v1, [.16 .84])', 'Color', [.6 .6 .6]);
-plot(mean(store_v1), 'k', 'LineWidth', 1); plot(v1_true, 'r');
-title('variance of variable 1, with 68% band; truth in red'); hold off
+q = quantile(store_v1, [.16 .84]);
+hb = bvar.util.shaded_band((1:T)', q(1,:)', q(2,:)');
+hm = plot(mean(store_v1), 'k', 'LineWidth', 1); ht = plot(v1_true, 'r');
+title('variance of variable 1'); hold off
+legend([hb hm ht], {'68% credible band', 'posterior mean', 'truth'}, 'Location', 'northwest'); legend boxoff
 subplot(2,2,4); hold on; box off
-plot(quantile(store_c12, [.16 .84])', 'Color', [.6 .6 .6]);
+q = quantile(store_c12, [.16 .84]);
+bvar.util.shaded_band((1:T)', q(1,:)', q(2,:)');
 plot(mean(store_c12), 'k', 'LineWidth', 1); plot(c12_true, 'r');
-title('correlation of variables 1 and 2; truth in red'); hold off
+title('correlation of variables 1 and 2'); hold off
 drawnow

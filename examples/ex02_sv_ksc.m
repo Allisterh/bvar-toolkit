@@ -178,11 +178,11 @@ subplot(3,1,1)
 plot(1:T, y, 'Color', [.4 .4 .4]); box off
 title('simulated SV series y_t')
 
-subplot(3,1,2)
-plot(1:T, h_true, 'k', 'LineWidth', 1.2); hold on
-plot(1:T, h_mean, 'r', 'LineWidth', 1.2);
-plot(1:T, h_ci, 'r:'); hold off; box off
-title('log-volatility h_t: truth (black), posterior mean and 90% band (red)')
+subplot(3,1,2); hold on
+bvar.util.shaded_band((1:T)', h_ci(:,1), h_ci(:,2));
+plot(1:T, h_true, 'k', 'LineWidth', 1.2);
+plot(1:T, h_mean, 'r', 'LineWidth', 1.2); hold off; box off
+title('log-volatility h_t: truth (black), posterior mean (red), 90% band (shaded)')
 
 subplot(3,1,3)
 plot(1:T, h_true, 'k', 'LineWidth', 1.2); hold on

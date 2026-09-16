@@ -1,6 +1,7 @@
 function test_ksc_rw_h0
 % bvar.sv.ksc_rw_h0 must reproduce, draw-for-draw under one seed, EVERY legacy
-% copy it canonicalizes: springer/kronecker/mahp SVRW.m and HYB sample_SVRW.m.
+% copy it canonicalizes: springer/kronecker/mahp/ml_tvpsv SVRW.m and HYB
+% sample_SVRW.m.
 root = getappdata(0, 'bvar_repo_root');
 
 rng(41, 'twister');                          % fixed test data
@@ -18,7 +19,8 @@ copies = { ...
     {'chan2020_springer_largebvar', 'legacy'},                     'SVRW'; ...
     {'chan2020_jbes_kronecker', 'legacy', 'realtime_forecasts'},   'SVRW'; ...
     {'chan2021_ijf_mahp', 'legacy'},                               'SVRW'; ...
-    {'chan2023_jbes_hybtvp', 'legacy', 'utility'},                 'sample_SVRW'};
+    {'chan2023_jbes_hybtvp', 'legacy', 'utility'},                 'sample_SVRW'; ...
+    {'chan_eisenstat2018_jae_mltvpsv', 'legacy'},                  'SVRW'};
 
 for ii = 1:size(copies, 1)
     leg = fullfile(root, 'replications', copies{ii,1}{:});

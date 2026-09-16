@@ -17,8 +17,8 @@ legacy copy in `tests/unit/` (stochastic functions compared draw-for-draw under 
 
 | Core function | Canonical source (legacy) | Also canonicalizes | Verified |
 |---|---|---|---|
-| `bvar.util.surform` | chan2023_jbes_hybtvp `utility/SURform.m` | chan_jeliazkov2009_statespace `sp_code/SURform.m` | diff + unit |
-| `bvar.util.surform2` | chan2023_joe_mlvarsv `utility/SURform2.m` | chan2020_springer_largebvar, chan2020_jbes_kronecker `realtime_forecasts/`, chan_koop_yu2024_jbes_oisv (dead there) | diff + unit |
+| `bvar.util.surform` | chan2023_jbes_hybtvp `utility/SURform.m` | chan_jeliazkov2009_statespace `sp_code/SURform.m`, chan_eisenstat2018_jae_mltvpsv `SURform.m` | diff + unit |
+| `bvar.util.surform2` | chan2023_joe_mlvarsv `utility/SURform2.m` | chan2020_springer_largebvar, chan2020_jbes_kronecker `realtime_forecasts/`, chan_koop_yu2024_jbes_oisv (dead there), chan_eisenstat2018_jae_mltvpsv `SURform2.m` | diff + unit |
 | `bvar.util.vec` | chan2023_joe_mlvarsv `utility/vec.m` | chan_koop_yu2024_jbes_oisv (byte-identical) | md5 + unit |
 | `bvar.util.vech` | chan2023_joe_mlvarsv `utility/vech.m` | (single copy) | unit |
 | `bvar.util.ldet` | chan2023_joe_mlvarsv `utility/ldet.m` | cjz2019_ad_opthyper | diff + unit |
@@ -52,7 +52,7 @@ does not have to find it named in a later pass's table.
 
 | Core function | Canonical source (legacy) | Also canonicalizes | Verified |
 |---|---|---|---|
-| `bvar.sv.ksc_rw_h0` | chan2020_springer_largebvar `SVRW.m` | chan2021_ijf_mahp `SVRW.m`, chan2020_jbes_kronecker `realtime_forecasts/SVRW.m`, chan2023_jbes_hybtvp `utility/sample_SVRW.m` (the last verified bitwise over 200 randomized inputs in step 11) | unit (`test_ksc_rw_h0`) |
+| `bvar.sv.ksc_rw_h0` | chan2020_springer_largebvar `SVRW.m` | chan2021_ijf_mahp `SVRW.m`, chan2020_jbes_kronecker `realtime_forecasts/SVRW.m`, chan2023_jbes_hybtvp `utility/sample_SVRW.m` (the last verified bitwise over 200 randomized inputs in step 11), chan_eisenstat2018_jae_mltvpsv `SVRW.m` (the MAHP copy's variable names with the HYB copy's `chol(Kh,'lower')'` factorization) | unit (`test_ksc_rw_h0`) |
 | `bvar.sv.ksc_rw_diffuse` | chan_jeliazkov2009_statespace `sp_code/SVRW.m` | none - of the four files named `SVRW.m`, this is the only diffuse-initialization one; the other three go to `ksc_rw_h0` above. NEVER merge the two: this variant takes h_1 ~ N(0,Vh) and returns `[h S]`, the other a known `h0`. See the never-merge list | unit (`test_ksc_rw_diffuse`) |
 | `bvar.sv.ksc_ar1_mean` | chan2023_joe_mlvarsv `utility/sample_SV.m` | chan_koop_yu2024_jbes_oisv `utility/sample_SV.m` | unit (`test_ksc_ar1_mean`) |
 | `bvar.sv.csv_armh` | chan2023_joe_mlvarsv `utility/sample_CSV.m` (the only file of that name) | the three `sample_h.m` copies - chan2020_jbes_kronecker `sample_h.m` and `realtime_forecasts/sample_h.m`, chan2020_springer_largebvar `sample_h.m` - and the inline h step of chan2020_jbes_kronecker `ml_BVAR_CSV.m`. `is_ForcedAccept` defaults to false, which is the legacy `sample_h` behavior | unit (`test_csv_armh`) |
@@ -1173,3 +1173,25 @@ exactly as they are. Change one and the corresponding test fails, which is the p
 | `bvar.util.anormrnd` | exactly one rand THEN one randn per call. |
 | `bvar.util.igrnd` | implemented as 1./gamrnd(nu, 1./S), the same expression the samplers write inline, so a seeded call here advances the random stream identically (asserted in tests/unit/test_igrnd.m). |
 | `bvar.util.tnormrnd` | one rand(N,1) per call. |
+
+## ml_tvpsv against the rest of the repository (2026-09-17)
+
+`chan_eisenstat2018_jae_mltvpsv` was imported verbatim on 2026-09-15 and is not
+functionized. Every one of its 40 `.m` files was compared with every other `.m` file in the
+repository, ignoring comments, whitespace and function names. Two have a code twin:
+
+- `SURform.m` is `bvar.util.surform`, as are the HYB and sp_code copies.
+- `SURform2.m` is `bvar.util.surform2`, as are the ml_varsv and Springer copies.
+
+`SVRW.m` has no textual twin but computes the same draw as `bvar.sv.ksc_rw_h0`: it uses the
+MAHP copy's variable names and the HYB copy's `chol(Kh,'lower')'` factorization, and both
+spellings are already bitwise equal to the core function. `test_ksc_rw_h0`, `test_surform`
+and `test_surform2` now run this package's copies, and all three agree bitwise.
+
+The other 37 files have no code twin: the driver `main_tvpsv.m`, the ten model samplers
+(TVP-SV, TVP, the three restricted TVP variants, VAR-SV, VAR and three regime-switching VARs),
+their integrated-likelihood, marginal-likelihood and DIC routines, `constructX` and
+`constructX_RS`, and the Dirichlet helpers `dirifit`, `dirirnd` and `ldiripdf`. The comparison
+is textual, so a functionization pass starts from these files, and any equivalence with
+existing core, of the kind `SVRW.m` has, needs a test to establish it. The package reads its
+data with `xlsread` and a range argument, so such tests will have to stay local.

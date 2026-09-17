@@ -13,13 +13,13 @@ repository-code: "https://github.com/joshuaccchan/bvar-toolkit"
 url: "https://joshuachan.org/code.html"
 abstract: >-
   MATLAB code for estimating large Bayesian vector autoregressions. The
-  repository archives thirteen published replication packages verbatim and
-  consolidates their shared machinery into a single tested library: samplers
-  for stochastic volatility and VAR coefficients, shrinkage and asymmetric
-  conjugate priors, forecasting routines, and marginal-likelihood estimators.
-  Every consolidated function is covered by a unit test that runs the
-  corresponding published code beside it and requires identical output, draw
-  for draw under a fixed seed.
+  repository archives fourteen replication packages verbatim and consolidates
+  their shared machinery into a single tested library: samplers for stochastic
+  volatility and VAR coefficients, shrinkage and asymmetric conjugate priors,
+  forecasting routines, and marginal-likelihood estimators. Most library
+  functions began as extractions from the packages, and unit tests check that
+  they still reproduce the original code draw for draw under a fixed seed, at
+  their default settings.
 keywords:
   - Bayesian econometrics
   - vector autoregression
@@ -30,3 +30,5 @@ keywords:
   - macroeconomic forecasting
   - MATLAB
 license: MIT
+version: 1.0.0
+date-released: "2026-09-16"

@@ -2,10 +2,10 @@
 
 Eleven short scripts in four groups: the two computational building blocks the toolkit rests
 on, VAR specifications of increasing flexibility, model comparison and forecasting with
-an estimated VAR, and structural identification by sign restrictions. They are teaching material, not
-replications: each works on data small enough that you can check the numbers against the
-truth, and each prints its reasoning as it goes. For reproducing a published table, use
-`replications/<paper>/` instead.
+an estimated VAR, and structural identification by sign restrictions. Each prints its
+reasoning as it goes. Five of them (ex01, ex02, ex04, ex06 and ex07) run on simulated data,
+so their estimates can be checked against the truth. The other six use data from the
+replication packages. For reproducing a published table, use `replications/<paper>/` instead.
 
 Every script puts the toolkit on the path itself, so any of them runs from a clean session:
 

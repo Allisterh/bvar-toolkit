@@ -25,17 +25,18 @@ chapter that develops it.
 
 ## Three ways to use this repo
 
-**Learn the methods.** `examples/` holds eleven short scripts, each runnable in a minute or
-less and each printing its reasoning as it goes, in four groups. The building blocks: the
-precision sampler and stochastic volatility by auxiliary mixture. VAR specifications:
-a small BVAR end to end, a BVAR with stochastic volatility assembled from core blocks,
-what changes when its variables are put in a different order, a factor structure that lets
-the error covariance of many variables move with few parameters, and a hybrid TVP-VAR in
-which each equation's coefficients vary over time only where the data support it. Using an
-estimated VAR: marginal likelihoods and model comparison, and a recursive forecasting
-exercise scored by RMSFE and predictive likelihood. Structural identification: sign
-restrictions on impact and over a stretch of the impulse response. Each works on data small
-enough to check the numbers against the truth, and they are meant to be read in order.
+**Learn the methods.** `examples/` holds eleven short scripts, each running in under a minute.
+Read them in order:
+
+- **Building blocks** (ex01–ex02): the precision sampler and stochastic volatility by
+  auxiliary mixture.
+- **VAR specifications** (ex03–ex07): a small BVAR, a BVAR with stochastic volatility, the
+  effect of variable ordering, factor stochastic volatility, and a hybrid TVP-VAR.
+- **Using an estimated VAR** (ex08–ex09): model comparison by marginal likelihood and
+  recursive forecast evaluation.
+- **Structural identification** (ex10–ex11): sign restrictions on impact and over several
+  horizons.
+
 `examples/README.md` lists what each one teaches and which core functions it calls.
 
 **Reproduce a paper.** Every package is here exactly as published, never edited, under
@@ -76,9 +77,9 @@ as shipped; `tests/golden_runs/manifest.md` names them and says why. Full citati
 A Bayesian VAR is estimated by Markov chain Monte Carlo. Once the prior has been
 constructed, each sweep draws the VAR coefficients, the log-volatility path and the
 shrinkage hyperparameters in turn, each conditional on the rest; forecasts and marginal
-likelihoods are computed afterwards from the stored draws. Across the thirteen packages
+likelihoods are computed afterwards from the stored draws. Across the fourteen packages
 those steps were written out again and again — the auxiliary mixture sampler that draws
-the log-volatility path appears in seven of them, under three names. `bvar` is those steps
+the log-volatility path appears in eight of them, under three names. `bvar` is those steps
 factored into one function each.
 
 Most function bodies are taken from a specific published package, and a unit test runs the

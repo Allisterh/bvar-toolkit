@@ -21,7 +21,7 @@ function test_acp_equivalence
 %
 % Scope: dataset 1 (n = 6, kappa fixed). Dataset 2 optimizes kappa and needs
 % days of rejection sampling for its published run; bvar.priors.acp_opt_kappa is
-% covered separately below against get_OptKappa on the same data.
+% covered separately below against get_OptKappa on the 6-variable data.
 root = getappdata(0, 'bvar_repo_root');
 leg = fullfile(root, 'replications', 'chan2022_qe_acp', 'legacy');
 repdir = fullfile(root, 'replications', 'chan2022_qe_acp');

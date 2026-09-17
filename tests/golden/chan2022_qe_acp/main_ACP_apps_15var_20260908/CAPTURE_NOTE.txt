@@ -15,7 +15,11 @@ The model selector was left at the shipped dataset = 2; nothing else was patched
 The run was launched detached on 2026-09-01 and outlived two harness timeout
 wrappers, which is why the log is the only artifact: main_ACP_apps.m saves no
 .mat, it draws figures, so there is nothing else to capture. The acceptance
-trajectory in the log is the substance - it is what makes the cost of this
-identification scheme concrete, and it is the regression anchor for
-replications/chan2022_qe_acp/run_all.m at dataset 2, which the unit test cannot
-reach (test_acp_equivalence covers dataset 1 at nsim = 30).
+trajectory in the log is the substance: it makes the cost of this identification
+scheme concrete, and it gives the acceptance rate at dataset 2, the one quantity
+against which replications/chan2022_qe_acp/run_all.m can be compared at this
+setting. The comparison can only be statistical, because the script sets no seed
+and saves no impulse responses. test_acp_equivalence covers dataset 1 at
+nsim = 30. tests/variant_map.md (ACP section) gives the rate with its interval,
+its rise over the run, and a check of run_all's dataset-2 setup against this
+script.

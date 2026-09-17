@@ -769,8 +769,24 @@ drivers here return arrays rather than drawing figures.
 - On the paper's full 56 x 191 grid, run_jointden reproduces the numeric golden
   `tests/golden/chan2022_qe_acp/main_ACP_jointden_savegolden_20260917_0835/` exactly: all
   10,696 values of `store_lml`, and `ml_Sym` and `kappa_Sym` (checked 2026-09-17).
-- Dataset 2 (n = 15) is not covered end to end: its published run needs days of rejection
-  sampling. Its distinguishing step, the kappa optimization, is covered directly.
+- Dataset 2 (n = 15): the setup was checked once, on 2026-09-17. With nsim = 0, so that no
+  draws are taken, `run_all(2, 0)` and main_ACP_apps.m at dataset = 2 give identical data,
+  lag matrix, residual variances, reduced-form prior, sign restrictions and row
+  inequalities, and the same optimized kappa, [0.05809671686, 0.004269572696, 1, 100], with
+  log marginal likelihood 4341.550489. No unit test repeats this check, and no test runs the
+  rejection loop at n = 15.
+- The as-shipped run at dataset 2 (`tests/golden/chan2022_qe_acp/main_ACP_apps_15var_20260908/`)
+  took 147.3 hours: 1000 accepted draws out of about 3,783.5 million examined, 1 in 3.78
+  million, at about 7,100 draws per second. If the rate is constant, its 95% interval is 1 in
+  3.56 to 1 in 4.03 million. The log records no impulse responses and no kappa, and the
+  script sets no seed, so the run cannot be reproduced draw for draw. It anchors run_all at
+  dataset 2 through the acceptance rate alone, and only statistically: 100 accepted draws
+  from run_all, about 15 hours, would give a 95% interval of roughly 0.81 to 1.23 for the
+  ratio of the two rates.
+- The rate rose over the run. By quarter of the draws examined it was 1 in 4.36, 3.83, 3.70
+  and 3.39 million, and a test for a linear trend in the per-million counts gives p = 0.004.
+  The draws are independent by construction; the trend test was chosen after the quarterly
+  rates were seen.
 - **None of the four sources above is the only copy in the repository**, which is why the
   "(only copy)" tags they used to carry have been dropped. `chan_matthes_yu2026_qe_svarsign`
   holds `sample_ThetaSig.m`, `getReducedForm.m`, `IRredu.m` and `QR.m`, every one identical to

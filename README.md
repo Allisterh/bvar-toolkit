@@ -1,5 +1,7 @@
 # bvar-toolkit
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22804032.svg)](https://doi.org/10.5281/zenodo.22804032)
+
 MATLAB code for Bayesian VARs by [Joshua Chan](https://joshuachan.org) — the packages
 distributed at [joshuachan.org/code.html](https://joshuachan.org/code.html), consolidated into a
 documented library with the original code preserved verbatim alongside it.
@@ -168,7 +170,10 @@ Cite the paper whose code you use — full references in `provenance.md`. For th
 itself, `CITATION.cff` holds the machine-readable record, which GitHub's "Cite this
 repository" button reads:
 
-> Chan, J. C. C. *bvar-toolkit: MATLAB code for large Bayesian VARs*. https://github.com/joshuaccchan/bvar-toolkit
+> Chan, J. C. C. (2026). *bvar-toolkit: MATLAB code for large Bayesian VARs*. Zenodo. https://doi.org/10.5281/zenodo.22804032
+
+The DOI resolves to the latest release. Each release also has a DOI of its own, listed on the
+Zenodo record.
 
 ## License
 

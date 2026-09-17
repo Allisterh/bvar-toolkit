@@ -35,8 +35,9 @@
 % bvar.structural.sign_restrict (the inline check at main_ACP_apps.m 103-131)
 % and bvar.structural.irf_redu (IRredu).
 %
-% Functionized 2026-09-07 (step 12). Draw-for-draw equivalence against the
-% unmodified legacy script: tests/unit/test_acp_equivalence.m.
+% Functionized 2026-09-07 (step 12). tests/unit/test_acp_equivalence.m checks it
+% against the legacy script: draw for draw at dataset 1, and at dataset 2
+% everything before the rejection loop.
 %
 % See:
 % Chan, J.C.C. (2022). Asymmetric Conjugate Priors for Large Bayesian VARs,

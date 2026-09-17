@@ -19,9 +19,18 @@ function test_acp_equivalence
 % all, so there is no clock-seed line to remove; the harness seeds before each
 % run instead, which is also the only way to make the legacy script repeatable.
 %
-% Scope: dataset 1 (n = 6, kappa fixed). Dataset 2 optimizes kappa and needs
-% days of rejection sampling for its published run; bvar.priors.acp_opt_kappa is
-% covered separately below against get_OptKappa on the 6-variable data.
+% Scope: dataset 1 (n = 6, kappa fixed), draw for draw. Dataset 2 (n = 15)
+% optimizes kappa and needs days of rejection sampling for its published run, so
+% it is compared with no draws taken: the legacy script at dataset = 2 and
+% nsim = 0 against run_all(2, 0), asserting isequal on the data, the lag matrix,
+% the optimized kappa and its log marginal likelihood, the residual variances,
+% the reduced-form prior, and the sign restrictions and row inequalities. That
+% run has its own four patches, each asserted to match exactly once: `clear;
+% clc;` removed, the dataset selector set to 2, nsim for dataset 2 set to 0, and
+% everything from the summaries on removed. The rejection loop is not run at
+% n = 15. The nsim and nbatch defaults in preset.m, which both runs override, are
+% checked against the legacy values. bvar.priors.acp_opt_kappa is also covered
+% separately below against get_OptKappa on the 6-variable data.
 root = getappdata(0, 'bvar_repo_root');
 leg = fullfile(root, 'replications', 'chan2022_qe_acp', 'legacy');
 repdir = fullfile(root, 'replications', 'chan2022_qe_acp');
@@ -71,6 +80,34 @@ assert(size(res.store_response,1) >= nsim, 'fewer accepted draws than requested'
 % and the final batch must overshoot, which is the behaviour run_all reproduces
 % deliberately (no early exit inside the batch)
 assert(size(res.store_response,1) >= nsim, 'overshoot invariant not exercised');
+
+% --- dataset 2 (n = 15): everything before the rejection loop ---
+txt2 = fileread(fullfile(leg, 'main_ACP_apps.m'));
+txt2 = patch_once(txt2, 'clear; clc;', '% [clear removed by test_acp_equivalence]', 'clear');
+txt2 = patch_once(txt2, 'dataset = 1;', 'dataset = 2;', 'the dataset selector');
+txt2 = patch_once(txt2, 'nsim = 1000;', 'nsim = 0;', 'nsim for dataset 2');
+cut = strfind(txt2, 'response_median = squeeze(median(store_response));');
+assert(numel(cut) == 1, 'expected exactly one summary line');
+txt2 = txt2(1:cut-1);
+fid = fopen(fullfile(tmp, 'main_ACP_apps_d2.m'), 'w'); fwrite(fid, txt2); fclose(fid);
+
+L2 = run_legacy_setup(tmp, 'main_ACP_apps_d2');
+res2 = run_all(2, 0, seed);
+names = {'Y0', 'Y', 'Z', 'var_id', 'idx_ns', 'kappa', 'ml_opt', 'sig2', ...
+    'prior_redu', 'S', 'Rineq', 'Ridx'};
+for k = 1:numel(names)
+    assert(isequaln(L2.(names{k}), res2.(names{k})), 'dataset 2: %s differs', names{k});
+end
+% the comparison must be of the 15-variable setup, with kappa optimized
+assert(isequal(size(res2.S), [15 5]) && ~isempty(res2.ml_opt), ...
+    'dataset 2: the setup is not the 15-variable one');
+
+% --- the defaults both runs override, against the legacy values ---
+% patch_once above has already asserted that the legacy script sets nsim = 5000,
+% nsim = 1000 and nbatch = 50000, each exactly once
+pr = res.preset;
+assert(isequal(pr.d1.nsim, 5000) && isequal(pr.d2.nsim, 1000) && isequal(pr.nbatch, 50000), ...
+    'the nsim or nbatch defaults in preset.m differ from the legacy script');
 
 % --- bvar.priors.acp_opt_kappa against get_OptKappa, both variants ---
 addpath(fullfile(tmp, 'utility'));
@@ -138,4 +175,31 @@ cd(od_);
 out = struct('store_response',store_response, 'response_median',response_median, ...
     'response_CI',response_CI, 'count_total',count_total, 'count_sat',count_sat, ...
     'rngstate',s_.State);
+end
+
+% -------------------------------------------------------------------------
+function out = run_legacy_setup(tmpdir_, name_)
+% Run a patched legacy script that stops before the rejection loop, and return
+% its setup. As in run_legacy, it runs from the tempdir and its locals carry a
+% trailing underscore.
+od_ = cd(tmpdir_);
+
+Y0 = []; Y = []; Z = []; var_id = []; idx_ns = []; kappa = []; ml_opt = [];
+sig2 = []; prior_redu = []; S = []; Rineq = []; Ridx = [];
+
+resolved_ = which(name_);
+assert(strncmpi(resolved_, tmpdir_, numel(tmpdir_)), ...
+    '%s must resolve from the tempdir copy, got %s', name_, resolved_);
+
+try
+    evalc(name_);
+catch err_
+    cd(od_);
+    rethrow(err_);
+end
+cd(od_);
+
+out = struct('Y0',Y0, 'Y',Y, 'Z',Z, 'var_id',var_id, 'idx_ns',idx_ns, ...
+    'kappa',kappa, 'ml_opt',ml_opt, 'sig2',sig2, 'prior_redu',prior_redu, ...
+    'S',S, 'Rineq',Rineq, 'Ridx',Ridx);
 end

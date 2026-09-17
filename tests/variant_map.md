@@ -751,7 +751,8 @@ drivers here return arrays rather than drawing figures.
   its output), the accepted-draw count and the terminal rng state; it then checks
   `acp_opt_kappa` against both legacy optimizers and `bvar.ml.acp` against `ml_VAR_ACP`.
   Four patches, each asserted to occur exactly once: `clear; clc;`, nsim, nbatch, and the
-  trailing figure block. None touches an arithmetic line. Runtime ~17 s.
+  trailing figure block. None touches an arithmetic line. Runtime ~24 s, including the
+  dataset-2 comparison below.
 - Perturbation check: a 1e-9 change to the impact response in a scratch mirror of
   `irf_redu` makes the test fail on `store_response`. The real tree was never modified.
 - Equivalence test `test_run_jointden` (2026-09-17) runs main_ACP_jointden.m from a tempdir
@@ -769,12 +770,18 @@ drivers here return arrays rather than drawing figures.
 - On the paper's full 56 x 191 grid, run_jointden reproduces the numeric golden
   `tests/golden/chan2022_qe_acp/main_ACP_jointden_savegolden_20260917_0835/` exactly: all
   10,696 values of `store_lml`, and `ml_Sym` and `kappa_Sym` (checked 2026-09-17).
-- Dataset 2 (n = 15): the setup was checked once, on 2026-09-17. With nsim = 0, so that no
-  draws are taken, `run_all(2, 0)` and main_ACP_apps.m at dataset = 2 give identical data,
-  lag matrix, residual variances, reduced-form prior, sign restrictions and row
-  inequalities, and the same optimized kappa, [0.05809671686, 0.004269572696, 1, 100], with
-  log marginal likelihood 4341.550489. No unit test repeats this check, and no test runs the
-  rejection loop at n = 15.
+- Dataset 2 (n = 15): `test_acp_equivalence` compares the setup on every run (since
+  2026-09-17). With nsim = 0, so that no draws are taken, `run_all(2, 0)` and
+  main_ACP_apps.m at dataset = 2 give identical data, lag matrix, residual variances,
+  reduced-form prior, sign restrictions and row inequalities, and the same optimized kappa,
+  [0.05809671686, 0.004269572696, 1, 100], with log marginal likelihood 4341.550489. The
+  test also checks the nsim and nbatch defaults in preset.m, which both runs override,
+  against the legacy values. No test runs the rejection loop at n = 15.
+- Perturbation check, in a scratch mirror: flipping one sign in `pr.d2.S`, dropping 15 from
+  `pr.d2.idx_ns`, changing a row of `pr.d2.Rineq`, or moving `pr.d2.kappa_init` to
+  [.05,.0016] each fails the test on that field (the last on `kappa`, since fminsearch then
+  stops at a different point), and changing the `pr.nbatch` or `pr.d2.nsim` default fails
+  the defaults check. The real tree was never modified.
 - The as-shipped run at dataset 2 (`tests/golden/chan2022_qe_acp/main_ACP_apps_15var_20260908/`)
   took 147.3 hours: 1000 accepted draws out of about 3,783.5 million examined, 1 in 3.78
   million, at about 7,100 draws per second. If the rate is constant, its 95% interval is 1 in

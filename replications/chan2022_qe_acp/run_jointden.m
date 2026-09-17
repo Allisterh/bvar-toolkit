@@ -25,8 +25,10 @@
 % (prior_ACP_redu), bvar.ml.acp (ml_VAR_ACP), and bvar.priors.acp_opt_kappa with
 % 'symmetric', true (get_OptSymKappa).
 %
-% Functionized 2026-09-07 (step 12). The pieces are covered by
-% tests/unit/test_acp_equivalence.m; this driver is a loop over them.
+% Functionized 2026-09-07 (step 12). tests/unit/test_run_jointden.m runs it
+% beside the legacy script on a 20 x 12 grid and requires identical output. On
+% the paper's full grid it reproduces the numeric golden in tests/golden/
+% chan2022_qe_acp/main_ACP_jointden_savegolden_20260917_0835/ exactly.
 %
 % See:
 % Chan, J.C.C. (2022). Asymmetric Conjugate Priors for Large Bayesian VARs,

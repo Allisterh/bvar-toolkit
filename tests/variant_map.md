@@ -754,6 +754,21 @@ drivers here return arrays rather than drawing figures.
   trailing figure block. None touches an arithmetic line. Runtime ~17 s.
 - Perturbation check: a 1e-9 change to the impact response in a scratch mirror of
   `irf_redu` makes the test fail on `store_response`. The real tree was never modified.
+- Equivalence test `test_run_jointden` (2026-09-17) runs main_ACP_jointden.m from a tempdir
+  copy on a 20 x 12 grid with the paper's endpoints (steps .01 and .001, against .001 and
+  .0002; the grid is not square, so a transposed index fails) and asserts isequal on the
+  grid, `store_lml`, `store_ml`, `ml_Sym` and `kappa_Sym`. Three patches, each asserted to
+  occur exactly once: `clear; clc;`, the grid line, and the trailing figure block. The two
+  preset.m settings the run cannot reach are checked against the legacy text: the default
+  grid and `pr.jd.subjective`. Runtime ~5 s.
+- Perturbation check, in a scratch mirror: kappa4 in `pr.jd.kappa` changed from 100 to 101
+  fails on `store_lml`; the default kappa1 grid extended to .21 fails the grid check;
+  `pr.jd.subjective` changed to [.04,.0017] fails the marker check; and swapping the
+  meshgrid arguments in run_jointden fails on the shape of `store_lml`. The real tree was
+  never modified.
+- On the paper's full 56 x 191 grid, run_jointden reproduces the numeric golden
+  `tests/golden/chan2022_qe_acp/main_ACP_jointden_savegolden_20260917_0835/` exactly: all
+  10,696 values of `store_lml`, and `ml_Sym` and `kappa_Sym` (checked 2026-09-17).
 - Dataset 2 (n = 15) is not covered end to end: its published run needs days of rejection
   sampling. Its distinguishing step, the kappa optimization, is covered directly.
 - **None of the four sources above is the only copy in the repository**, which is why the

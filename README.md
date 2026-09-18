@@ -72,8 +72,8 @@ own. Call the blocks directly, or copy the nearest `run_all.m` as a template.
 `run_all.m` may follow. Read it with two qualifications. The SVAR-sign package is not slated
 for one, because its main programs depend on third-party code and produce figures rather than
 reusable computation, so only its algorithm was extracted. And a few legacy scripts do not run
-as shipped; `tests/golden_runs/manifest.md` names them and says why. Full citations are in
-`provenance.md`.
+as shipped; `tests/golden_runs/manifest.md` names them and says why. What to cite for each
+method, with BibTeX, is in [`CITING.md`](CITING.md).
 
 ## The `bvar` library
 
@@ -167,7 +167,8 @@ Both audits are in `tests/variant_map.md`, with the full comparison for the 2020
 
 ## Citation
 
-Cite the paper whose code you use — full references in `provenance.md`. For the toolkit
+Cite the paper behind each method you use: [`CITING.md`](CITING.md) maps every replication
+package, library function and example to its paper, with BibTeX. For the toolkit
 itself, `CITATION.cff` holds the machine-readable record, which GitHub's "Cite this
 repository" button reads:
 

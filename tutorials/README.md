@@ -7,4 +7,4 @@ page.
 
 | Tutorial | Example | Paper |
 |---|---|---|
-| [Variable Ordering in VARs with Stochastic Volatility](variable_ordering/) | ex06 | Chan, Koop and Yu (2024) |
+| [Does the Order of the Variables Change My VAR Results?](variable_ordering/) | ex06 | Chan, Koop and Yu (2024) |

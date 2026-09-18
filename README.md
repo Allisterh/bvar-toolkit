@@ -44,7 +44,7 @@ Read them in order:
 
 [`tutorials/`](tutorials/) takes an example further: a page that answers one research question
 with results at the chain length of the paper's package, readable without MATLAB. The first is
-[Variable Ordering in VARs with Stochastic Volatility](tutorials/variable_ordering/).
+[Does the Order of the Variables Change My VAR Results?](tutorials/variable_ordering/).
 
 **Reproduce a paper.** Every package is here exactly as published, never edited, under
 `replications/<paper>/legacy/`, with a permanent `as-published/<paper>` git tag and the source

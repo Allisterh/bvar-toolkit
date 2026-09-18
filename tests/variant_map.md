@@ -654,7 +654,7 @@ copy, and `initialize.m` is not extracted for the reason given below the table.
 | `bvar.priors.minnesota_C` | `utility/get_C.m` | already core (step 4); comment-stripped diff identical | - |
 | `bvar.priors.resid_var_allvars_ridge` | `utility/get_resid_var_v2.m` | already core (step 4); this package is the only copy | - |
 | `bvar.priors.vtheta` | `utility/getVtheta.m` | already core (step 4). HYB hard-codes kappa_3 = .2 and kappa_4 = 1 and reads only kappa(1:2); `run_all` supplies them as kappa(3:4) | unit (both settings) |
-| `bvar.sv.ksc_rw_h0` | `utility/sample_SVRW.m` | already core (step 4). Same algorithm spelled differently - legacy `chol(Kh,'lower')'\randn`, core `chol(Ph)\randn`, and `sparse(...)` vs `spdiags(...)` for the difference matrix. Verified BITWISE over 200 randomized (T, ystar, h, sig2, h0) | unit (whole-chain) |
+| `bvar.sv.ksc_rw_h0` | `utility/sample_SVRW.m` | already core (step 4). Same algorithm spelled differently - legacy `chol(Kh,'lower')'\randn`, core `chol(Ph)\randn` until 2026-09-18 and `chol(Ph,'lower')'\randn` since, bitwise identical either way, and `sparse(...)` vs `spdiags(...)` for the difference matrix. Verified BITWISE over 200 randomized (T, ystar, h, sig2, h0) | unit (whole-chain) |
 | `third_party/gigrnd.m` | `utility/gigrnd.m` | md5-identical to the other copies (step 3) | - |
 
 `initialize.m` is not extracted: it is a script, not a function, and what it does -

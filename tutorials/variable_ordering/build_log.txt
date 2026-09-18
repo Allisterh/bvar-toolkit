@@ -1,0 +1,152 @@
+tutorials/variable_ordering/build.m, 2026-09-18 14:41, MATLAB 25.2.0.3150157 (R2025b) Update 4
+bvar-toolkit: core/ and third_party/ added to the path (<repo>).
+  quick start:  cd examples; ex01_precision_sampler
+  run tests:    run(fullfile('<repo>','tests','unit','run_unit_tests.m'))
+
+=== ex06: variable ordering in a VAR with stochastic volatility ===
+
+variables, in the published order: IP, unemployment, PCE inflation, fed funds
+730 monthly observations from 1959:03, 24 as initial conditions, p = 13 lags
+30000 draws after 5000 burn-in, two seeds
+
+OI order 1             135 s
+
+OI order 2             135 s
+
+OI order 1, seed 2     154 s
+
+CS order 1             229 s
+
+CS order 2             227 s
+
+CS order 1, seed 2     225 s
+
+difference between two posterior-mean paths
+variances, as a share of their level   CS orders    CS seeds   OI orders    OI seeds
+  var(IP)                                 4.1%        0.3%        1.1%        1.2%
+  var(unemployment)                       7.7%        0.4%        0.5%        0.6%
+  var(PCE inflation)                      0.9%        0.3%        2.4%        2.4%
+  var(fed funds)                          1.7%        0.8%        0.9%        0.8%
+correlations, in correlation points
+  corr(IP, unemployment)                 0.111       0.001       0.002       0.002
+  corr(IP, PCE inflation)                0.067       0.000       0.001       0.001
+  corr(IP, fed funds)                    0.088       0.000       0.001       0.001
+  corr(unemployment, PCE inflation)       0.004       0.000       0.000       0.000
+  corr(unemployment, fed funds)          0.086       0.000       0.001       0.001
+  corr(PCE inflation, fed funds)         0.022       0.000       0.001       0.001
+
+reversing the ordering moves the CS correlation between IP and unemployment by 0.111 on
+average, against 0.001 between two seeds of the same CS run. The same correlation
+under OI moves 0.002 with the ordering and 0.002 between seeds.
+
+The order-invariant model is drawn under two orderings that are the same model,
+so its two paths differ only by Monte Carlo error. The Cholesky model is drawn
+under two orderings that are two different models.
+
+=== Part 1: four variables, 30000 draws after 5000 burn-in ===
+| | Cholesky SV, two orderings | Cholesky SV, two seeds | order-invariant SV, two orderings | order-invariant SV, two seeds |
+|---|---|---|---|---|
+| var(IP) | 4.1% | 0.3% | 1.1% | 1.2% |
+| var(unemployment) | 7.7% | 0.4% | 0.5% | 0.6% |
+| var(PCE inflation) | 0.9% | 0.3% | 2.4% | 2.4% |
+| var(fed funds) | 1.7% | 0.8% | 0.9% | 0.8% |
+| corr(IP, unemployment) | 0.111 | 0.001 | 0.002 | 0.002 |
+| corr(IP, PCE inflation) | 0.067 | 0.000 | 0.001 | 0.001 |
+| corr(IP, fed funds) | 0.088 | 0.000 | 0.001 | 0.001 |
+| corr(unemployment, PCE inflation) | 0.004 | 0.000 | 0.000 | 0.000 |
+| corr(unemployment, fed funds) | 0.086 | 0.000 | 0.001 | 0.001 |
+| corr(PCE inflation, fed funds) | 0.022 | 0.000 | 0.001 | 0.001 |
+range over time of the IP x unemployment correlation:
+  Cholesky SV, published order         -0.35 to -0.18
+  Cholesky SV, reversed order          -0.45 to -0.11
+  order-invariant SV, published order  -0.55 to -0.12
+  order-invariant SV, reversed order   -0.55 to -0.11
+
+=== Part 2: 20 variables, shipped posterior means (T = 706, n = 20) ===
+| | Cholesky SV | order-invariant SV |
+|---|---|---|
+| Variances, median change | 16.3% | 1.0% |
+| Variances, largest change | 107.0% | 5.1% |
+| Correlations, median change | 0.041 | 0.002 |
+| Correlations, 90th percentile | 0.176 | 0.004 |
+| Correlations, largest change | 0.631 | 0.026 |
+variances where the Cholesky change exceeds the largest order-invariant change: 18 of 20
+correlations where the Cholesky change exceeds the largest order-invariant change: 131 of 190
+largest variance changes (Cholesky / order-invariant):
+  PPI finished goods      107.0%    1.7%
+  fed funds                53.9%    1.5%
+  1-year spread            38.6%    2.9%
+  PPI commodities          28.7%    0.8%
+  housing starts           26.6%    0.9%
+largest correlation changes (Cholesky / order-invariant):
+  PCE inflation          x PPI finished goods     0.631  0.026
+  real M&T sales         x payrolls               0.499  0.003
+  PCE inflation          x real personal income   0.381  0.004
+  real personal income   x payrolls               0.363  0.001
+  PCE inflation          x PPI commodities        0.346  0.006
+the four ex06 variables inside the 20-variable VAR (Cholesky / order-invariant):
+  corr(IP, unemployment): 0.119  0.003
+  corr(IP, PCE inflation): 0.039  0.002
+  corr(IP, fed funds): 0.066  0.003
+  corr(unemployment, PCE inflation): 0.002  0.001
+  corr(unemployment, fed funds): 0.068  0.002
+  corr(PCE inflation, fed funds): 0.018  0.002
+  var(IP): 17.0%  0.7%
+  var(unemployment): 6.2%  0.6%
+  var(PCE inflation): 15.4%  5.1%
+  var(fed funds): 53.9%  1.5%
+time average of the PCE inflation x PPI finished goods correlation (Cholesky 1, 2, order-invariant 1, 2): 0.82 0.19 0.48 0.46
+its range over time under order-invariant SV, published order: 0.18 to 0.85
+peak of the fed funds variance (Cholesky 1, 2, order-invariant 1, 2): 6.41 3.39 6.76 6.90
+
+Table_re_withDM =
+
+  16×6 table
+
+              Table_re_withDM1                   Table_re_withDM2                Table_re_withDM3                    Table_re_withDM4                          Table_re_withDM5                          Table_re_withDM6            
+    ____________________________________    ___________________________    ____________________________    _____________________________________    ______________________________________    _______________________________________
+
+    {'0.007'                           }    {'\textbf{0.007}'         }    {'\textbf{0.007}'          }    {'2.071'                            }    {'2.159'                             }    {'2.266'                              }
+    {'0.007\ensuremath{^{**}}'         }    {'0.007\ensuremath{^{**}}'}    {'0.007\ensuremath{^{**}}' }    {'1.522\ensuremath{^{***}}'         }    {'1.651\ensuremath{^{***}}'          }    {'1.767\ensuremath{^{***}}'           }
+    {'\textbf{0.007}'                  }    {'0.007'                  }    {'0.007\ensuremath{^{***}}'}    {'\textbf{3.660}\ensuremath{^{***}}'}    {'3.458\ensuremath{^{***}}'          }    {'\textbf{3.360}\ensuremath{^{***}}'  }
+    {'0.007'                           }    {'0.007'                  }    {'0.007\ensuremath{^{***}}'}    {'3.659\ensuremath{^{***}}'         }    {'\textbf{3.459}\ensuremath{^{***}}' }    {'3.358\ensuremath{^{***}}'           }
+    {'0.159'                           }    {'0.169'                  }    {'0.173'                   }    {'-0.005'                           }    {'-0.689'                            }    {'-0.707'                             }
+    {'0.158'                           }    {'0.169'                  }    {'0.173'                   }    {'-0.124'                           }    {'-0.761'                            }    {'-0.742'                             }
+    {'\textbf{0.158}'                  }    {'\textbf{0.167}'         }    {'\textbf{0.173}'          }    {'\textbf{0.463}\ensuremath{^{***}}'}    {'\textbf{0.276}'                    }    {'0.152'                              }
+    {'0.158'                           }    {'0.167\ensuremath{^{*}}' }    {'0.173'                   }    {'0.463\ensuremath{^{***}}'         }    {'0.276'                             }    {'\textbf{0.156}'                     }
+    {'0.002'                           }    {'\textbf{0.002}'         }    {'\textbf{0.002}'          }    {'2.210'                            }    {'2.311'                             }    {'2.425'                              }
+    {'0.002\ensuremath{^{***}}'        }    {'0.002'                  }    {'0.002'                   }    {'1.811\ensuremath{^{***}}'         }    {'1.919\ensuremath{^{***}}'          }    {'2.024\ensuremath{^{***}}'           }
+    {'\textbf{0.002}\ensuremath{^{**}}'}    {'0.002'                  }    {'0.002\ensuremath{^{*}}'  }    {'4.821\ensuremath{^{***}}'         }    {'4.448\ensuremath{^{***}}'          }    {'4.249\ensuremath{^{***}}'           }
+    {'0.002\ensuremath{^{**}}'         }    {'0.002'                  }    {'0.002'                   }    {'\textbf{4.823}\ensuremath{^{***}}'}    {'\textbf{4.453}\ensuremath{^{***}}' }    {'\textbf{4.260}\ensuremath{^{***}}'  }
+    {'\textbf{0.492}'                  }    {'\textbf{1.566}'         }    {'\textbf{2.216}'          }    {'0.222'                            }    {'-8.473'                            }    {'-16.704'                            }
+    {'0.497'                           }    {'1.597\ensuremath{^{*}}' }    {'2.264'                   }    {'-0.327\ensuremath{^{***}}'        }    {'\textbf{-6.708}\ensuremath{^{***}}'}    {'\textbf{-12.474}\ensuremath{^{***}}'}
+    {'0.493'                           }    {'1.576'                  }    {'2.233'                   }    {'0.294\ensuremath{^{***}}'         }    {'-6.956\ensuremath{^{*}}'           }    {'-13.466\ensuremath{^{*}}'           }
+    {'0.494'                           }    {'1.570'                  }    {'2.236'                   }    {'\textbf{0.296}\ensuremath{^{***}}'}    {'-7.039'                            }    {'-13.662'                            }
+
+
+forecast table recomputed from the shipped forecasts: matches the golden capture (96 numbers)
+
+=== Part 3: forecasts, 1970:03 onward ===
+| Variable | Model | RMSFE h=1 | RMSFE h=6 | RMSFE h=12 | ALPL h=1 | ALPL h=6 | ALPL h=12 |
+|---|---|---|---|---|---|---|---|
+| IP | Cholesky SV, published order | 0.006954 | 0.007195 | 0.007261 | 2.071 | 2.159 | 2.266 |
+| IP | Cholesky SV, reversed order | 0.007095** | 0.00729** | 0.007323** | 1.522*** | 1.651*** | 1.767*** |
+| IP | order-invariant SV, published order | 0.006796 | 0.007299 | 0.007486*** | 3.660*** | 3.458*** | 3.360*** |
+| IP | order-invariant SV, reversed order | 0.00681 | 0.007286 | 0.007493*** | 3.659*** | 3.459*** | 3.358*** |
+| unemployment | Cholesky SV, published order | 0.159 | 0.1692 | 0.1729 | -0.005 | -0.689 | -0.707 |
+| unemployment | Cholesky SV, reversed order | 0.1581 | 0.1686 | 0.173 | -0.124 | -0.761 | -0.742 |
+| unemployment | order-invariant SV, published order | 0.1579 | 0.167 | 0.1728 | 0.463*** | 0.276 | 0.152 |
+| unemployment | order-invariant SV, reversed order | 0.1579 | 0.1671* | 0.1728 | 0.463*** | 0.276 | 0.156 |
+| PCE inflation | Cholesky SV, published order | 0.001955 | 0.001986 | 0.001983 | 2.210 | 2.311 | 2.425 |
+| PCE inflation | Cholesky SV, reversed order | 0.001969*** | 0.001987 | 0.001986 | 1.811*** | 1.919*** | 2.024*** |
+| PCE inflation | order-invariant SV, published order | 0.001818** | 0.001989 | 0.001986* | 4.821*** | 4.448*** | 4.249*** |
+| PCE inflation | order-invariant SV, reversed order | 0.001819** | 0.001989 | 0.001986 | 4.823*** | 4.453*** | 4.260*** |
+| fed funds | Cholesky SV, published order | 0.4924 | 1.566 | 2.216 | 0.222 | -8.473 | -16.704 |
+| fed funds | Cholesky SV, reversed order | 0.4966 | 1.597* | 2.264 | -0.327*** | -6.708*** | -12.474*** |
+| fed funds | order-invariant SV, published order | 0.4925 | 1.576 | 2.233 | 0.294*** | -6.956* | -13.466* |
+| fed funds | order-invariant SV, reversed order | 0.494 | 1.57 | 2.236 | 0.296*** | -7.039 | -13.662 |
+RMSFE: lower is better. ALPL: average log predictive likelihood, higher is better. Stars: two-sided Diebold-Mariano test against Cholesky SV in the published order, 10/5/1%.
+largest spread of RMSFE across the four models, by variable and horizon: 8.3%
+largest RMSFE difference between the two orderings: Cholesky SV 2.1%, order-invariant SV 0.4%
+
+build finished in 18.6 minutes

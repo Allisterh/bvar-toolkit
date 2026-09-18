@@ -20,7 +20,8 @@
 % funds rate, which the paper ranks first among its 20 variables. Thirteen
 % lags, the first 24 months as initial conditions, and the prior constants of
 % the package's preset.m. The chains are 1000 draws after 200 burn-in, against
-% the published 30,000 after 5,000.
+% the published 30,000 after 5,000; tutorials/variable_ordering/build.m runs the
+% script at the published length.
 %
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian
@@ -53,6 +54,9 @@ p = pr.p;
 n0 = pr.n0;
 
 nsim = 1000; burnin = 200;
+if exist('tutorial_settings', 'var')                 % set by tutorials/variable_ordering/build.m
+    nsim = tutorial_settings.nsim; burnin = tutorial_settings.burnin;
+end
 seeds = [20260915, 31415926];
 
 n = numel(var_id);

@@ -1,4 +1,4 @@
-%% ex11 - Dynamic sign restrictions and impulse responses: Uhlig (2005)
+%% ex12 - Dynamic sign restrictions and impulse responses: Uhlig (2005)
 %
 % Uhlig (2005) identifies a monetary contraction by restricting the impulse
 % responses at horizons 0 to K: the funds rate rises, and prices, commodity
@@ -37,7 +37,7 @@ run(fullfile(fileparts(fileparts(mfilename('fullpath'))),'setup.m'))
 
 rng(20260908, 'twister')
 repo = fileparts(fileparts(mfilename('fullpath')));
-fprintf('\n=== ex11: dynamic sign restrictions, Uhlig (2005) ===\n');
+fprintf('\n=== ex12: dynamic sign restrictions, Uhlig (2005) ===\n');
 
 %% ------------------------------------------------------------------
 %  1. Data and prior
@@ -157,10 +157,10 @@ fprintf('%-28s %13.2f%% %13.2f%%\n', 'acceptance rate', 100*nS/cand_S, 100*nA/ca
 fprintf('%s\n', repmat('-', 1, 68));
 fprintf('the assignment rule reached %d draws from %.1fx fewer candidates (%.0f s total)\n', ...
     target, cand_S/cand_A, elapsed);
-fprintf(['\nThe margin here is far smaller than ex10''s. With ONE restricted shock\n' ...
+fprintf(['\nThe margin here is far smaller than ex11''s. With ONE restricted shock\n' ...
          'and six columns, the strict rule already has a fair chance of finding the\n' ...
          'shock in column 1. The advantage of searching grows with the number of\n' ...
-         'shocks that must be placed, which is why the 15-variable case in ex10\n' ...
+         'shocks that must be placed, which is why the 15-variable case in ex11\n' ...
          'looks so different.\n']);
 
 %% ------------------------------------------------------------------
@@ -225,7 +225,7 @@ end
 %  5. The bands
 %  ------------------------------------------------------------------
 hh = 0:horizon-1;
-figure('Name','ex11: Uhlig (2005) impulse responses','Position',[100 100 900 520]);
+figure('Name','ex12: Uhlig (2005) impulse responses','Position',[100 100 900 520]);
 for i = 1:n
     subplot(2,3,i); hold on
     bvar.util.shaded_band(hh, squeeze(qS(1,i,:)), squeeze(qS(3,i,:)));

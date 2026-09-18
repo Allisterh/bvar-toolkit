@@ -1,4 +1,4 @@
-%% ex06 - A VAR with factor stochastic volatility
+%% ex07 - A VAR with factor stochastic volatility
 %
 % BOOK: Chapter 14, Section 14.4, in Bayesian Macroeconometrics: Methods and
 % Applications (Chapman & Hall/CRC, forthcoming); the static factor model it
@@ -33,7 +33,7 @@
 run(fullfile(fileparts(fileparts(mfilename('fullpath'))),'setup.m'))
 
 rng(20260916, 'twister')
-fprintf('\n=== ex06: a VAR with factor stochastic volatility ===\n');
+fprintf('\n=== ex07: a VAR with factor stochastic volatility ===\n');
 
 %% ------------------------------------------------------------------
 %  1. Simulate, with the truth kept
@@ -178,7 +178,7 @@ v1_true = exp(h_true(:,n+1:end))*(L_true(1,:).^2)' + exp(h_true(:,1));
 v2_true = exp(h_true(:,n+1:end))*(L_true(2,:).^2)' + exp(h_true(:,2));
 c12_true = (exp(h_true(:,n+1:end))*(L_true(1,:).*L_true(2,:))')./sqrt(v1_true.*v2_true);
 
-figure('Name', 'ex06: factor stochastic volatility');
+figure('Name', 'ex07: factor stochastic volatility');
 for j = 1:r
     subplot(2,2,j); hold on; box off
     plot(F_true(:,j), 'Color', [.6 .6 .6]); plot(F_hat(:,j), 'k', 'LineWidth', 1);

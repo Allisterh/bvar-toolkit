@@ -370,4 +370,4 @@ fprintf('To RUN it, use the functionized driver, which switches the kappa block 
 fprintf('and reproduces the legacy script draw for draw:\n');
 fprintf('  run_all(''VAR-SV'')   in replications/chan2023_joe_mlvarsv/\n');
 fprintf('and run_ml(''VAR-SV'') in the same folder adds the marginal likelihood.\n');
-fprintf('Next: ex05_variable_ordering_sv.\n');
+fprintf('Next: ex05_var_csv.\n');

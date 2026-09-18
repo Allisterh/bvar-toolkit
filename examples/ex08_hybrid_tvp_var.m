@@ -1,4 +1,4 @@
-%% ex07 - A hybrid time-varying parameter VAR
+%% ex08 - A hybrid time-varying parameter VAR
 %
 % BOOK: Chapter 13, Section 13.2, in Bayesian Macroeconometrics: Methods and
 % Applications (Chapman & Hall/CRC, forthcoming), treats the TVP-VAR with
@@ -41,7 +41,7 @@
 run(fullfile(fileparts(fileparts(mfilename('fullpath'))),'setup.m'))
 
 rng(20260917, 'twister')
-fprintf('\n=== ex07: a hybrid time-varying parameter VAR ===\n');
+fprintf('\n=== ex08: a hybrid time-varying parameter VAR ===\n');
 
 %% ------------------------------------------------------------------
 %  1. Simulate, with the truth kept
@@ -207,7 +207,7 @@ end
 %  5. Figures: a coefficient that drifts, one that does not, and a drifting
 %     impact element
 %  ------------------------------------------------------------------
-figure('Name', 'ex07: hybrid TVP-VAR');
+figure('Name', 'ex08: hybrid TVP-VAR');
 panels = {store_b2own, beta_true(:, kb+3),  'Equation 2: coefficient on y_{2,t-1}, time-varying'; ...
           store_b3own, beta_true(:, 2*kb+4), 'Equation 3: coefficient on y_{3,t-1}, constant'; ...
           store_a31,   alp_true(:, 2),       'Equation 3: \alpha_{31}, time-varying'};

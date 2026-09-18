@@ -1,4 +1,4 @@
-%% ex10 - Identifying a structural VAR by sign restrictions
+%% ex11 - Identifying a structural VAR by sign restrictions
 %
 % THE PROBLEM. A reduced-form VAR identifies Sigma but not the impact matrix:
 % every L0*Q with L0*L0' = Sigma and Q orthogonal is admissible. Sign
@@ -35,7 +35,7 @@ run(fullfile(fileparts(fileparts(mfilename('fullpath'))),'setup.m'))
 
 rng(20260908, 'twister')
 repo = fileparts(fileparts(mfilename('fullpath')));
-fprintf('\n=== ex10: sign restrictions, and the cost of the search ===\n');
+fprintf('\n=== ex11: sign restrictions, and the cost of the search ===\n');
 
 %% ------------------------------------------------------------------
 %  1. Data and prior

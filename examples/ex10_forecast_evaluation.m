@@ -1,4 +1,4 @@
-%% ex09 - Recursive forecasting and predictive evaluation
+%% ex10 - Recursive forecasting and predictive evaluation
 %
 % BOOK: Chapter 14, Large VARs with Stochastic Volatility, in Bayesian
 % Macroeconometrics: Methods and Applications (Chapman & Hall/CRC, forthcoming).
@@ -29,7 +29,7 @@
 run(fullfile(fileparts(fileparts(mfilename('fullpath'))),'setup.m'))
 
 repo = fileparts(fileparts(mfilename('fullpath')));
-fprintf('\n=== ex09: recursive forecasting and predictive evaluation ===\n');
+fprintf('\n=== ex10: recursive forecasting and predictive evaluation ===\n');
 
 %% ------------------------------------------------------------------
 %  1. Data and sizes
@@ -135,7 +135,7 @@ fprintf(['tables trims the evaluation window the way the paper does: the h = 1\n
 %% ------------------------------------------------------------------
 %  5. The prior adapting
 %  ------------------------------------------------------------------
-figure('Name','ex09: shrinkage learned at each vintage','Position',[100 100 760 320]);
+figure('Name','ex10: shrinkage learned at each vintage','Position',[100 100 760 320]);
 subplot(1,2,1); plot(t_first:(t_first+nvintage-1), kappa_path(:,1), 'k-o', 'LineWidth', 1.1);
 title('kappa_1  (own lags)'); xlabel('vintage t'); grid on
 subplot(1,2,2); plot(t_first:(t_first+nvintage-1), kappa_path(:,2), 'k-o', 'LineWidth', 1.1);

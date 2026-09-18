@@ -27,16 +27,17 @@ chapter that develops it.
 
 ## Three ways to use this repo
 
-**Learn the methods.** `examples/` holds eleven short scripts, each running in under a minute.
+**Learn the methods.** `examples/` holds twelve short scripts, each running in under a minute.
 Read them in order:
 
 - **Building blocks** (ex01–ex02): the precision sampler and stochastic volatility by
   auxiliary mixture.
-- **VAR specifications** (ex03–ex07): a small BVAR, a BVAR with stochastic volatility, the
-  effect of variable ordering, factor stochastic volatility, and a hybrid TVP-VAR.
-- **Using an estimated VAR** (ex08–ex09): model comparison by marginal likelihood and
+- **VAR specifications** (ex03–ex08): a small BVAR, a BVAR with stochastic volatility, one
+  common volatility path in place of many, the effect of variable ordering, factor
+  stochastic volatility, and a hybrid TVP-VAR.
+- **Using an estimated VAR** (ex09–ex10): model comparison by marginal likelihood and
   recursive forecast evaluation.
-- **Structural identification** (ex10–ex11): sign restrictions on impact and over several
+- **Structural identification** (ex11–ex12): sign restrictions on impact and over several
   horizons.
 
 `examples/README.md` lists what each one teaches and which core functions it calls.

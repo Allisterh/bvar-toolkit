@@ -814,7 +814,7 @@ Only the paper's own contribution is extracted here.
 |---|---|---|---|
 | `bvar.structural.sign_assign` | the inline block at `proposed_15var.m` 72-113 | body verbatim; wrapped as a function, with m and n taken from the arguments and the acceptance test returned as a flag | unit (draw-for-draw, 400 draws) |
 
-- Example `examples/ex10_sign_restrictions.m` runs both acceptance rules over one batch of
+- Example `examples/ex11_sign_restrictions.m` runs both acceptance rules over one batch of
   posterior draws, so the comparison is of the rules rather than of the sampling. At n = 6
   with five sign-restricted shocks and three row inequalities, 50000 rotations yield 7
   acceptances under the strict rule and 2544 under `sign_assign`. The batch is that large
@@ -858,7 +858,7 @@ A future deduplication must not unify any of these; doing so silently changes pu
   `sign_restrict` tests `Rineq*L < 0` strictly, so a row of zeros rejects every candidate and
   returns an empty identified set with no error; `sign_assign` tests `<= 0`, where a zero row
   imposes nothing. To use `sign_restrict` with sign restrictions only, pass an EMPTY `Ridx`
-  and a `0 x n` `Rineq`. Both headers now say so. `examples/ex11_dynamic_sign_restrictions.m`
+  and a `0 x n` `Rineq`. Both headers now say so. `examples/ex12_dynamic_sign_restrictions.m`
   calls both functions side by side and shows the two spellings.
 
 - **`SVRW.m`**: sp_code's variant uses a DIFFUSE initial condition h_1 ~ N(0,Vh), lower-Cholesky,

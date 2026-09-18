@@ -1,4 +1,4 @@
-%% ex08 - Marginal likelihoods and model comparison
+%% ex09 - Marginal likelihoods and model comparison
 %
 % BOOK: Chapter 5, Bayesian Model Comparison, in Bayesian Macroeconometrics:
 % Methods and Applications (Chapman & Hall/CRC, forthcoming).
@@ -24,7 +24,7 @@
 run(fullfile(fileparts(fileparts(mfilename('fullpath'))),'setup.m'))
 
 repo = fileparts(fileparts(mfilename('fullpath')));
-fprintf('\n=== ex08: marginal likelihoods and model comparison ===\n');
+fprintf('\n=== ex09: marginal likelihoods and model comparison ===\n');
 
 nsim = 200; burnin = 50; seed = 20260903;
 fprintf('\nsettings: nsim = %d, burnin = %d, seed = %d\n', nsim, burnin, seed);

@@ -1,4 +1,4 @@
-%% ex05 - Variable ordering in a VAR with stochastic volatility
+%% ex06 - Variable ordering in a VAR with stochastic volatility
 %
 % BOOK: Chapter 13, Section 13.1.3, and Chapter 14, Section 14.3, in Bayesian
 % Macroeconometrics: Methods and Applications (Chapman & Hall/CRC, forthcoming).
@@ -36,7 +36,7 @@
 run(fullfile(fileparts(fileparts(mfilename('fullpath'))),'setup.m'))
 
 repo = fileparts(fileparts(mfilename('fullpath')));
-fprintf('\n=== ex05: variable ordering in a VAR with stochastic volatility ===\n');
+fprintf('\n=== ex06: variable ordering in a VAR with stochastic volatility ===\n');
 
 %% ------------------------------------------------------------------
 %  1. Data, the two orderings, and the settings
@@ -137,7 +137,7 @@ fprintf(['\nreversing the ordering moves the CS correlation between %s and %s by
 T = size(res{1}.Sig_mean, 1);
 dates = datetime(1961,3,1) + calmonths(0:T-1);
 lbl = {cfg([4 5 1 2]).label};
-figure('Name', 'ex05: two orderings, two models');
+figure('Name', 'ex06: two orderings, two models');
 subplot(2,1,1); hold on; box off
 for ic = [4 5 1 2], plot(dates, vpath(res{ic}.Sig_mean, 4), 'LineWidth', 1); end
 title('variance of the federal funds rate'); legend(lbl, 'Location', 'northeast'); hold off

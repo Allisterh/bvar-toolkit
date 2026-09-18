@@ -75,11 +75,10 @@ assert(isequal(L.count_sat, size(res.store_response,1)), ...
     'the accepted-draw count differs from the stored rows');
 assert(isequal(L.rngstate, sC.State), 'rng call sequence differs');
 
-% the run must actually accept something, or the comparison is vacuous
+% the run must actually accept something, or the comparison is vacuous. The
+% overshoot past nsim, which run_all reproduces deliberately by not leaving the
+% batch early, is pinned by count_total and store_response above.
 assert(size(res.store_response,1) >= nsim, 'fewer accepted draws than requested');
-% and the final batch must overshoot, which is the behaviour run_all reproduces
-% deliberately (no early exit inside the batch)
-assert(size(res.store_response,1) >= nsim, 'overshoot invariant not exercised');
 
 % --- dataset 2 (n = 15): everything before the rejection loop ---
 txt2 = fileread(fullfile(leg, 'main_ACP_apps.m'));

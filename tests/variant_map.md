@@ -37,7 +37,10 @@ package - test reproduces the inline pattern exactly), `bvar.util.logsumexp`,
 `bvar.util.diffmat` (the state-equation difference matrix that makes the precision samplers
 banded), `bvar.util.igrnd`, `bvar.samplers.eq_var_oi` (2026-09-06; see the note at the end of
 this file), `bvar.util.shaded_band` (2026-09-17; the book's chapter14/shaded_band.m, used
-for the credible bands in the examples' figures). None of these is retrofitted into a legacy body: they exist for new code, and the
+for the credible bands in the examples' figures), `bvar.models.var_sv` (2026-09-18; the
+sampler ex06 used inline, moved into the library, with the prior constants of the CKY24 preset;
+`test_var_sv` pins it draw for draw to a frozen copy of that inline sampler and checks the
+constants against `preset.m`). None of these is retrofitted into a legacy body: they exist for new code, and the
 legacy spellings they generalize stay as they are.
 
 Edits made during extraction, in full: provenance header prepended; function renamed where

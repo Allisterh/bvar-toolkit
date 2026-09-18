@@ -54,7 +54,7 @@ zip's md5 recorded in `provenance.md`. Run those files as you would the original
 `bvar` package under `core/`. Most began as extractions and still reproduce their legacy
 counterpart draw-for-draw under a fixed seed at their default settings. Where the published
 code can be improved on, `core/` improves on it, and the improvement carries a test of its
-own. Call the blocks directly, or copy the nearest `run_all.m` as a template.
+own. Call the blocks directly, start from `bvar.models.var_sv`, the complete sampler for a VAR with stochastic volatility, or copy the nearest `run_all.m` as a template.
 
 ## Which model do I want?
 
@@ -110,6 +110,7 @@ spelling they generalize.
 | `bvar.forecast` | Producing forecasts from a chain. `iterate` runs one draw forward and scores it, `tables` accumulates RMSFEs and log predictive likelihoods, `realtime_loaddata` assembles a real-time data vintage. |
 | `bvar.structural` | Contemporaneous structure and identification. `construct_Sigt` builds the time-varying covariance from the impact matrix and `b0_row_sampler` draws that matrix row by row for the order-invariant model; `reduced_form` maps structural draws to their reduced form, and `qr_sign`, `sign_restrict` and `irf_redu` are the three steps of a sign-restricted SVAR - draw a rotation, test it against the sign and inequality restrictions, and compute the impulse responses of the draws that survive. `sign_assign` replaces the middle step with the search of Chan, Matthes and Yu (2026), which accepts a rotation whenever every shock has some admissible column rather than requiring the columns to arrive in order. |
 | `bvar.ml` | Marginal likelihoods, for model comparison. Chib's method for the VARs with non-Gaussian, heteroscedastic and serially dependent innovations of Chan (2020), adaptive importance sampling for the stochastic volatility specifications of Chan (2023), and `acp`, which is closed form - the property that motivates the asymmetric conjugate prior of Chan (2022), and the reason selecting its hyperparameters is an optimization rather than a second round of estimation. Plus the integrated-likelihood evaluators and log densities the simulation-based ones share. |
+| `bvar.models` | Complete samplers assembled from the blocks above. `var_sv` estimates a VAR with stochastic volatility under the Cholesky or the order-invariant specification, with the prior of Chan, Koop and Yu (2024), and returns posterior means; the tutorial in `tutorials/variable_ordering/` uses it. |
 | `bvar.util` | The small shared pieces: `build_lags` (the lag matrix, intercept first), `diffmat` (the state-equation difference matrix that makes the precision samplers banded), `surform`/`surform2` (two different sparse expansions — see their headers), `logsumexp`, `igrnd`, `shaded_band` (the shaded credible bands in the examples' figures), and a few one-liners. |
 
 Where two legacy versions of a step turned out to differ numerically, both survive under

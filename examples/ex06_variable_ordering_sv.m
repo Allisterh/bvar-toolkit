@@ -13,6 +13,7 @@
 %
 % Each model is also run a second time in the published order under another
 % seed, which measures the Monte Carlo error the ordering gap is read against.
+% Both models are estimated by bvar.models.var_sv.
 %
 % DATA. replications/chan_koop_yu2024_jbes_oisv/legacy/FRED_MD_20vars.csv,
 % read-only: monthly FRED-MD, 1959:03 to 2019:12, columns 4, 6, 12 and 13 -
@@ -81,12 +82,11 @@ for ic = 1:numel(cfg)
     if cfg(ic).rev, ord = ord(end:-1:1); end
     Y0 = data(1:n0, ord);
     Y  = data(n0+1:end, ord);
-    [~, X] = bvar.util.build_lags([Y0(end-p+1:end,:); Y], p);
 
     fprintf('\n%-20s ', cfg(ic).label);
     t0 = tic;
-    rng(cfg(ic).seed, 'twister');
-    res{ic} = mcmc(cfg(ic).model, Y, X, Y0, p, nsim, burnin, pr);
+    res{ic} = bvar.models.var_sv(Y0, Y, p, 'model', cfg(ic).model, ...
+        'nsim', nsim, 'burnin', burnin, 'seed', cfg(ic).seed);
     if cfg(ic).rev                       % back to the published order for comparison
         res{ic}.Sig_mean = res{ic}.Sig_mean(:, end:-1:1, end:-1:1);
     end
@@ -153,107 +153,3 @@ drawnow
 fprintf('\nThe order-invariant model is drawn under two orderings that are the same model,\n');
 fprintf('so its two paths differ only by Monte Carlo error. The Cholesky model is drawn\n');
 fprintf('under two orderings that are two different models.\n');
-
-%% ------------------------------------------------------------------
-%  The sampler. Both models share the log-volatility and shrinkage blocks and
-%  differ in the impact matrix and the coefficient draw, which is where the
-%  ordering enters.
-%  ------------------------------------------------------------------
-function res = mcmc(model, Y, X, Y0, p, nsim, burnin, pr)
-[T, n] = size(Y);
-k = 1 + n*p;
-is_oi = strcmp(model, 'OI');
-
-    % Minnesota second moments, built from AR(4) residual variances
-sig2_ar = bvar.priors.resid_var_ar4(Y0, Y);
-[C, idx_kappa1, idx_kappa2] = bvar.priors.minnesota_C(n, p, sig2_ar);
-
-    % priors: the preset values of the package, at this n
-Hyper.nuh = 3*ones(n,1);
-Hyper.Sh = .05*(Hyper.nuh - 1);
-Hyper.phi0 = .95*ones(n,1);
-Hyper.Vphi = .05^2*ones(n,1);
-Hyper.mu0 = zeros(n,1);
-Hyper.Vmu = 100*ones(n,1);
-Hyper.B0 = eye(n);
-Hyper.VB0 = ones(n);
-Hyper.beta0 = zeros(n^2*p + n, 1);
-Hyper.Valp = ones(n*(n-1)/2, 1);
-kappa = pr.oi.kappa_init;                    % [.1 .1 NaN 100]
-if ~is_oi, kappa = pr.cs.kappa_init; end     % [.1 .1 1 100]
-
-    % chain init
-A = (X'*X + pr.ls_ridge*speye(k))\(X'*Y);
-U = Y - X*A;
-Sig_hat = U'*U/T;
-h = repmat(log(diag(Sig_hat))', T, 1);
-sig2 = 1./gamrnd(Hyper.nuh, 1./Hyper.Sh);
-phi = min(Hyper.phi0 + sqrt(Hyper.Vphi).*randn(n,1), pr.phi_init_bnd);
-z_psi1 = 1./gamrnd(.5, 1, n*p, 1);
-z_psi2 = 1./gamrnd(.5, 1, (n-1)*n*p, 1);
-z_kappa = 1./gamrnd(.5, 1, 2, 1);
-Psi = ones(k*n, 1);
-Psi(idx_kappa1) = 1./gamrnd(.5, z_psi1);
-Psi(idx_kappa2) = 1./gamrnd(.5, z_psi2);
-if is_oi
-    B0 = diag(1./sqrt(diag(Sig_hat)));       % full matrix, updated row by row
-else
-    A_id = nonzeros(tril(reshape(1:n^2, n, n), -1)');
-    Atri = eye(n); B = A'; XB = X*B';        % unit lower triangular impact matrix
-    mu = zeros(n,1);
-    for ii = 1:n, mu(ii) = mean(log(U(:,ii).^2)); end
-end
-
-Sig_sum = zeros(T, n, n);
-store_kappa = zeros(nsim, 2);
-for isim = 1:nsim + burnin
-        % Vbeta scales with sig2, which holds the log-volatility state variances
-        % at this point, as in the published samplers. The same rule applies in
-        % every configuration, so it does not enter the comparison.
-    [~, tmpdV] = bvar.priors.vtheta(idx_kappa1, idx_kappa2, kappa, C.*Psi, sig2);
-
-    if is_oi
-        B0 = bvar.structural.b0_row_sampler(Y - X*A, h, B0, Hyper.B0, Hyper.VB0);
-        A = bvar.samplers.eq_var_oi(Y, X, B0, h, A, tmpdV);
-        theta = A(:);
-        E = (Y - X*A)*B0';                   % structural innovations
-    else
-        [B, XB] = bvar.samplers.eq_tri_cs(Y, X, XB, B, Atri, h, tmpdV, Hyper.beta0);
-        theta = reshape(B', n^2*p + n, 1);
-        E = Y - XB;
-        Atri(A_id) = bvar.samplers.alp_tri_cs(E, h, Hyper.Valp);
-        E = E*sparse(Atri');                 % structural innovations
-    end
-
-    for ii = 1:n
-        ystar = log(E(:,ii).^2 + pr.sv_offset);
-        if is_oi
-            h(:,ii) = bvar.sv.ksc_ar1_mean(ystar, h(:,ii), pr.oi.h_mean_in_sv, phi(ii), sig2(ii));
-        else
-            h(:,ii) = bvar.sv.ksc_ar1_mean(ystar, h(:,ii), mu(ii), phi(ii), sig2(ii));
-        end
-    end
-    if is_oi
-        [phi, sig2] = bvar.sv.sv0_params(h, phi, Hyper);
-    else
-        [mu, phi, sig2] = bvar.sv.sv_params(h, mu, phi, Hyper);
-    end
-
-    [psi1, psi2, z_psi1, z_psi2, kappa, z_kappa] = bvar.samplers.horseshoe_kappa_psi( ...
-        theta, idx_kappa1, idx_kappa2, C, kappa, z_psi1, z_psi2, z_kappa);
-    Psi(idx_kappa1) = psi1;
-    Psi(idx_kappa2) = psi2;
-
-    if isim > burnin
-        store_kappa(isim - burnin, :) = kappa(1:2);
-        if is_oi
-            Sig_sum = Sig_sum + bvar.structural.construct_Sigt(h, B0);
-        else
-            Sig_sum = Sig_sum + bvar.structural.construct_Sigt(h, Atri);
-        end
-    end
-end
-
-res.Sig_mean = Sig_sum/nsim;
-res.kappa_mean = mean(store_kappa)';
-end

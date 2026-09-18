@@ -6,7 +6,9 @@
 % construction), draws the first rotation coordinate from the bimodal
 % two-component approximation bvar.util.anormrnd and the remaining n-1
 % coordinates as zetaj_hat + randn/sqrt(T), maps back, and fixes the sign of
-% the ii-th element to be positive.
+% the ii-th element to be positive. The row-by-row construction is that of
+% Waggoner and Zha (2003), with the extension to a nonzero prior mean and the
+% two-component approximation to the absolute-normal density of Villani (2009).
 %
 %   B0 = bvar.structural.b0_row_sampler(U, h, B0, B00, VB0)
 %
@@ -21,6 +23,10 @@
 % n-1 further randn - rows in order ii = 1:n.
 %
 % See:
+% Waggoner, D.F. and Zha, T. (2003). A Gibbs Sampler for Structural Vector
+% Autoregressions, Journal of Economic Dynamics and Control, 28(2): 349-366.
+% Villani, M. (2009). Steady-State Priors for Vector Autoregressions, Journal
+% of Applied Econometrics, 24(4): 630-650.
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian
 % VARs with Stochastic Volatility, Journal of Business and Economic
 % Statistics, 42(2): 825-837.

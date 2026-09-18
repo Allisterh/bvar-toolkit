@@ -19,7 +19,7 @@ To credit the software as well, cite the toolkit record at the end.
 | Common stochastic volatility | `bvar.sv.csv_armh`; ex05 | [Carriero, Clark and Marcellino (2016)](#carriero-clark-and-marcellino-2016) for the model; [Chan (2020a)](#chan-2020a) for the sampler |
 | Cholesky stochastic volatility | `bvar.samplers.eq_tri_cs`, `alp_tri_cs`; ex04, ex06 | [Cogley and Sargent (2005)](#cogley-and-sargent-2005) for the model; [Carriero, Chan, Clark and Marcellino (2022)](#carriero-chan-clark-and-marcellino-2022) for the corrected equation-by-equation algorithm in `eq_tri_cs`, and [Carriero, Clark and Marcellino (2019)](#carriero-clark-and-marcellino-2019) for the original |
 | Choosing a stochastic volatility specification by marginal likelihood; factor stochastic volatility | `replications/chan2023_joe_mlvarsv`, `bvar.ml.mlvarsv_*`, `bvar.samplers.factor_fsv`, `eq_fsv_load`, `eq_var_redu_tri`, `bvar.priors.impact_B0`, `bvar.sv.init_approx1N`, `svo_outlier`; ex04, ex07 | [Chan (2023a)](#chan-2023a) |
-| Order-invariant stochastic volatility | `replications/chan_koop_yu2024_jbes_oisv`, `bvar.samplers.eq_svar_oi`, `eq_var_oi`, `horseshoe_kappa_psi`, `bvar.structural.b0_row_sampler`, `construct_Sigt`, `bvar.sv.sv_params`, `sv0_params`; ex06 | [Chan, Koop and Yu (2024)](#chan-koop-and-yu-2024) for the model; [Waggoner and Zha (2003)](#waggoner-and-zha-2003) for the row-by-row draw of the impact matrix in `b0_row_sampler` |
+| Order-invariant stochastic volatility | `replications/chan_koop_yu2024_jbes_oisv`, `bvar.samplers.eq_svar_oi`, `eq_var_oi`, `horseshoe_kappa_psi`, `bvar.structural.b0_row_sampler`, `construct_Sigt`, `bvar.sv.sv_params`, `sv0_params`; ex06 | [Chan, Koop and Yu (2024)](#chan-koop-and-yu-2024) for the model; [Waggoner and Zha (2003)](#waggoner-and-zha-2003) and [Villani (2009)](#villani-2009) for the row-by-row draw of the impact matrix in `b0_row_sampler` |
 | Hybrid time-varying parameter VARs | `replications/chan2023_jbes_hybtvp`, `bvar.samplers.eq_hyb_tvp`, `bvar.priors.resid_var_allvars_ridge`; ex08 | [Chan (2023b)](#chan-2023b) |
 | Comparing time-varying parameter VARs by marginal likelihood and DIC | `replications/chan_eisenstat2018_jae_mltvpsv` | [Chan and Eisenstat (2018)](#chan-and-eisenstat-2018) |
 | Forecasting with large BVARs across priors and volatility models | `replications/chan2020_springer_largebvar`, `bvar.forecast.iterate`, `tables`, `realtime_loaddata`, `bvar.priors.niw`, `bvar.sv.nu_studentt` | [Chan (2020b)](#chan-2020b) |
@@ -577,6 +577,29 @@ application of ex12.
   number  = {2},
   pages   = {381--419},
   doi     = {10.1016/j.jmoneco.2004.05.007}
+}
+```
+
+### Villani (2009)
+
+Villani, M. (2009). Steady-State Priors for Vector Autoregressions. *Journal of Applied
+Econometrics* 24(4): 630-650.
+[Journal version](https://doi.org/10.1002/jae.1065)
+
+The extension of the Waggoner and Zha (2003) algorithm to priors with nonzero means, and the
+two-component normal approximation to the absolute-normal density, both used by
+`bvar.structural.b0_row_sampler`.
+
+```bibtex
+@article{villani09,
+  author  = {Villani, M.},
+  title   = {Steady-State Priors for Vector Autoregressions},
+  journal = {Journal of Applied Econometrics},
+  year    = {2009},
+  volume  = {24},
+  number  = {4},
+  pages   = {630--650},
+  doi     = {10.1002/jae.1065}
 }
 ```
 

@@ -53,9 +53,9 @@ on $\mathbf{B}_0$ centered at the identity matrix and with common variances acro
 prior is order invariant as well. They also develop an MCMC algorithm for estimation and
 forecasting. Without the triangular restriction, the conditional distribution of each row of
 $\mathbf{B}_0$ is no longer Gaussian, but the rows can still be drawn one at a time using the
-algorithm of Waggoner and Zha (2003), which preserves the equation-by-equation structure of the
-sampler. In a forecasting exercise with 20 variables, the order-invariant model produces the
-best forecasts.
+algorithm of Waggoner and Zha (2003), as extended by Villani (2009) to priors with nonzero
+means, which preserves the equation-by-equation structure of the sampler. In a forecasting
+exercise with 20 variables, the order-invariant model produces the best forecasts.
 
 Arias, Rubio-Ramírez and Shin (2023) document the implications of the ordering for forecasts
 from the time-varying parameter VAR with Cholesky stochastic volatility. They find that the
@@ -251,13 +251,14 @@ The structure `pr` holds the prior hyperparameters of the replication package an
 length of the replication package, 30,000 draws after a burn-in period of 5,000 draws, and a
 second run with a different seed to measure the Monte Carlo error.
 
-The sampler draws $\mathbf{B}_0$ row by row with the algorithm of Waggoner and Zha (2003), using
-`bvar.structural.b0_row_sampler`, the VAR coefficients using `bvar.samplers.eq_var_oi`, each
-log-volatility path using `bvar.sv.ksc_ar1_mean` and its parameters using `bvar.sv.sv0_params`.
-The shrinkage hyperparameters of the Minnesota-type horseshoe prior are drawn using
-`bvar.samplers.horseshoe_kappa_psi`. To reproduce the 20-variable estimation in Chan, Koop and
-Yu (2024), call `run_all('OI', flip, 30000, 5000, seed)` in
-`replications/chan_koop_yu2024_jbes_oisv/`, where `flip = 1` reverses the order.
+The sampler draws $\mathbf{B}_0$ row by row with the algorithm of Waggoner and Zha (2003) and
+Villani (2009), using `bvar.structural.b0_row_sampler`, the VAR coefficients using
+`bvar.samplers.eq_var_oi`, each log-volatility path using `bvar.sv.ksc_ar1_mean` and its
+parameters using `bvar.sv.sv0_params`. The shrinkage hyperparameters of the Minnesota-type
+horseshoe prior are drawn using `bvar.samplers.horseshoe_kappa_psi`. To reproduce the
+20-variable estimation in Chan, Koop and Yu (2024), call
+`run_all('OI', flip, 30000, 5000, seed)` in `replications/chan_koop_yu2024_jbes_oisv/`, where
+`flip = 1` reverses the order.
 
 ## Implementations in R and Python
 
@@ -305,6 +306,9 @@ the Post WWII US. *Review of Economic Dynamics*, 8(2): 262-302.
 McCracken, M. W. and Ng, S. (2016). FRED-MD: A Monthly Database for Macroeconomic Research.
 *Journal of Business and Economic Statistics*, 34(4): 574-589.
 [doi:10.1080/07350015.2015.1086655](https://doi.org/10.1080/07350015.2015.1086655)
+
+Villani, M. (2009). Steady-State Priors for Vector Autoregressions. *Journal of Applied
+Econometrics*, 24(4): 630-650. [doi:10.1002/jae.1065](https://doi.org/10.1002/jae.1065)
 
 Waggoner, D. F. and Zha, T. (2003). A Gibbs Sampler for Structural Vector Autoregressions.
 *Journal of Economic Dynamics and Control*, 28(2): 349-366.

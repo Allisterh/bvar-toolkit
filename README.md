@@ -23,7 +23,8 @@ Applications* (Chapman & Hall/CRC, forthcoming) —
 [sample chapters](https://joshuachan.org/papers/BayesMacroBook_sample.pdf) and
 [its own code repository](https://github.com/joshuaccchan/bayesian-macroeconometrics), with
 MATLAB, R and Python for all fourteen chapters. `examples/README.md` maps each example to the
-chapter that develops it.
+chapter that develops it, and [`RELATED.md`](RELATED.md) maps the models here to the book's R
+and Python scripts and to the R package `bvars`.
 
 ## Three ways to use this repo
 

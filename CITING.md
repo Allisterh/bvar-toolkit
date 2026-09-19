@@ -4,7 +4,8 @@ The code here implements methods from the papers below. If you use it in your wo
 cite the paper behind each method you use. The table maps each replication package, library
 function and example to that paper, and the BibTeX for every entry follows. A study usually
 needs more than one row: one for the model it estimates and one for each sampler inside it.
-To credit the software as well, cite the toolkit record at the end.
+To credit the software as well, cite the toolkit record at the end. [`RELATED.md`](RELATED.md)
+lists implementations of the same models in R and Python.
 
 ## What to cite
 

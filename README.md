@@ -34,10 +34,11 @@ the same analysis on your own data.
   amounts. In a 21-variable VAR, the chosen prior improves the one-quarter-ahead point forecasts
   of 20 of the 21 variables relative to the best symmetric prior.
 
-The twelve scripts in [`examples/`](examples/) each run in under a minute and are best read in
+The thirteen scripts in [`examples/`](examples/) each run in under a minute and are best read in
 order: the building blocks (ex01–ex02, the precision sampler and stochastic volatility), VAR
 specifications (ex03–ex08), model comparison and forecasting with an estimated VAR
-(ex09–ex10), and structural identification by sign restrictions (ex11–ex12).
+(ex09–ex10), structural identification by sign restrictions (ex11–ex12), and diagnostics for
+the output of a sampler (ex13).
 [`examples/README.md`](examples/README.md) lists what each one teaches and which library
 functions it calls.
 
@@ -94,7 +95,8 @@ copy the nearest `run_all.m` as a template.
 | `bvar.structural` | Impact matrices and identification: the order-invariant impact matrix (`b0_row_sampler`, `construct_Sigt`), the map to the reduced form (`reduced_form`) and sign restrictions (`qr_sign`, `sign_restrict`, `sign_assign`, `irf_redu`). |
 | `bvar.ml` | Marginal likelihoods: Chib's method for the models of Chan (2020, JBES) (`kron_bvar*`), adaptive importance sampling for those of Chan (2023, JoE) (`mlvarsv_*`), the closed form under the asymmetric conjugate prior (`acp`), and the integrated likelihoods and log densities they share. |
 | `bvar.forecast` | Forecasts from a chain: `iterate` runs one draw forward and scores it, `tables` accumulates RMSFEs and log predictive likelihoods, and `realtime_loaddata` assembles a real-time data vintage. |
-| `bvar.models` | Complete samplers: `var_sv`, a VAR with Cholesky or order-invariant stochastic volatility under the prior of Chan, Koop and Yu (2024). |
+| `bvar.diag` | Diagnostics for MCMC output: inefficiency factors (`inefficiency_factor`), Monte Carlo standard errors (`mcse`) and Geweke's convergence diagnostic (`geweke`), each from the long-run variance that `specvar0` estimates. |
+| `bvar.models` | Complete samplers: `var_sv`, a VAR with Cholesky or order-invariant stochastic volatility under the prior of Chan, Koop and Yu (2024), which can also return its parameter draws. |
 | `bvar.util` | Shared pieces: the lag matrix (`build_lags`), the difference matrix of the precision samplers (`diffmat`), sparse expansions (`surform`, `surform2`), credible bands for figures (`shaded_band`) and small numerical helpers. |
 
 Where two legacy versions of a step differ numerically, both survive under separate names.

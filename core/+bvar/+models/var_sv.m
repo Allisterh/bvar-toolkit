@@ -16,6 +16,14 @@
 %   'burnin' : draws discarded first, default 5000
 %   'seed'   : if given, rng(seed,'twister') is set before the first draw;
 %              otherwise the current stream is used
+%   'draws'  : true also returns res.draws, the parameter draws, one row per
+%              draw: kappa (nsim x 2), A (nsim x k*n, each row A(:)'), impact
+%              (nsim x n^2), phi and sig2 (nsim x n) and, under 'CS', mu
+%              (nsim x n); default false. The log-volatility paths are not kept.
+%   'phi_proposal' : under 'OI', the candidate of the Metropolis-Hastings step for
+%              the log-volatility persistence phi, passed to bvar.sv.sv0_params:
+%              'truncated' (default) or 'untruncated', the step of the Chan, Koop
+%              and Yu (2024) package
 %
 %   res.Sig_mean     : T x n x n posterior mean of Sigma_t
 %   res.A_mean       : k x n posterior mean of the VAR coefficients, intercept
@@ -29,7 +37,8 @@
 % The prior constants and the chain initialization are those of the Chan, Koop
 % and Yu (2024) package (replications/chan_koop_yu2024_jbes_oisv/preset.m).
 % test_var_sv checks the constants against that file and pins the draws, bitwise,
-% to the inline sampler ex06 used previously.
+% to the inline sampler ex06 used previously, whose phi step is the package's
+% (under 'OI', 'phi_proposal' set to 'untruncated').
 %
 % See:
 % Cogley, T. and Sargent, T.J. (2005). Drifts and Volatilities: Monetary
@@ -40,7 +49,8 @@
 % Statistics, 42(2): 825-837.
 
 function res = var_sv(Y0, Y, p, varargin)
-model = 'OI'; nsim = 30000; burnin = 5000; seed = [];
+model = 'OI'; nsim = 30000; burnin = 5000; seed = []; keep_draws = false;
+phi_proposal = 'truncated';
 iv = 1;
 while iv <= numel(varargin)
     if iv == numel(varargin)
@@ -51,6 +61,8 @@ while iv <= numel(varargin)
         case 'nsim',   nsim   = varargin{iv+1};
         case 'burnin', burnin = varargin{iv+1};
         case 'seed',   seed   = varargin{iv+1};
+        case 'draws',  keep_draws = varargin{iv+1};
+        case 'phi_proposal', phi_proposal = lower(char(string(varargin{iv+1})));
         otherwise, error('bvar:models:var_sv:badOption', 'unknown option ''%s''', char(string(varargin{iv})));
     end
     iv = iv + 2;
@@ -76,6 +88,13 @@ if ~all(isfinite([Y0(:); Y(:)]))
 end
 if ~(isscalar(nsim) && nsim >= 1 && nsim == fix(nsim) && isscalar(burnin) && burnin >= 0 && burnin == fix(burnin))
     error('bvar:models:var_sv:badOption', 'nsim must be a positive integer and burnin a nonnegative integer');
+end
+if ~(isscalar(keep_draws) && (islogical(keep_draws) || isnumeric(keep_draws)))
+    error('bvar:models:var_sv:badOption', 'draws must be true or false');
+end
+if ~any(strcmp(phi_proposal, {'truncated', 'untruncated'}))
+    error('bvar:models:var_sv:badOption', ...
+        'phi_proposal must be ''truncated'' or ''untruncated''; got ''%s''', phi_proposal);
 end
 if ~isempty(seed), rng(seed, 'twister'); end
 
@@ -131,6 +150,14 @@ A_sum = zeros(k, n);
 h_sum = zeros(T, n);
 imp_sum = zeros(n, n);
 store_kappa = zeros(nsim, 2);
+if keep_draws
+    D.kappa = [];                            % store_kappa, filled in at the end
+    D.A = zeros(nsim, k*n);
+    D.impact = zeros(nsim, n^2);
+    D.phi = zeros(nsim, n);
+    D.sig2 = zeros(nsim, n);
+    if ~is_oi, D.mu = zeros(nsim, n); end
+end
 for isim = 1:nsim + burnin
         % Vbeta scales with sig2, which holds the log-volatility state variances
         % at this point, as in the published samplers
@@ -158,7 +185,7 @@ for isim = 1:nsim + burnin
         end
     end
     if is_oi
-        [phi, sig2] = bvar.sv.sv0_params(h, phi, Hyper);
+        [phi, sig2] = bvar.sv.sv0_params(h, phi, Hyper, [], 'proposal', phi_proposal);
     else
         [mu, phi, sig2] = bvar.sv.sv_params(h, mu, phi, Hyper);
     end
@@ -180,6 +207,19 @@ for isim = 1:nsim + burnin
             A_sum = A_sum + B';
             imp_sum = imp_sum + Atri;
         end
+        if keep_draws
+            r = isim - burnin;
+            if is_oi
+                D.A(r,:) = A(:)';
+                D.impact(r,:) = B0(:)';
+            else
+                D.A(r,:) = reshape(B', 1, []);
+                D.impact(r,:) = Atri(:)';
+                D.mu(r,:) = mu';
+            end
+            D.phi(r,:) = phi';
+            D.sig2(r,:) = sig2';
+        end
     end
 end
 
@@ -189,4 +229,8 @@ res.h_mean = h_sum/nsim;
 res.impact_mean = imp_sum/nsim;
 res.kappa_mean = mean(store_kappa)';
 res.model = model; res.nsim = nsim; res.burnin = burnin; res.seed = seed; res.p = p;
+if keep_draws
+    D.kappa = store_kappa;
+    res.draws = D;
+end
 end

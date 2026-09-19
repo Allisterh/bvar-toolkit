@@ -1,10 +1,11 @@
 # Examples
 
-Twelve short scripts in four groups: the two computational building blocks the toolkit rests
+Thirteen short scripts in five groups: the two computational building blocks the toolkit rests
 on, VAR specifications of increasing flexibility, model comparison and forecasting with
-an estimated VAR, and structural identification by sign restrictions. Each prints its
+an estimated VAR, structural identification by sign restrictions, and diagnostics for the
+output of a sampler. Each prints its
 reasoning as it goes. Six of them (ex01, ex02, ex04, ex05, ex07 and ex08) run on simulated data,
-so their estimates can be checked against the truth. The other six use data from the
+so their estimates can be checked against the truth. The other seven use data from the
 replication packages. For reproducing a published table, use `replications/<paper>/` instead.
 
 Every script puts the toolkit on the path itself, so any of them runs from a clean session:
@@ -48,6 +49,12 @@ Read them in order; each group builds on the ones before it.
 | 11 | `ex11_sign_restrictions.m` | Identifying a structural VAR by sign restrictions, and the cost of the search: two acceptance rules run over the same posterior draws and the same rotations, one requiring each shock in its own column and one searching over assignments. | &mdash; | 5 s |
 | 12 | `ex12_dynamic_sign_restrictions.m` | Sign restrictions imposed over a stretch of the impulse response rather than on impact alone — Uhlig's (2005) agnostic identification of a monetary shock. Collects 1000 accepted draws under each acceptance rule and compares the resulting credible bands: the two rules have different acceptance rates and produce the same bands. | &mdash; | 13 s |
 
+### Checking a sampler
+
+| | Script | What it teaches | Book | Runs in |
+|---|---|---|---|---|
+| 13 | `ex13_mcmc_diagnostics.m` | Inefficiency factors, Monte Carlo standard errors and Geweke's convergence diagnostic, from `bvar.diag`, for the parameter draws of the two samplers of ex06. The VAR coefficients mix well under both models, while the shrinkage parameters, the volatility parameters and the diagonal of the order-invariant impact matrix need tens to over a hundred draws for each independent one. The inefficiency factor rises with the truncation lag until the lag passes the autocorrelations, and Geweke's statistic, computed with two lags, separates slow mixing from a chain that has not settled. | Ch. 6 | 35 s |
+
 Timings are from one warm R2025b session on a desktop machine; treat them as orders of
 magnitude. All but ex09 and ex11 draw figures as well as printing. The chapter column
 refers to *Bayesian Macroeconometrics: Methods and Applications* (Chan, Chapman &
@@ -55,7 +62,7 @@ Hall/CRC, forthcoming), whose [sample chapters](https://joshuachan.org/papers/Ba
 and [code repository](https://github.com/joshuaccchan/bayesian-macroeconometrics) are
 online: 9 Linear Gaussian State Space Models, 10 Stochastic Volatility Models, 12
 Vector Autoregressions, 13 Time-Varying Vector Autoregressions, 14 Large VARs with
-Stochastic Volatility, 5 Bayesian Model Comparison. The auxiliary mixture ex02 uses is developed in Chapter 4, Mixture Models.
+Stochastic Volatility, 5 Bayesian Model Comparison, 6 Foundations of Bayesian Computation. The auxiliary mixture ex02 uses is developed in Chapter 4, Mixture Models.
 Each script repeats its chapter in the header. Five scripts draw on Chapter 14: ex04 for
 the sampler, ex05 for the common-volatility model, ex06 and ex07 for the order-invariant
 and factor models, and ex10 for the forecasting exercise. ex11 and ex12 have no entry because the book identifies structural
@@ -79,6 +86,7 @@ Useful if you are looking for a worked call of a particular core function.
 | ex10 | `bvar.forecast.iterate`, `bvar.forecast.tables`, `bvar.samplers.eq_gauss`, `bvar.samplers.gig_shrinkage`, `bvar.samplers.nu_psi_ng`, `bvar.priors.minnesota_C`, `bvar.priors.vtheta`, `bvar.priors.resid_var_ar4`, `bvar.sv.ksc_rw_h0`, `bvar.util.build_lags` | `replications/chan2021_ijf_mahp/legacy/macrodata_Q_2018Q4.csv`, read-only |
 | ex11 | `bvar.priors.resid_var_ar4`, `bvar.priors.acp_redu`, `bvar.samplers.acp_theta_sig`, `bvar.structural.reduced_form`, `bvar.structural.qr_sign`, `bvar.structural.sign_restrict`, `bvar.structural.sign_assign` | `replications/chan_matthes_yu2026_qe_svarsign/legacy/data/database_2019Q4.csv`, read-only |
 | ex12 | the same seven, plus `bvar.structural.irf_redu` — the only example that computes an impulse response — and `bvar.ml.acp`, `bvar.priors.acp_opt_kappa` and `bvar.util.build_lags` for the marginal likelihood, and `bvar.util.shaded_band` for the bands | that package's `data/Uhlig_monthly.csv`, read-only |
+| ex13 | `bvar.models.var_sv` with `'draws'`, `bvar.diag.inefficiency_factor`, `bvar.diag.mcse`, `bvar.diag.geweke` | `replications/chan_koop_yu2024_jbes_oisv/legacy/FRED_MD_20vars.csv`, read-only |
 
 We note two points about reading these scripts. First, ex01 and ex04 spell out inline what a
 core function would otherwise do in one call: the precision-sampler draw in ex01, and the

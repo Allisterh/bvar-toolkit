@@ -1,8 +1,11 @@
 function test_var_sv
 % bvar.models.var_sv must reproduce, draw for draw under one seed, the inline
 % sampler ex06 used before the function existed (frozen below as mcmc_ex06), for
-% both models and both orders, and its embedded constants must equal the preset
-% of the Chan, Koop and Yu (2024) package.
+% both models and both orders, with 'phi_proposal' set to 'untruncated', the phi
+% step of that sampler; and its embedded constants must equal the preset of the
+% Chan, Koop and Yu (2024) package. Under the default truncated proposal every phi
+% must move. With 'draws' it must run the same chain and return draws that average
+% to its posterior means.
 root = getappdata(0, 'bvar_repo_root');
 pkg = fullfile(root, 'replications', 'chan_koop_yu2024_jbes_oisv');
 od = cd(pkg); c = onCleanup(@() cd(od));
@@ -28,7 +31,7 @@ for rev = [false true]
         rng(seed, 'twister');
         ref = mcmc_ex06(model{1}, Y, X, Y0, p, nsim, burnin, pr);
         got = bvar.models.var_sv(Y0, Y, p, 'model', model{1}, 'nsim', nsim, ...
-            'burnin', burnin, 'seed', seed);
+            'burnin', burnin, 'seed', seed, 'phi_proposal', 'untruncated');
         assert(isequal(got.Sig_mean, ref.Sig_mean) && isequal(got.kappa_mean, ref.kappa_mean), ...
             'var_sv(%s, reversed = %d): differs from the ex06 sampler', model{1}, rev);
     end
@@ -38,8 +41,13 @@ end
 rng(5, 'twister');
 ref = mcmc_ex06('OI', Y, X, Y0, p, 5, 2, pr);
 rng(5, 'twister');
-got = bvar.models.var_sv(Y0, Y, p, 'nsim', 5, 'burnin', 2);
+got = bvar.models.var_sv(Y0, Y, p, 'nsim', 5, 'burnin', 2, 'phi_proposal', 'untruncated');
 assert(isequal(got.Sig_mean, ref.Sig_mean), 'var_sv: without a seed it must use the current stream');
+
+    % the default phi step, with the candidate from the truncated normal, moves
+    % every phi within a short chain
+r = bvar.models.var_sv(Y0, Y, p, 'nsim', 30, 'burnin', 5, 'seed', 4, 'draws', true);
+assert(all(any(diff(r.draws.phi) ~= 0)), 'var_sv: under the default phi_proposal every phi must move');
 
     % the other outputs
 [T, n] = size(Y); k = 1 + n*p;
@@ -50,6 +58,23 @@ assert(all(diag(got.impact_mean) == 1) && all(all(triu(got.impact_mean, 1) == 0)
     'var_sv: under ''CS'' the impact matrix must be unit lower triangular');
 assert(all(isfinite(got.A_mean(:))) && all(isfinite(got.h_mean(:))), 'var_sv: non-finite output');
 
+    % 'draws': the same chain, and draws that average to the means
+for model = {'OI', 'CS'}
+    a = bvar.models.var_sv(Y0, Y, p, 'model', model{1}, 'nsim', 6, 'burnin', 2, 'seed', 3);
+    b = bvar.models.var_sv(Y0, Y, p, 'model', model{1}, 'nsim', 6, 'burnin', 2, 'seed', 3, ...
+        'draws', true);
+    assert(isequal(rmfield(b, 'draws'), a), 'var_sv(%s): ''draws'' changed the chain', model{1});
+    D = b.draws;
+    assert(isequal(size(D.kappa), [6 2]) && isequal(size(D.A), [6 k*n]) ...
+        && isequal(size(D.impact), [6 n^2]) && isequal(size(D.phi), [6 n]) ...
+        && isequal(size(D.sig2), [6 n]) && isfield(D, 'mu') == strcmp(model{1}, 'CS'), ...
+        'var_sv(%s): draw sizes', model{1});
+    assert(isequal(mean(D.kappa)', b.kappa_mean) ...
+        && max(abs(mean(D.A) - b.A_mean(:)')) < 1e-12*max(abs(b.A_mean(:))) ...
+        && max(abs(mean(D.impact) - b.impact_mean(:)')) < 1e-12*max(abs(b.impact_mean(:))), ...
+        'var_sv(%s): the draws do not average to the posterior means', model{1});
+end
+
     % input checks
 Ybad = Y; Ybad(end, 1) = NaN;
 expect_error(@() bvar.models.var_sv(Y0, Ybad, p, 'nsim', 1, 'burnin', 0), 'bvar:models:var_sv:badData');
@@ -58,6 +83,10 @@ expect_error(@() bvar.models.var_sv(Y0, Y(:,1), p, 'nsim', 1, 'burnin', 0), 'bva
 expect_error(@() bvar.models.var_sv(Y0, Y, p, 'model', 'XX'), 'bvar:models:var_sv:badModel');
 expect_error(@() bvar.models.var_sv(Y0, Y, p, 'nsims', 5), 'bvar:models:var_sv:badOption');
 expect_error(@() bvar.models.var_sv(Y0, Y, p, 'nsim', 0), 'bvar:models:var_sv:badOption');
+expect_error(@() bvar.models.var_sv(Y0, Y, p, 'nsim', 1, 'burnin', 0, 'draws', 'yes'), ...
+    'bvar:models:var_sv:badOption');
+expect_error(@() bvar.models.var_sv(Y0, Y, p, 'nsim', 1, 'burnin', 0, 'phi_proposal', 'nw'), ...
+    'bvar:models:var_sv:badOption');
 end
 
 function expect_error(f, id)

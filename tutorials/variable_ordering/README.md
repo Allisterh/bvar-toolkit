@@ -98,16 +98,16 @@ Variances are in percent of their level and correlations in correlation points.*
 
 | | Cholesky, order reversed | Cholesky, seed changed | Order-invariant, order reversed | Order-invariant, seed changed |
 |---|---|---|---|---|
-| var(IP) | 4.1% | 0.3% | 0.6% | 1.0% |
-| var(unemployment) | 7.7% | 0.4% | 0.4% | 0.7% |
-| var(PCE inflation) | 0.9% | 0.3% | 2.4% | 2.3% |
-| var(fed funds) | 1.7% | 0.8% | 0.8% | 0.9% |
-| corr(IP, unemployment) | 0.111 | 0.001 | 0.001 | 0.002 |
-| corr(IP, PCE inflation) | 0.067 | 0.000 | 0.001 | 0.001 |
+| var(IP) | 4.1% | 0.3% | 0.6% | 0.8% |
+| var(unemployment) | 7.7% | 0.4% | 0.4% | 0.8% |
+| var(PCE inflation) | 0.9% | 0.3% | 0.5% | 0.7% |
+| var(fed funds) | 1.7% | 0.8% | 1.1% | 1.2% |
+| corr(IP, unemployment) | 0.111 | 0.001 | 0.001 | 0.001 |
+| corr(IP, PCE inflation) | 0.067 | 0.000 | 0.000 | 0.001 |
 | corr(IP, fed funds) | 0.088 | 0.000 | 0.001 | 0.001 |
-| corr(unemployment, PCE inflation) | 0.004 | 0.000 | 0.000 | 0.001 |
+| corr(unemployment, PCE inflation) | 0.004 | 0.000 | 0.001 | 0.000 |
 | corr(unemployment, fed funds) | 0.086 | 0.000 | 0.001 | 0.001 |
-| corr(PCE inflation, fed funds) | 0.022 | 0.000 | 0.001 | 0.000 |
+| corr(PCE inflation, fed funds) | 0.022 | 0.000 | 0.000 | 0.001 |
 
 We note three features of Table 1. First, reversing the order changes four of the six
 correlations of the Cholesky model by 0.07 to 0.11, whereas changing the seed changes them by

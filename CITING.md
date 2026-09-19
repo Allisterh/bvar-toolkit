@@ -30,6 +30,7 @@ lists implementations of the same models in R and Python.
 | Sensitivity of forecasts to prior hyperparameters | `replications/cjz2018_ad_var` | [Chan, Jacobi and Zhu (2019)](#chan-jacobi-and-zhu-2019) |
 | Hyperparameter selection by automatic differentiation | `replications/cjz2019_ad_opthyper`, `bvar.priors.niw(..., 'opthyper_ncp')` | [Chan, Jacobi and Zhu (2020)](#chan-jacobi-and-zhu-2020) |
 | Prior robustness of marginal likelihoods | `replications/cjz2021_jae_ad_ml` | [Chan, Jacobi and Zhu (2022)](#chan-jacobi-and-zhu-2022) |
+| Diagnostics for MCMC output: inefficiency factors, Monte Carlo standard errors and the convergence diagnostic | `bvar.diag.inefficiency_factor`, `mcse`, `geweke`, `specvar0`; ex13 | [Geweke (1992)](#geweke-1992); [Newey and West (1987)](#newey-and-west-1987) for the long-run variance and [Newey and West (1994)](#newey-and-west-1994) for the default lag of `geweke` |
 | FRED-MD data | ex06, `replications/chan_koop_yu2024_jbes_oisv` | [McCracken and Ng (2016)](#mccracken-and-ng-2016) |
 
 ## References
@@ -472,6 +473,31 @@ With Litterman (1986), the origin of the Minnesota prior.
 }
 ```
 
+### Geweke (1992)
+
+Geweke, J. (1992). Evaluating the Accuracy of Sampling-Based Approaches to the Calculation of
+Posterior Moments. In J. M. Bernardo, J. O. Berger, A. P. Dawid and A. F. M. Smith (Eds),
+*Bayesian Statistics 4*, 169-193. Oxford University Press.
+[Publisher version](https://doi.org/10.1093/oso/9780198522669.003.0010) ·
+[Working paper](https://doi.org/10.21034/sr.148)
+
+Numerical standard errors and relative numerical efficiency from the spectral density at
+frequency zero, and the convergence diagnostic that compares the means of an early and a late
+segment of a chain.
+
+```bibtex
+@incollection{Geweke92,
+  author    = {Geweke, J.},
+  title     = {Evaluating the Accuracy of Sampling-Based Approaches to the Calculation of Posterior Moments},
+  booktitle = {{B}ayesian Statistics 4},
+  editor    = {Bernardo, J. M. and Berger, J. O. and Dawid, A. P. and Smith, A. F. M.},
+  publisher = {Oxford University Press},
+  year      = {1992},
+  pages     = {169--193},
+  doi       = {10.1093/oso/9780198522669.003.0010}
+}
+```
+
 ### Kim, Shephard and Chib (1998)
 
 Kim, S., Shephard, N. and Chib, S. (1998). Stochastic Volatility: Likelihood Inference and
@@ -533,6 +559,48 @@ The monthly database that ex06 and the order-invariant package draw their data f
   number  = {4},
   pages   = {574--589},
   doi     = {10.1080/07350015.2015.1086655}
+}
+```
+
+### Newey and West (1987)
+
+Newey, W. K. and West, K. D. (1987). A Simple, Positive Semi-Definite, Heteroskedasticity and
+Autocorrelation Consistent Covariance Matrix. *Econometrica* 55(3): 703-708.
+[Journal version](https://doi.org/10.2307/1913610)
+
+The Bartlett-window estimator of the long-run variance that `bvar.diag.specvar0` computes.
+
+```bibtex
+@article{NW87,
+  author  = {Newey, W. K. and West, K. D.},
+  title   = {A Simple, Positive Semi-Definite, Heteroskedasticity and Autocorrelation Consistent Covariance Matrix},
+  journal = {Econometrica},
+  year    = {1987},
+  volume  = {55},
+  number  = {3},
+  pages   = {703--708},
+  doi     = {10.2307/1913610}
+}
+```
+
+### Newey and West (1994)
+
+Newey, W. K. and West, K. D. (1994). Automatic Lag Selection in Covariance Matrix Estimation.
+*Review of Economic Studies* 61(4): 631-653.
+[Journal version](https://doi.org/10.2307/2297912)
+
+The rule of thumb for the truncation lag that `bvar.diag.geweke` uses by default.
+
+```bibtex
+@article{NW94,
+  author  = {Newey, W. K. and West, K. D.},
+  title   = {Automatic Lag Selection in Covariance Matrix Estimation},
+  journal = {Review of Economic Studies},
+  year    = {1994},
+  volume  = {61},
+  number  = {4},
+  pages   = {631--653},
+  doi     = {10.2307/2297912}
 }
 ```
 

@@ -40,7 +40,10 @@ this file), `bvar.util.shaded_band` (2026-09-17; the book's chapter14/shaded_ban
 for the credible bands in the examples' figures), `bvar.models.var_sv` (2026-09-18; the
 sampler ex06 used inline, moved into the library, with the prior constants of the CKY24 preset;
 `test_var_sv` pins it draw for draw to a frozen copy of that inline sampler and checks the
-constants against `preset.m`). None of these is retrofitted into a legacy body: they exist for new code, and the
+constants against `preset.m`; its `'draws'` option, 2026-09-19, returns the parameter draws,
+and its default phi step, the same day, is the truncated candidate of Deviations from legacy),
+and the `bvar.diag` namespace (2026-09-19; the book's chapter 6 diagnostics, see the section
+at the end of this file). None of these is retrofitted into a legacy body: they exist for new code, and the
 legacy spellings they generalize stay as they are.
 
 Edits made during extraction, in full: provenance header prepended; function renamed where
@@ -1163,9 +1166,10 @@ First consumer: an out-of-tree clustered stochastic volatility VAR sampler.
 `core/` began as extraction and is now allowed to improve on the published code. The archive
 under `replications/*/legacy/` is untouched either way, and the replication drivers still
 reproduce the published numbers, because every deviation keeps a default that reproduces the
-legacy behaviour bit for bit. The two exceptions are the lower Cholesky factor in two log
-densities and one Cholesky factor per matrix (the last two rows of the table), which change
-the last bits. What changes is the
+legacy behaviour bit for bit. The exceptions are the last three rows of the table: the lower
+Cholesky factor in two log densities and one Cholesky factor per matrix, which change the last
+bits, and the default phi candidate of `bvar.models.var_sv`, which changes its draws but not
+the distribution they target. What changes is the
 standard of proof: legacy equivalence pins the default path, and the new behaviour needs a
 test of the property that makes it correct, argued directly rather than by comparison
 against a legacy file that does not have it.
@@ -1181,6 +1185,7 @@ covered by the equivalence test.
 | `bvar.ml.kron_bvar_t_csv` | two dead assignments dropped - `h_mean` (computed, never read, and never in `out` despite the header claiming it) and an `s2` overwritten before any read | neither consumed randomness, so the draws are unchanged | `tests/unit/test_kron_equivalence.m` (unchanged, still bitwise) |
 | `bvar.ml.llike_ma`, `bvar.ml.lniwpdf` | take the lower Cholesky factor, `chol(Sig,'lower')` in `llike_ma` and `chol(iVA0,'lower')`, `chol(S0,'lower')` in the log-determinants of `lniwpdf`, where the legacy copies take the upper one (2026-09-18), so that the library uses one convention throughout. Sparse factorizations, as in the `ksc_*` samplers, agree bitwise either way; dense ones need not: under MKL 2024.1 in R2025b the lower factor and the transposed upper factor differed in the last bits for every size from 6 to 1000 tried (five random matrices each, by up to about 1e-14) and agreed for sizes 1 to 5 | none; the log densities agreed exactly with the unmodified legacy copies at the test points, which is not guaranteed in general | `tests/unit/test_kron_ml_densities.m`: within 1e-12 relative of the unmodified legacy copies at n = 4 and n = 20, and bitwise against copies carrying the same three substitutions; `tests/unit/test_kron_equivalence.m` runs the legacy pipeline with those copies, so it remains a bitwise comparison |
 | `bvar.sv.ksc_rw_h0`, `ksc_rw_diffuse`, `ksc_ar1_mean`, `csv_armh`; `bvar.ml.intlike_csv`, `intlike_csv_ma`, `lniwpdf`, `mlvarsv_csv`, `mlvarsv_fsv`, `mlvarsv_arsv_redu`, `mlvarsv_arsvo_redu`, `kron_bvar_t_ma`; `bvar.samplers.alp_tri_cs`, `factor_fsv`; `bvar.structural.b0_row_sampler`; the `run_all.m` drivers of the Kronecker, ml_varsv and HYB packages | each function factors each matrix once (2026-09-19). The factor `C = chol(K,'lower')` serves the solves, as `(C')\(C\b)`, the draw, as `C'\z`, and the log determinant, as `2*sum(log(diag(C)))`. The legacy code solves with `K\b` (or `b'/K`), which factors `K` a second time. In the mode searches of `csv_armh`, `intlike_csv` and `intlike_csv_ma` each Newton step factors its matrix with `chol`, and the factor of the last step serves the proposal. The solves differ from `K\b` in the last bits (by about 1e-15 for the banded precision matrices of the samplers, for T from 50 to 10,000) and are no faster. Where a sampler compares a uniform with a probability computed from them, a long chain eventually takes the other branch and from then on is a different realization of the same sampler. Reusing a factor for a log determinant (`mlvarsv_arsv_redu`, `mlvarsv_arsvo_redu`, `mlvarsv_fsv`) and dropping the second `chol(Sig_mean)` of `kron_bvar_t_ma` change no bits. `intlike_t_csv` and `intlike_csv_t_ma` are unchanged: the matrix they factor after the mode search, the negative Hessian at the mode, is never solved during the search. Diagonal matrices (`Kh0` in the MAHP and HYB drivers and examples) are unchanged too, since backslash divides by the diagonal without factoring | none | `tests/unit/private/one_factor_patch.m` declares the substitution for each legacy copy, each asserted to occur exactly once, and the bitwise tests that run these copies apply it (`test_ksc_rw_h0`, `test_ksc_rw_diffuse`, `test_ksc_ar1_mean`, `test_csv_armh`, `test_kron_intlike`, `test_kron_ml_densities`, `test_kron_equivalence`, `test_mahp_equivalence`, `test_forecast_iterate_mahp`, `test_forecast_iterate_springer`, `test_hybtvp_equivalence`, `test_mlvarsv_equivalence`, `test_mlvarsv_ml`, `test_oisv_equivalence`), so they remain bitwise comparisons |
+| `bvar.sv.sv0_params`, `bvar.models.var_sv` | the option `'proposal', 'truncated'` of `sv0_params` draws the phi candidate from the normal part of its conditional, N(phi_hat, 1/Kphi), truncated to (-phi_bnd, phi_bnd), and accepts it with probability min{1, exp(g(phic) - g(phi))}, g the part of the density of h(1) that depends on phi; the target is unchanged. The package's step draws the candidate from the untruncated normal and rejects it outside the bound. The truncated draw is an inverse transform on the side of the interval nearest the mean, and beyond about 37 standard deviations, where the normal cdf underflows, the exponential rejection sampler of Robert (1995). `var_sv` uses the truncated candidate by default, and its option `'phi_proposal', 'untruncated'` restores the package's step (2026-09-19) | `sv0_params`: the default `'untruncated'` is the package's step, bitwise (`test_sv0_params`, `test_oisv_equivalence`); `var_sv`: only with `'phi_proposal', 'untruncated'` (`test_var_sv`) | `tests/unit/test_sv0_params.m`: 20,000 draws of the step against the posterior of phi given h, with sig2 integrated out, on a fine grid, for a path whose posterior sits against the bound, one with an interior mode and one against the negative bound: means within 1.3 Monte Carlo standard errors of the exact ones and standard deviations within 1%; the draw stays inside the bound for a normal centred 50,000 standard deviations beyond it, in either direction. `tests/unit/test_var_sv.m`: under the default every phi moves within 30 draws |
 
 Header convention for these: state what the function does and how to call it. The legacy
 correspondence belongs here, not in eighty headers - a header that opens with which legacy
@@ -1225,7 +1230,7 @@ exactly as they are. Change one and the corresponding test fails, which is the p
 | `bvar.sv.ksc_rw_diffuse` | rand(T,1) then randn(T,1), one of each per call. |
 | `bvar.sv.ksc_rw_h0` | rand(T,1) then randn(T,1), one of each per call. |
 | `bvar.sv.nu_studentt` | one randn for the candidate, then one rand only if that candidate falls in (2, nu_ub). |
-| `bvar.sv.sv0_params` | one gamrnd for sig2, one randn(n,1) for the phi candidates, then one rand per candidate falling inside phi_bnd - so that count is data-dependent. |
+| `bvar.sv.sv0_params` | one gamrnd for sig2, one randn(n,1) for the phi candidates, then one rand per candidate falling inside phi_bnd - so that count is data-dependent. With `'proposal', 'truncated'`: one gamrnd, then for each series one rand for the candidate (a variable number beyond about 37 standard deviations into the tail) and one rand for the Metropolis-Hastings step. |
 | `bvar.sv.sv_params` | one gamrnd for sig2, one randn(n+r,1) for the phi candidates, then one rand per candidate falling inside phi_bnd - so that count is data-dependent - and finally randn(n,1) for mu when the gate above passes. |
 | `bvar.sv.svo_outlier` | rand once per period t = 1:T, then one betarnd. |
 | `bvar.util.anormrnd` | exactly one rand THEN one randn per call. |
@@ -1302,3 +1307,23 @@ samplers `Sample_*`, and the prior, importance-sampling and integrated-likelihoo
 their plain counterparts, and further derivative and matrix helpers. No core function handles
 dual numbers, so functionizing these packages needs new core for them, with one copy of each
 shared helper above.
+
+## The `bvar.diag` Namespace (2026-09-19)
+
+The four functions of the book's MCMC diagnostics (*Bayesian Macroeconometrics*, Section 6.5),
+taken from `code/matlab/chapter06/` of
+[bayesian-macroeconometrics](https://github.com/joshuaccchan/bayesian-macroeconometrics) at
+commit `92bcf76`. Each column is computed with the book's arithmetic, so the results are
+bitwise the same. `tests/unit/test_diag.m` holds the book's four files verbatim and checks this
+on a five-column chain at L = 0, 1, 7 and 50 and for five settings of `geweke`.
+
+| core function | book file | deviations | test |
+|---|---|---|---|
+| `bvar.diag.specvar0` | `specvar0.m` | a matrix is one series per column, where the book's copy stacks the columns into one series; L must be a nonnegative integer below the number of draws (`bvar:diag:specvar0:badLag`) | unit (`test_diag`): bitwise per column; a row vector is one series |
+| `bvar.diag.inefficiency_factor` | `inefficiency_factor.m` | a vector of either orientation is one chain, where the book's copy reads a row vector as one draw of many summaries | unit: bitwise; 1 at L = 0; an AR(1) chain with coefficient .9 and 200,000 draws gives 19.0 at L = 200, against the windowed value 18.1 |
+| `bvar.diag.mcse` | `mcse.m` | as `inefficiency_factor` | unit: bitwise; MCSE^2 = IF*var/R |
+| `bvar.diag.geweke` | `geweke_diag.m`, renamed | as `inefficiency_factor`, and named errors for a segment too short for its lag (`bvar:diag:geweke:shortChain`) and an unknown lag rule (`bvar:diag:geweke:badLag`) | unit: bitwise, `info` included; rejects 6.0% of 2,000 chains of 1,000 independent draws at the 5% level; Z = -8.5 on a mean shift of half a standard deviation |
+
+`bvar.models.var_sv` gained the option `'draws'`, which returns the parameter draws for these
+diagnostics. It uses no random numbers, and `test_var_sv` checks that the chain and every other
+output are unchanged and that the draws average to the returned posterior means.

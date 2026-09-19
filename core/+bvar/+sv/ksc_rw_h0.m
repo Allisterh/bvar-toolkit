@@ -14,6 +14,12 @@
 % draws.
 %
 % See:
+% Kim, S., Shephard, N. and Chib, S. (1998). Stochastic Volatility: Likelihood
+% Inference and Comparison with ARCH Models, Review of Economic Studies, 65(3):
+% 361-393.
+% Chan, J.C.C. and Jeliazkov, I. (2009). Efficient Simulation and Integrated
+% Likelihood Estimation in State Space Models, International Journal of
+% Mathematical Modelling and Numerical Optimisation, 1(1/2): 101-120.
 % Chan, J.C.C. (2020). Large Bayesian Vector Autoregressions. In: P. Fuleky (Eds),
 % Macroeconomic Forecasting in the Era of Big Data, 95-125, Springer, Cham
 

@@ -20,9 +20,9 @@
 function lden = lniwpdf(A,Sig,A0,iVA0,nu0,S0)
 [k,n] = size(A);
 CSig = chol(Sig,'lower');
-cA = -n*k/2*log(2*pi) + n*sum(log(diag(chol(iVA0))));
+cA = -n*k/2*log(2*pi) + n*sum(log(diag(chol(iVA0,'lower'))));
 cSig = -nu0*n/2*log(2) -n*(n-1)/4*log(pi) -sum(gammaln((nu0+1-(1:n))/2))...
-    + nu0*sum(log(diag(chol(S0))));
+    + nu0*sum(log(diag(chol(S0,'lower'))));
 tmp = A-A0;
 lden = cA + cSig - (n+nu0+k+1)*sum(log(diag(CSig))) ...
     - .5*trace(Sig\(S0+tmp'*iVA0*tmp));

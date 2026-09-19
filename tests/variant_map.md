@@ -264,8 +264,9 @@ is the inline cp_ml block of BVAR.m). The realtime forecasting pipeline (main_fo
 realtime_forecasts/) is part 2 - NOT canonicalized here. Equivalence test:
 `tests/unit/test_kron_equivalence.m` runs the legacy cp_ml = 1 pipeline for ALL EIGHT models
 from tempdir copies at small nsim - the seven MCMC estimation scripts with their ACTIVE
-clock-seed lines removed as the sole patch (asserted exactly-one-occurrence each, not
-commented); BVAR.m, all seven ml_*, all four intlike_* and every helper BYTE-VERBATIM
+clock-seed lines removed (asserted exactly-one-occurrence each, not commented); llike_MA.m
+and lniwpdf.m with the lower-Cholesky substitution of 2026-09-18 (see Deviations from
+legacy); BVAR.m, all seven ml_*, all four intlike_* and every other helper BYTE-VERBATIM
 (asserted seed-line-free) - and asserts isequal on all stores, counters, script-tail
 summaries, every ML piece (ML/llike/lpri/lpost/final store_lpost), and the terminal rng
 state. Models 4 and 8 are compared under bugcompat (below); their corrected defaults are
@@ -273,9 +274,9 @@ additionally asserted to differ exactly where each bug lives and match everywher
 
 | Core function | Canonical source (legacy) | Also canonicalizes | Verified |
 |---|---|---|---|
-| `bvar.ml.lniwpdf` | chan2020_jbes_kronecker `lniwpdf.m` (single copy) | all prior/posterior NIW ordinates in the 8 ML computations | unit (`test_kron_ml_densities` bitwise + end-to-end) |
+| `bvar.ml.lniwpdf` | chan2020_jbes_kronecker `lniwpdf.m` (single copy; since 2026-09-18 its two log-determinants take the lower Cholesky factor, see Deviations from legacy) | all prior/posterior NIW ordinates in the 8 ML computations | unit (`test_kron_ml_densities`, bitwise against the substituted copy, + end-to-end) |
 | `bvar.ml.linvgammpdf` | `linvgammpdf.m`; cjz2021_jae_ad_ml `AD_code/linvgammpdf.m` is the same one-line body, differing only by whitespace in the signature | the sigh2 ordinates (models 3/5/7/8) | unit (same tests) |
-| `bvar.ml.llike_ma` | `llike_MA.m` (root; body verbatim incl. its `chol(Sig)'` upper-transposed Cholesky) | BVAR_MA.m + ml_BVAR_MA.m psi targets. realtime_forecasts/llike_MA.m is NOT canonicalized (its function line is named llike_MA1; part 2). | unit (same tests) |
+| `bvar.ml.llike_ma` | `llike_MA.m` (root; body verbatim except `chol(Sig,'lower')` in place of the transposed upper factor `chol(Sig)'` since 2026-09-18, see Deviations from legacy) | BVAR_MA.m + ml_BVAR_MA.m psi targets. realtime_forecasts/llike_MA.m is NOT canonicalized (its function line is named llike_MA1; part 2). | unit (same tests) |
 | `bvar.ml.llike_csv_ma` | `llike_CSV_MA.m` (package ROOT copy WITH the -n/2*sum(h) term) | the psi targets of BVAR_t_MA/BVAR_CSV_MA/BVAR_CSV_t_MA and ml_BVAR_t_MA/ml_BVAR_CSV_MA/ml_BVAR_CSV_t_MA (with h := log(lam) / U pre-scaled by sqrt(lam) in the t models, exactly as the legacy calls do). The realtime/springer reduced copies stay never-merge (below). | unit (`test_kron_ml_densities`: bitwise vs root AND asserted to differ from the realtime copy by n/2*sum(h)) + end-to-end |
 | `bvar.ml.intlike_csv` | `intlike_BVAR_CSV.m` (renamed; body verbatim) | (single copy) | unit (`test_kron_intlike` bitwise seeded, real data, + end-to-end model 3) |
 | `bvar.ml.intlike_t_csv` | `intlike_BVAR_t_CSV.m` | (single copy) | unit (same, + end-to-end model 5) |
@@ -1151,9 +1152,11 @@ First consumer: an out-of-tree clustered stochastic volatility VAR sampler.
 `core/` began as extraction and is now allowed to improve on the published code. The archive
 under `replications/*/legacy/` is untouched either way, and the replication drivers still
 reproduce the published numbers, because every deviation keeps a default that reproduces the
-legacy behaviour bit for bit. What changes is the standard of proof: legacy equivalence pins
-the default path, and the new behaviour needs a test of the property that makes it correct,
-argued directly rather than by comparison against a legacy file that does not have it.
+legacy behaviour bit for bit. The one exception is the lower Cholesky factor in two log
+densities (last row of the table), which can change their last bits. What changes is the
+standard of proof: legacy equivalence pins the default path, and the new behaviour needs a
+test of the property that makes it correct, argued directly rather than by comparison
+against a legacy file that does not have it.
 
 For a sampler that property is usually an INVARIANCE. A new option may change how long a step
 takes or how often it accepts, and must leave the distribution the step targets alone; the
@@ -1164,6 +1167,7 @@ covered by the equivalence test.
 |---|---|---|---|
 | `bvar.sv.csv_armh` | the accept-reject envelope constant, hard-coded `log(3)`, is the option `c_reject`; both unbounded `while` loops are capped by `MaxIterMode` (500) and `MaxIterAR` (1000) and raise a named error rather than returning a draw that is not from the target; every exposed option is validated. The mode-search tolerance stays hard-coded and is deliberately NOT an option: convergence to the mode is what makes the proposal state-independent, hence the MH ratio correct, so exposing it would trade correctness for speed silently | `c_reject = 3`, caps never reached | `c_reject` is efficiency-only by an exact argument, not just empirically: the AR loop draws from `min(pi, c*q)`, the MH ratio for that proposal is `exp(max(b,0) - max(a,0))` which is what the three-way branch computes, and `logc` cancels on both sides of detailed balance. Checked numerically at machine precision (residual 1.4e-14) and by a mixing-free one-step invariance test on 300,000 draws from the exact target. Both extremes are live - at `c_reject` = 1e-4 the envelope is violated essentially always, and at 300 on a heavy-tailed target it still fails - so the MH repair is never idle. In the suite: `tests/unit/test_csv_armh.m`, a Geweke joint-distribution test, since `s2_t \| h_t = exp(h_t)*chi2(n)` makes both conditionals exact. The invariant distribution is unchanged for `c_reject` in 0.2 to 20 (max\|z\| 2.2) while a kernel given the wrong `n` scores 115; forced accept is exact at a valid envelope and fails below it, which is what the MH step is for; both caps fire; the values that used to fail silently (`c_reject` 0 or negative) are rejected |
 | `bvar.ml.kron_bvar_t_csv` | two dead assignments dropped - `h_mean` (computed, never read, and never in `out` despite the header claiming it) and an `s2` overwritten before any read | neither consumed randomness, so the draws are unchanged | `tests/unit/test_kron_equivalence.m` (unchanged, still bitwise) |
+| `bvar.ml.llike_ma`, `bvar.ml.lniwpdf` | take the lower Cholesky factor, `chol(Sig,'lower')` in `llike_ma` and `chol(iVA0,'lower')`, `chol(S0,'lower')` in the log-determinants of `lniwpdf`, where the legacy copies take the upper one (2026-09-18), so that the library uses one convention throughout. Sparse factorizations, as in the `ksc_*` samplers, agree bitwise either way; dense ones need not: under MKL 2024.1 in R2025b the lower factor and the transposed upper factor differed in the last bits for every size from 6 to 1000 tried (five random matrices each, by up to about 1e-14) and agreed for sizes 1 to 5 | none; the log densities agreed exactly with the unmodified legacy copies at the test points, which is not guaranteed in general | `tests/unit/test_kron_ml_densities.m`: within 1e-12 relative of the unmodified legacy copies at n = 4 and n = 20, and bitwise against copies carrying the same three substitutions; `tests/unit/test_kron_equivalence.m` runs the legacy pipeline with those copies, so it remains a bitwise comparison |
 
 Header convention for these: state what the function does and how to call it. The legacy
 correspondence belongs here, not in eighty headers - a header that opens with which legacy
@@ -1236,3 +1240,52 @@ their integrated-likelihood, marginal-likelihood and DIC routines, `constructX` 
 is textual, so a functionization pass starts from these files, and any equivalence with
 existing core, of the kind `SVRW.m` has, needs a test to establish it. The package reads its
 data with `xlsread` and a range argument, so such tests will have to stay local.
+
+## The AD packages against the rest of the repository (2026-09-18)
+
+`cjz2018_ad_var` (16 `.m` files) and `cjz2021_jae_ad_ml` (87) were imported verbatim and are
+not functionized. Every one of their `.m` files was compared with every `.m` file in the
+repository outside `tests/`, as for ml_tvpsv above: ignoring comments, whitespace and function
+names. One has a code twin in core: `AD_code/linvgammpdf.m` of cjz2021_jae_ad_ml is
+`bvar.ml.linvgammpdf` (step 8). The other twins lie within the three AD packages, which share a
+library of helpers for dual numbers, structs carrying a value in `.v` and its derivative in `.d`:
+
+- in all three: `commutation_matrix.m`, `d_dotproduct.m`;
+- in cjz2018_ad_var and cjz2021_jae_ad_ml: `d_prod.m`, `d_trans.m`;
+- in cjz2021_jae_ad_ml and cjz2019_ad_opthyper: `GetA.m`, `GettheL.m`, `d_Cov.m`, `d_Sigma.m`,
+  `d_Sigma2.m`, `d_beta.m`, `d_det.m`, `d_dotinv.m`, `d_kron.m`, `d_trace.m`, `dmatrix.m`,
+  `elimination_matrix.m`.
+
+Sixteen names recur with different code:
+
+- `d_dotinv.m` of cjz2018_ad_var differs from the other two only in the name of its first
+  argument, and its `elimination_matrix.m` builds in a loop, as a dense matrix, the matrix the
+  other two build as a sparse one (equal for n = 1, ..., 12).
+- `d_cholasky.m`, `d_diag.m`, `d_kron.m` and `d_minverse.m` of cjz2018_ad_var are dense; the
+  cjz2021_jae_ad_ml copies wrap the same products in `sparse` and `speye`, and the
+  cjz2021_jae_ad_ml `d_cholasky.m` also replaces `inv(M)*E_n` with `M\E_n`.
+- `d_Gamma.m` has three versions. The cjz2018_ad_var one, `(g, alpha)`, integrates against
+  `gampdf`; the cjz2021_jae_ad_ml one computes the same derivative with an explicit gamma kernel
+  and falls back on a Meijer G function when the integral is infinite; the cjz2019_ad_opthyper
+  one, `(alpha, delta, dim, dim1)`, draws `g` itself and returns the dual number of `g/delta`.
+- In cjz2021_jae_ad_ml, `Maddition.m`, `Msubtraction.m`, `MtimeScalar.m` and `Mtimes.m` also
+  accept one argument without a derivative, `Cholasky.m` and `Mtrans.m` take optional
+  precomputed matrices, and `Minverse.m` computes its dimension; the cjz2019_ad_opthyper
+  versions require two dual numbers, build the matrices on each call and take the dimension
+  as an argument. The cjz2019_ad_opthyper `Mtrans.m` sets the derivative to `K_nq * X.v`,
+  the value, where the cjz2021_jae_ad_ml copy has `K_nq * X.d`; no file in
+  cjz2019_ad_opthyper calls it.
+- `Min_Prior.m` differs between cjz2018_ad_var and cjz2021_jae_ad_ml (NEVER MERGE, above).
+- `AD_code/lmvnpdf.m` of cjz2021_jae_ad_ml and `utility/lmvnpdf.m` of ml_varsv compute the same
+  log density by different code, a sparse solve with `log(det(...))` in the first and a
+  Cholesky factor in the second.
+
+The remaining files have neither a twin nor a namesake. In cjz2018_ad_var they are the driver
+`main_AD_VAR.m`, `forecastVAR.m`, `plotforecast.m` and `d_normal.m`. In cjz2021_jae_ad_ml they
+are 57: the three drivers; 19 files in `utility/`, which hold the marginal-likelihood routines
+`VAR_CE_AD`, `VAR_Chib_AD`, `VAR_t_CE_AD`, `VAR_t_Chibs_AD`, `SF_CE_AD` and `SF_Chib_AD`, the
+samplers `Sample_*`, and the prior, importance-sampling and integrated-likelihood helpers; and
+35 in `AD_code/`, dual-number densities such as `lmvnpdfAD`, `logmvtpdfAD` and `linvwishpdfAD`,
+their plain counterparts, and further derivative and matrix helpers. No core function handles
+dual numbers, so functionizing these packages needs new core for them, with one copy of each
+shared helper above.

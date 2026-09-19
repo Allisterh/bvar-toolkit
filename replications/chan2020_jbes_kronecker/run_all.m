@@ -27,11 +27,11 @@
 % legacy defects; see run_ml and tests/variant_map.md).
 %
 % Reproduces the legacy pipeline main_BVAR.m -> BVAR*.m draw-for-draw bitwise
-% (verified by tests/unit/test_kron_equivalence.m at small nsim) with ONE
-% deliberate divergence: every legacy MCMC script (models 2-8) re-seeds the
-% global stream from the wall clock at its "MCMC starts here" banner
-% (randn('seed',sum(clock*100)); rand('seed',sum(clock*1000))), which makes
-% as-shipped runs irreproducible AND switches MATLAB to the legacy v4/v5
+% (verified by tests/unit/test_kron_equivalence.m at small nsim) with two
+% deliberate divergences. First, every legacy MCMC script (models 2-8)
+% re-seeds the global stream from the wall clock at its "MCMC starts here"
+% banner (randn('seed',sum(clock*100)); rand('seed',sum(clock*1000))), which
+% makes as-shipped runs irreproducible AND switches MATLAB to the legacy v4/v5
 % generators; run_all drops that line so the caller controls seeding via
 % `seed` (or the ambient state) on the modern twister stream - same rationale
 % and mechanics as the step-5 MAHP and step-7 OISV notes in
@@ -40,7 +40,11 @@
 % (chain init included) consumes one coherent stream in script order. The
 % legacy wall-clock timing displays and all figure windows (imagesc heat
 % maps, density plots, histograms) are not reproduced; the disp banners and
-% the mod-5000 loop counter are.
+% the mod-5000 loop counter are. Second, the model-4 psi target
+% bvar.ml.llike_ma takes chol(Sig,'lower') where legacy llike_MA.m takes
+% chol(Sig)'. For a dense Sig the two factors can differ in the last bits, so
+% test_kron_equivalence gives its legacy copy the same substitution
+% (tests/variant_map.md).
 %
 % All constants come from preset.m in this folder (each field cites its legacy
 % source line); the data file is read from legacy/ READ-ONLY; core reuse:

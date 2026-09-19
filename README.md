@@ -43,9 +43,10 @@ Read them in order:
 
 `examples/README.md` lists what each one teaches and which core functions it calls.
 
-[`tutorials/`](tutorials/) takes an example further: a page that answers one research question
-with results at the chain length of the paper's package, readable without MATLAB. The first is
-[Does the Order of the Variables Change My VAR Results?](tutorials/variable_ordering/).
+[`tutorials/`](tutorials/) holds pages that each answer one research question with the data and
+settings of a paper's package, readable without MATLAB:
+[Does the Order of the Variables Change My VAR Results?](tutorials/variable_ordering/) and
+[How Should I Choose the Shrinkage Hyperparameters of My BVAR?](tutorials/shrinkage/).
 
 **Reproduce a paper.** Every package is here exactly as published, never edited, under
 `replications/<paper>/legacy/`, with a permanent `as-published/<paper>` git tag and the source
@@ -105,7 +106,7 @@ spelling they generalize.
 
 | Namespace | What it is for |
 |---|---|
-| `bvar.priors` | Building priors. `resid_var_ar4`, `minnesota_C` and `vtheta` compute the Minnesota scaling every prior here rests on; `minn`, `niw` and `acp_stru`/`acp_redu` are the prior constructors themselves — Minnesota, natural conjugate, and the asymmetric conjugate prior of Chan (2022), whose marginal likelihood is available in closed form; `acp_opt_kappa` uses that to choose the shrinkage hyperparameters by maximizing it. |
+| `bvar.priors` | Building priors. `resid_var_ar4`, `minnesota_C` and `vtheta` compute the Minnesota scaling every prior here rests on; `minn`, `niw` and `acp_stru`/`acp_redu` are the prior constructors themselves — Minnesota, natural conjugate, and the asymmetric conjugate prior of Chan (2022), whose marginal likelihood is available in closed form; `acp_opt_kappa` uses that to choose the shrinkage hyperparameters by maximizing it; the tutorial in `tutorials/shrinkage/` uses it. |
 | `bvar.sv` | Drawing stochastic volatility. The `ksc_*` functions are the Kim–Shephard–Chib auxiliary-mixture sampler, one per state equation (random walk with a known initial value, random walk with a diffuse one, stationary AR(1)); `csv_armh` draws a single common volatility factor; `sv_params` and `nu_studentt` draw the parameters governing them. |
 | `bvar.samplers` | Drawing everything else in the Gibbs loop: VAR coefficients equation by equation (`eq_gauss` for the structural form, `eq_var_redu_tri` and `eq_svar_oi` for the reduced form, `eq_var_oi` for the same order-invariant conditional as `eq_svar_oi` at `O(T k^2 + k^3)` per equation instead of `O(T n k^2 + k^3)`, `eq_tri_cs` for the Cholesky benchmark), the free elements of that benchmark's unit lower triangular impact matrix (`alp_tri_cs`), the factor blocks (`factor_fsv`, `eq_fsv_load`), `eq_hyb_tvp` for the hybrid TVP-VAR, where each equation's coefficients are drawn jointly with the indicators for whether they vary at all, `acp_theta_sig` for the asymmetric conjugate prior, whose conjugacy means it returns every draw in one call rather than a chain, and the hierarchical shrinkage blocks (`gig_shrinkage`, `horseshoe_kappa_psi`, `nu_psi_ng`). |
 | `bvar.forecast` | Producing forecasts from a chain. `iterate` runs one draw forward and scores it, `tables` accumulates RMSFEs and log predictive likelihoods, `realtime_loaddata` assembles a real-time data vintage. |

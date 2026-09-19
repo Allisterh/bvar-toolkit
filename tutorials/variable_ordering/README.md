@@ -18,50 +18,50 @@ forecasts.
 
 *Figure 1: Posterior mean of the variance of the federal funds rate equation (top panel) and the
 correlation between the PCE inflation and PPI finished goods equations implied by the posterior
-mean of $\boldsymbol{\Sigma}_t$ (bottom panel), 20-variable VAR. The solid blue and dashed red
+mean of $`\boldsymbol{\Sigma}_t`$ (bottom panel), 20-variable VAR. The solid blue and dashed red
 lines are the Cholesky model in the published and reverse orders; the thick gray and dotted
 black lines are the order-invariant model in the published and reverse orders.*
 
 ## The Ordering Problem
 
 A VAR with stochastic volatility requires a model for the time-varying error covariance matrix
-$\boldsymbol{\Sigma}_t$. Following Cogley and Sargent (2005), a popular approach decomposes the
+$`\boldsymbol{\Sigma}_t`$. Following Cogley and Sargent (2005), a popular approach decomposes the
 precision matrix as
 
 $$\boldsymbol{\Sigma}_t^{-1} = \mathbf{L}'\mathbf{D}_t^{-1}\mathbf{L},$$
 
-where $\mathbf{D}_t = \mathrm{diag}(\mathrm{e}^{h_{1t}}, \ldots, \mathrm{e}^{h_{nt}})$ collects
-the time-varying variances and $\mathbf{L}$ is a unit lower triangular matrix. We refer to this
+where $`\mathbf{D}_t = \mathrm{diag}(\mathrm{e}^{h_{1t}}, \ldots, \mathrm{e}^{h_{nt}})`$ collects
+the time-varying variances and $`\mathbf{L}`$ is a unit lower triangular matrix. We refer to this
 specification as the Cholesky stochastic volatility model. The main advantage of the triangular
-form is computational: conditional on the other parameters, the free elements of $\mathbf{L}$
+form is computational: conditional on the other parameters, the free elements of $`\mathbf{L}`$
 are Gaussian and can be drawn exactly.
 
 The Cholesky stochastic volatility model is not invariant to the order of the variables. As
 noted by Carriero, Clark and Marcellino (2019), the order dependence comes from the triangular
 form combined with the prior. In applications one typically assumes an identical prior on the
 parameters in each equation: the log-volatilities share the same state equation and the free
-elements of $\mathbf{L}$ have the same prior. Under the triangular form, this prior induces an
-unreasonable prior on $\boldsymbol{\Sigma}_t$ that depends on the order of the variables. The
-variance of the first variable is $\mathrm{e}^{h_{1t}}$, whereas the variance of the $i$th
-variable also depends on the log-volatilities of the $i-1$ variables ordered before it, so it is
-stochastically larger as $i$ increases. For example, under independent standard normal priors on
-the free elements of $\mathbf{L}$ and $\mathbf{D}_t = \mathbf{I}_n$, the prior mean of the $i$th
-variance is $2^{i-1}$ (Chan, Koop and Yu, 2024). Reordering the variables therefore changes the
-prior on $\boldsymbol{\Sigma}_t$, and the posterior estimates and forecasts change with it.
-Since the implied prior variances grow exponentially with $i$, the problem becomes more serious
+elements of $`\mathbf{L}`$ have the same prior. Under the triangular form, this prior induces an
+unreasonable prior on $`\boldsymbol{\Sigma}_t`$ that depends on the order of the variables. The
+variance of the first variable is $`\mathrm{e}^{h_{1t}}`$, whereas the variance of the $`i`$th
+variable also depends on the log-volatilities of the $`i-1`$ variables ordered before it, so it is
+stochastically larger as $`i`$ increases. For example, under independent standard normal priors on
+the free elements of $`\mathbf{L}`$ and $`\mathbf{D}_t = \mathbf{I}_n`$, the prior mean of the $`i`$th
+variance is $`2^{i-1}`$ (Chan, Koop and Yu, 2024). Reordering the variables therefore changes the
+prior on $`\boldsymbol{\Sigma}_t`$, and the posterior estimates and forecasts change with it.
+Since the implied prior variances grow exponentially with $`i`$, the problem becomes more serious
 in larger VARs.
 
 Chan, Koop and Yu (2024) propose an order-invariant specification:
 
 $$\boldsymbol{\Sigma}_t^{-1} = \mathbf{B}_0'\mathbf{D}_t^{-1}\mathbf{B}_0,$$
 
-where $\mathbf{B}_0$ is an unrestricted nonsingular matrix and each log-volatility follows a
+where $`\mathbf{B}_0`$ is an unrestricted nonsingular matrix and each log-volatility follows a
 stationary AR(1) process with zero mean. They show that the stochastic volatility identifies
-$\mathbf{B}_0$ up to permutations and sign changes of its rows, and prove that the model is
-invariant to the order of the variables. With a prior on $\mathbf{B}_0$ centered at the identity
+$`\mathbf{B}_0`$ up to permutations and sign changes of its rows, and prove that the model is
+invariant to the order of the variables. With a prior on $`\mathbf{B}_0`$ centered at the identity
 matrix and with common variances across rows, the prior is order invariant as well. They also
 develop an MCMC algorithm for estimation and forecasting. Without the triangular restriction,
-the conditional distribution of each row of $\mathbf{B}_0$ is no longer Gaussian, but the rows
+the conditional distribution of each row of $`\mathbf{B}_0`$ is no longer Gaussian, but the rows
 can still be drawn one at a time using the algorithm of Waggoner and Zha (2003), as extended by
 Villani (2009) to priors with nonzero means, which preserves the equation-by-equation structure
 of the sampler. In a forecasting exercise with 20 variables, the order-invariant model produces
@@ -90,7 +90,7 @@ period of 5,000 draws, the settings of the replication package.
 Table 1 reports how much the estimated paths change, on average over 1961:03–2019:12, when the
 order of the variables is reversed and when only the seed is changed. The variances are
 posterior means. The correlations are computed from the posterior mean of
-$\boldsymbol{\Sigma}_t$, which in general differs from the posterior mean of the correlation.
+$`\boldsymbol{\Sigma}_t`$, which in general differs from the posterior mean of the correlation.
 
 *Table 1: Average absolute difference between the paths from the baseline run (published order,
 first seed) and from a run with the order reversed or with a different seed, four-variable VAR.
@@ -125,11 +125,11 @@ identical.
 
 *Figure 2: Posterior mean of the variance of the federal funds rate equation (top panel) and the
 correlation between the IP and unemployment equations implied by the posterior mean of
-$\boldsymbol{\Sigma}_t$ (bottom panel), four-variable VAR. The lines are as in Figure 1.*
+$`\boldsymbol{\Sigma}_t`$ (bottom panel), four-variable VAR. The lines are as in Figure 1.*
 
 ## Results for a 20-Variable VAR
 
-The replication package contains the posterior means of $\boldsymbol{\Sigma}_t$ from the
+The replication package contains the posterior means of $`\boldsymbol{\Sigma}_t`$ from the
 20-variable VAR in Chan, Koop and Yu (2024), for both models under both orders. The four
 variables above are ordered first, and the remaining 16 follow the order in Carriero, Clark and
 Marcellino (2019). Table 2 summarizes the differences between the two orders over all 20
@@ -137,7 +137,7 @@ variances and 190 correlations.
 
 *Table 2: Differences between the paths under the published and reverse orders, 20-variable VAR.
 Variances are posterior means, in percent of their level; correlations are computed from the
-posterior mean of $\boldsymbol{\Sigma}_t$, in correlation points.*
+posterior mean of $`\boldsymbol{\Sigma}_t`$, in correlation points.*
 
 | | Cholesky | Order-invariant |
 |---|---|---|
@@ -171,7 +171,7 @@ Monte Carlo error of the order-invariant model serves as the benchmark.
 ![Changes in all 190 correlations](fig_20var_gaps.png)
 
 *Figure 3: Average absolute change in each of the 190 correlation paths, computed from the
-posterior mean of $\boldsymbol{\Sigma}_t$, when the order of the variables is reversed,
+posterior mean of $`\boldsymbol{\Sigma}_t`$, when the order of the variables is reversed,
 20-variable VAR. The correlations are ranked by the change under the Cholesky model (blue); the
 black dots are the changes under the order-invariant model.*
 
@@ -266,15 +266,15 @@ Both models are estimated by the function `bvar.models.var_sv`:
 res = bvar.models.var_sv(Y0, Y, p, 'model', 'OI', 'nsim', 30000, 'burnin', 5000, 'seed', 1);
 ```
 
-The matrix `Y` is $T \times n$, with each variable transformed to be stationary and no missing
-values, and `Y0` contains at least $\max(p, 4)$ earlier observations that serve as initial
+The matrix `Y` is $`T \times n`$, with each variable transformed to be stationary and no missing
+values, and `Y0` contains at least $`\max(p, 4)`$ earlier observations that serve as initial
 conditions. Setting `'model'` to `'CS'` gives the Cholesky model. The prior is that of Chan,
-Koop and Yu (2024), and the output contains the posterior means of $\boldsymbol{\Sigma}_t$, the
+Koop and Yu (2024), and the output contains the posterior means of $`\boldsymbol{\Sigma}_t`$, the
 VAR coefficients, the log-volatilities and the impact matrix. We recommend the chain length of
 the replication package, 30,000 draws after a burn-in period of 5,000 draws, and a second run
 with a different seed to see how much the estimates change from Monte Carlo error alone.
 
-The sampler draws $\mathbf{B}_0$ row by row with the algorithm of Waggoner and Zha (2003) and
+The sampler draws $`\mathbf{B}_0`$ row by row with the algorithm of Waggoner and Zha (2003) and
 Villani (2009), using `bvar.structural.b0_row_sampler`, the VAR coefficients using
 `bvar.samplers.eq_var_oi`, each log-volatility path using `bvar.sv.ksc_ar1_mean` and its
 parameters using `bvar.sv.sv0_params`. The shrinkage hyperparameters of the Minnesota-type

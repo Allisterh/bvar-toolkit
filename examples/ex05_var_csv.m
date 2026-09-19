@@ -250,12 +250,13 @@ for isim = 1:nsim + burnin
     iOh = sparse(1:T, 1:T, exp(-h));
     XiOh = X'*iOh;
     KA = iVA0 + XiOh*X;
-    Ahat = KA\(VA0iA0 + XiOh*Y);
+    CKA = chol(KA, 'lower');
+    Ahat = (CKA')\(CKA\(VA0iA0 + XiOh*Y));
     Shat = S0 + A0'*iVA0*A0 + Y'*iOh*Y - Ahat'*KA*Ahat;
     Shat = (Shat + Shat')/2;                       % symmetrize against rounding
     Sig = iwishrnd(Shat, nu0 + T);
     CSig = chol(Sig, 'lower');
-    A = Ahat + (chol(KA, 'lower')'\randn(k,n))*CSig';
+    A = Ahat + (CKA'\randn(k,n))*CSig';
 
         % ---- BLOCK 2: h | A, Sig ----
     U = Y - X*A;

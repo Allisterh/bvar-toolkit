@@ -29,7 +29,12 @@
 % (line 49) - the legacy CS run already consumes the ambient stream. In both
 % samplers every rng draw sits after that point, so the whole run (chain-init
 % draws included) consumes one coherent stream. The legacy wall-clock timing
-% displays (start_time/etime) are not reproduced.
+% displays (start_time/etime) are not reproduced. The core blocks
+% bvar.structural.b0_row_sampler, bvar.samplers.alp_tri_cs and
+% bvar.sv.ksc_ar1_mean solve with the Cholesky factor they draw with, where the
+% legacy code factors the same matrix a second time; the solutions differ in
+% the last bits, so the equivalence test gives the legacy copies the
+% substitutions of tests/unit/private/one_factor_patch.m.
 %
 % All constants come from preset.m in this folder (each field cites its legacy
 % source line); the data file is read from legacy/ READ-ONLY; the Gibbs blocks

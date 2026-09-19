@@ -6,11 +6,12 @@ function test_mahp_equivalence
 % tempdir copy. Asserts isequal on ALL stored draws (not just means), on the
 % posterior means, and on the terminal rng state (same rng call sequence).
 %
-% SOLE PATCH to the legacy scripts: the clock-seed line
+% Two patches to the legacy copies. The clock-seed line
 %   randn('seed',sum(clock*100)); rand('seed',sum(clock*1000));
 % (BVAR_MNG.m line 32, BVAR_NG.m line 31, BVAR_Minn.m line 25) is removed - it
 % re-seeds the global stream from the wall clock (irreproducible) AND switches
-% MATLAB to the legacy v4/v5 generators. Everything else runs byte-verbatim.
+% MATLAB to the legacy v4/v5 generators - and SVRW.m gets the one-factor
+% substitution of one_factor_patch. Everything else runs byte-verbatim.
 % main_BVAR.m's setup is replicated in the harness below (run_legacy), which is
 % also where the hard-coded nsim = 10000 / burnin = 1000 are overridden: the
 % sampler scripts read nsim/burnin from the workspace, so the harness simply
@@ -28,6 +29,7 @@ helpers = {'SVRW.m', 'getVtheta.m', 'get_C.m', 'get_resid_var.m', 'gigrnd.m', 's
 for k = 1:numel(helpers)
     copyfile(fullfile(leg, helpers{k}), fullfile(tmp, helpers{k}));
 end
+one_factor_patch(fullfile(tmp, 'SVRW.m'), 'chan2021_ijf_mahp/legacy/SVRW.m');
 seedline = 'randn(''seed'',sum(clock*100)); rand(''seed'',sum(clock*1000));';
 scripts = {'BVAR_MNG.m', 'BVAR_NG.m', 'BVAR_Minn.m'};
 for k = 1:numel(scripts)
@@ -35,7 +37,7 @@ for k = 1:numel(scripts)
     assert(numel(strfind(txt, seedline)) == 1, ...
         'expected exactly one clock-seed line in %s', scripts{k});
     txt = strrep(txt, seedline, ...
-        '% [clock-seed line removed by test_mahp_equivalence - the sole patch]');
+        '% [clock-seed line removed by test_mahp_equivalence]');
     fid = fopen(fullfile(tmp, scripts{k}), 'w');
     fwrite(fid, txt);
     fclose(fid);

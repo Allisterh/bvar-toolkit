@@ -106,8 +106,9 @@ estimation-vs-forecast divergences). The legacy clock-seed line
 (`randn('seed',sum(clock*100)); rand('seed',sum(clock*1000))`) is deliberately
 NOT reproduced in `run_all` - it is irreproducible by construction and switches
 MATLAB to the legacy v4/v5 generators; the equivalence test removes exactly that
-line (its sole patch) from tempdir copies of the legacy scripts and runs both
-pipelines from `rng(seed,'twister')`.
+line from tempdir copies of the legacy scripts and runs both pipelines from
+`rng(seed,'twister')`. Since 2026-09-19 it also applies the one-factor substitution to
+its copy of SVRW.m (see Deviations from legacy).
 
 Edits made during extraction, in full: provenance headers prepended; `eq_gauss`
 wrapped as a function with `np = size(Z,2)-1` replacing the literal `n*p`
@@ -125,10 +126,11 @@ One entry point `bvar.forecast.iterate(branch, draw, cfg)` - called once per pos
 draw - with VERBATIM named branches, plus `bvar.forecast.tables` for the accumulation /
 RMSFE / ALPL table tails. Equivalence tests run the legacy forecast scripts wholesale
 from tempdir copies (byte-verbatim - unlike the MAHP estimation scripts, NO forecast
-script in either package carries a clock-seed line, so the step-5 sole-patch is not
+script in either package carries a clock-seed line, so the step-5 seed patch is not
 needed here; the tests assert that premise) and compare draw-for-draw against the
 functionized pipeline (core priors/samplers/sv blocks + iterate), including the
-terminal rng state.
+terminal rng state. Since 2026-09-19 the copies of SVRW.m and sample_h.m carry the
+one-factor substitution (see Deviations from legacy).
 
 | Core function (branch) | Canonical source (legacy) | Also canonicalizes | Verified |
 |---|---|---|---|
@@ -190,8 +192,9 @@ Full-sample estimation pipeline of chan_koop_yu2024_jbes_oisv (Chan, Koop and Yu
 42(2): 825-837): main_SVAR_fullsample.m -> func_main_SVAR_v2.m -> SVARSV_MH.m ('OI') /
 CS_MH.m ('CS'). Equivalence test: `tests/unit/test_oisv_equivalence.m` runs the legacy
 scripts from tempdir copies at small nsim - SVARSV_MH with its ACTIVE clock-seed line
-(line 24) removed as the sole patch (asserted exactly-one-occurrence, not commented);
-CS_MH BYTE-VERBATIM (its clock-seed line 49 ships commented out; asserted) - OI at the
+(line 24) removed (asserted exactly-one-occurrence, not commented); CS_MH without a seed
+patch (its clock-seed line 49 ships commented out; asserted); since 2026-09-19 both, and
+sample_SV, with the one-factor substitution (see Deviations from legacy) - OI at the
 default ordering, CS at the reversed ordering, and asserts isequal on all stores, the
 script-tail summaries, the six func_main outputs, and the terminal rng state.
 
@@ -231,7 +234,7 @@ New replication drivers (not core): `replications/chan_koop_yu2024_jbes_oisv/run
 four main_SVAR_fullsample configurations OI/CS x default/flipped) and `preset.m` (every
 hard-coded legacy constant with per-line citations, plus the documented forecast-fragment
 divergences under `pr.forecast`). The OI clock-seed line is deliberately NOT reproduced in
-run_all (same rationale and mechanics as the step-5 MAHP note above); CS needs no patch.
+run_all (same rationale and mechanics as the step-5 MAHP note above); CS needs no seed patch.
 
 Edits made during extraction, in full: provenance headers prepended; blocks wrapped as
 functions with sizes recomputed from arguments ([T,n] = size(U)/size(Y)/size(E),
@@ -265,8 +268,10 @@ realtime_forecasts/) is part 2 - NOT canonicalized here. Equivalence test:
 `tests/unit/test_kron_equivalence.m` runs the legacy cp_ml = 1 pipeline for ALL EIGHT models
 from tempdir copies at small nsim - the seven MCMC estimation scripts with their ACTIVE
 clock-seed lines removed (asserted exactly-one-occurrence each, not commented); llike_MA.m
-and lniwpdf.m with the lower-Cholesky substitution of 2026-09-18 (see Deviations from
-legacy); BVAR.m, all seven ml_*, all four intlike_* and every other helper BYTE-VERBATIM
+and lniwpdf.m with the lower-Cholesky substitution of 2026-09-18, and the seven MCMC
+scripts, ml_BVAR_CSV.m, intlike_BVAR_CSV.m, intlike_BVAR_CSV_MA.m, sample_h.m and
+lniwpdf.m with the one-factor substitution of 2026-09-19 (see Deviations from legacy);
+BVAR.m, the other six ml_*, the other two intlike_* and every other helper BYTE-VERBATIM
 (asserted seed-line-free) - and asserts isequal on all stores, counters, script-tail
 summaries, every ML piece (ML/llike/lpri/lpost/final store_lpost), and the terminal rng
 state. Models 4 and 8 are compared under bugcompat (below); their corrected defaults are
@@ -274,11 +279,11 @@ additionally asserted to differ exactly where each bug lives and match everywher
 
 | Core function | Canonical source (legacy) | Also canonicalizes | Verified |
 |---|---|---|---|
-| `bvar.ml.lniwpdf` | chan2020_jbes_kronecker `lniwpdf.m` (single copy; since 2026-09-18 its two log-determinants take the lower Cholesky factor, see Deviations from legacy) | all prior/posterior NIW ordinates in the 8 ML computations | unit (`test_kron_ml_densities`, bitwise against the substituted copy, + end-to-end) |
+| `bvar.ml.lniwpdf` | chan2020_jbes_kronecker `lniwpdf.m` (single copy; since 2026-09-18 its two log-determinants take the lower Cholesky factor, and since 2026-09-19 its trace term solves with the factor of Sig, see Deviations from legacy) | all prior/posterior NIW ordinates in the 8 ML computations | unit (`test_kron_ml_densities`, bitwise against the substituted copy, + end-to-end) |
 | `bvar.ml.linvgammpdf` | `linvgammpdf.m`; cjz2021_jae_ad_ml `AD_code/linvgammpdf.m` is the same one-line body, differing only by whitespace in the signature | the sigh2 ordinates (models 3/5/7/8) | unit (same tests) |
 | `bvar.ml.llike_ma` | `llike_MA.m` (root; body verbatim except `chol(Sig,'lower')` in place of the transposed upper factor `chol(Sig)'` since 2026-09-18, see Deviations from legacy) | BVAR_MA.m + ml_BVAR_MA.m psi targets. realtime_forecasts/llike_MA.m is NOT canonicalized (its function line is named llike_MA1; part 2). | unit (same tests) |
 | `bvar.ml.llike_csv_ma` | `llike_CSV_MA.m` (package ROOT copy WITH the -n/2*sum(h) term) | the psi targets of BVAR_t_MA/BVAR_CSV_MA/BVAR_CSV_t_MA and ml_BVAR_t_MA/ml_BVAR_CSV_MA/ml_BVAR_CSV_t_MA (with h := log(lam) / U pre-scaled by sqrt(lam) in the t models, exactly as the legacy calls do). The realtime/springer reduced copies stay never-merge (below). | unit (`test_kron_ml_densities`: bitwise vs root AND asserted to differ from the realtime copy by n/2*sum(h)) + end-to-end |
-| `bvar.ml.intlike_csv` | `intlike_BVAR_CSV.m` (renamed; body verbatim) | (single copy) | unit (`test_kron_intlike` bitwise seeded, real data, + end-to-end model 3) |
+| `bvar.ml.intlike_csv` | `intlike_BVAR_CSV.m` (renamed; body verbatim except the one-factor Newton step of 2026-09-19, see Deviations from legacy) | (single copy) | unit (`test_kron_intlike` bitwise seeded, real data, + end-to-end model 3) |
 | `bvar.ml.intlike_t_csv` | `intlike_BVAR_t_CSV.m` | (single copy) | unit (same, + end-to-end model 5) |
 | `bvar.ml.intlike_csv_ma` | `intlike_BVAR_CSV_MA.m` | (single copy) | unit (same, + end-to-end model 7) |
 | `bvar.ml.intlike_csv_t_ma` | `intlike_BVAR_CSV_t_MA.m` | (single copy; carries the first-observation scale quirk - see audit notes below) | unit (same, + end-to-end model 8) |
@@ -387,9 +392,10 @@ Equivalence test: `tests/unit/test_mlvarsv_equivalence.m` runs all five legacy s
 tempdir copies at nsim/burnin = 60/20 over 15 configurations - every model at every switch
 setting it reads, plus models 3/4/5 repeated at the paper's active n = 15 selection - and
 asserts isequal on all stores, counters, script-tail summaries and the terminal rng state.
-The four MCMC scripts' clock-seed lines are removed as the sole patch (asserted
-exactly-one-occurrence and active, per file); VAR_NCP.m is byte-verbatim (asserted
-seed-line-free). cp_ml = 0 for models 2-5 so no ml_var_* routine is entered.
+The four MCMC scripts' clock-seed lines are removed (asserted exactly-one-occurrence and
+active, per file); VAR_NCP.m carries none (asserted). Since 2026-09-19 all five scripts,
+sample_SV.m and sample_CSV.m carry the one-factor substitution (see Deviations from
+legacy). cp_ml = 0 for models 2-5 so no ml_var_* routine is entered.
 
 | Core function | Canonical source (legacy) | Also canonicalizes | Verified |
 |---|---|---|---|
@@ -486,7 +492,9 @@ estimation's own stream) at nsim/burnin = 40/10, M = 100, n = 4, over 11 configu
 every model at every switch setting its cprior/gIS branch reads - and asserts `isequal` on the
 stored draws, on `lml` and `lmlstd`, on `store_w` where the legacy script keeps it (VAR-FSV),
 and on the terminal rng state. The four ml routines and every density utility run BYTE-VERBATIM
-(asserted seed-line-free); the estimation scripts carry the same sole clock-seed patch as step
+(asserted seed-line-free), except that since 2026-09-19 ml_var_csv.m and ml_var_fsv.m carry
+the one-factor substitution (see Deviations from legacy); the estimation scripts carry the
+same patches as step
 9. VAR-SVO is compared under `'bugcompat', true`. T = 234 (the full sample) is deliberate: the
 `o_hat` linear-index defect only takes its published form when T >= 32.
 
@@ -685,7 +693,8 @@ inlined in `run_all` where it belongs to that driver's setup.
   actually entered. Four patches to the legacy copy, each asserted to occur exactly once:
   the clock-seed line, `nsim`, `burnin`, and the opening `clear; clc;` (which would wipe
   the harness's own bookkeeping when the script is run from a function). None touches an
-  arithmetic line. Runtime ~10 s.
+  arithmetic line. Since 2026-09-19 the copy and `utility/sample_SVRW.m` also carry the
+  one-factor substitution (see Deviations from legacy). Runtime ~10 s.
 - Perturbation check: a 1e-9 relative change to the `c1` constant in a scratch mirror of
   `eq_hyb_tvp` makes the test fail on `store_lpostgam`. The real tree was never modified.
 - Dead line kept: main 40 computes `[Valp,Vbeta]` before the loop, and line 91 recomputes
@@ -1069,6 +1078,8 @@ A future deduplication must not unify any of these; doing so silently changes pu
 - The four intlike evaluators are executably verbatim, not byte-verbatim: differences are
   trailing whitespace, one stray semicolon after `while errh> 10^(-3);`, and `[T n]` ->
   `[T, n]`. Bitwise outputs and terminal rng state are asserted by `test_kron_intlike`.
+  Since 2026-09-19 `intlike_csv` and `intlike_csv_ma` also differ in the Newton step, by
+  the one-factor substitution (see Deviations from legacy).
 - Toolbox note: models 4/6/7/8 need the Optimization Toolbox for `fminunc` (on every
   optimizer path); `fminbnd` is base MATLAB.
 - Grid sizes (preset `pr.ml.ngrid`): 700-point psi grids for models 2/3/4/5, 300 for
@@ -1152,8 +1163,9 @@ First consumer: an out-of-tree clustered stochastic volatility VAR sampler.
 `core/` began as extraction and is now allowed to improve on the published code. The archive
 under `replications/*/legacy/` is untouched either way, and the replication drivers still
 reproduce the published numbers, because every deviation keeps a default that reproduces the
-legacy behaviour bit for bit. The one exception is the lower Cholesky factor in two log
-densities (last row of the table), which can change their last bits. What changes is the
+legacy behaviour bit for bit. The two exceptions are the lower Cholesky factor in two log
+densities and one Cholesky factor per matrix (the last two rows of the table), which change
+the last bits. What changes is the
 standard of proof: legacy equivalence pins the default path, and the new behaviour needs a
 test of the property that makes it correct, argued directly rather than by comparison
 against a legacy file that does not have it.
@@ -1168,6 +1180,7 @@ covered by the equivalence test.
 | `bvar.sv.csv_armh` | the accept-reject envelope constant, hard-coded `log(3)`, is the option `c_reject`; both unbounded `while` loops are capped by `MaxIterMode` (500) and `MaxIterAR` (1000) and raise a named error rather than returning a draw that is not from the target; every exposed option is validated. The mode-search tolerance stays hard-coded and is deliberately NOT an option: convergence to the mode is what makes the proposal state-independent, hence the MH ratio correct, so exposing it would trade correctness for speed silently | `c_reject = 3`, caps never reached | `c_reject` is efficiency-only by an exact argument, not just empirically: the AR loop draws from `min(pi, c*q)`, the MH ratio for that proposal is `exp(max(b,0) - max(a,0))` which is what the three-way branch computes, and `logc` cancels on both sides of detailed balance. Checked numerically at machine precision (residual 1.4e-14) and by a mixing-free one-step invariance test on 300,000 draws from the exact target. Both extremes are live - at `c_reject` = 1e-4 the envelope is violated essentially always, and at 300 on a heavy-tailed target it still fails - so the MH repair is never idle. In the suite: `tests/unit/test_csv_armh.m`, a Geweke joint-distribution test, since `s2_t \| h_t = exp(h_t)*chi2(n)` makes both conditionals exact. The invariant distribution is unchanged for `c_reject` in 0.2 to 20 (max\|z\| 2.2) while a kernel given the wrong `n` scores 115; forced accept is exact at a valid envelope and fails below it, which is what the MH step is for; both caps fire; the values that used to fail silently (`c_reject` 0 or negative) are rejected |
 | `bvar.ml.kron_bvar_t_csv` | two dead assignments dropped - `h_mean` (computed, never read, and never in `out` despite the header claiming it) and an `s2` overwritten before any read | neither consumed randomness, so the draws are unchanged | `tests/unit/test_kron_equivalence.m` (unchanged, still bitwise) |
 | `bvar.ml.llike_ma`, `bvar.ml.lniwpdf` | take the lower Cholesky factor, `chol(Sig,'lower')` in `llike_ma` and `chol(iVA0,'lower')`, `chol(S0,'lower')` in the log-determinants of `lniwpdf`, where the legacy copies take the upper one (2026-09-18), so that the library uses one convention throughout. Sparse factorizations, as in the `ksc_*` samplers, agree bitwise either way; dense ones need not: under MKL 2024.1 in R2025b the lower factor and the transposed upper factor differed in the last bits for every size from 6 to 1000 tried (five random matrices each, by up to about 1e-14) and agreed for sizes 1 to 5 | none; the log densities agreed exactly with the unmodified legacy copies at the test points, which is not guaranteed in general | `tests/unit/test_kron_ml_densities.m`: within 1e-12 relative of the unmodified legacy copies at n = 4 and n = 20, and bitwise against copies carrying the same three substitutions; `tests/unit/test_kron_equivalence.m` runs the legacy pipeline with those copies, so it remains a bitwise comparison |
+| `bvar.sv.ksc_rw_h0`, `ksc_rw_diffuse`, `ksc_ar1_mean`, `csv_armh`; `bvar.ml.intlike_csv`, `intlike_csv_ma`, `lniwpdf`, `mlvarsv_csv`, `mlvarsv_fsv`, `mlvarsv_arsv_redu`, `mlvarsv_arsvo_redu`, `kron_bvar_t_ma`; `bvar.samplers.alp_tri_cs`, `factor_fsv`; `bvar.structural.b0_row_sampler`; the `run_all.m` drivers of the Kronecker, ml_varsv and HYB packages | each function factors each matrix once (2026-09-19). The factor `C = chol(K,'lower')` serves the solves, as `(C')\(C\b)`, the draw, as `C'\z`, and the log determinant, as `2*sum(log(diag(C)))`. The legacy code solves with `K\b` (or `b'/K`), which factors `K` a second time. In the mode searches of `csv_armh`, `intlike_csv` and `intlike_csv_ma` each Newton step factors its matrix with `chol`, and the factor of the last step serves the proposal. The solves differ from `K\b` in the last bits (by about 1e-15 for the banded precision matrices of the samplers, for T from 50 to 10,000) and are no faster. Where a sampler compares a uniform with a probability computed from them, a long chain eventually takes the other branch and from then on is a different realization of the same sampler. Reusing a factor for a log determinant (`mlvarsv_arsv_redu`, `mlvarsv_arsvo_redu`, `mlvarsv_fsv`) and dropping the second `chol(Sig_mean)` of `kron_bvar_t_ma` change no bits. `intlike_t_csv` and `intlike_csv_t_ma` are unchanged: the matrix they factor after the mode search, the negative Hessian at the mode, is never solved during the search. Diagonal matrices (`Kh0` in the MAHP and HYB drivers and examples) are unchanged too, since backslash divides by the diagonal without factoring | none | `tests/unit/private/one_factor_patch.m` declares the substitution for each legacy copy, each asserted to occur exactly once, and the bitwise tests that run these copies apply it (`test_ksc_rw_h0`, `test_ksc_rw_diffuse`, `test_ksc_ar1_mean`, `test_csv_armh`, `test_kron_intlike`, `test_kron_ml_densities`, `test_kron_equivalence`, `test_mahp_equivalence`, `test_forecast_iterate_mahp`, `test_forecast_iterate_springer`, `test_hybtvp_equivalence`, `test_mlvarsv_equivalence`, `test_mlvarsv_ml`, `test_oisv_equivalence`), so they remain bitwise comparisons |
 
 Header convention for these: state what the function does and how to call it. The legacy
 correspondence belongs here, not in eighty headers - a header that opens with which legacy

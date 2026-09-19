@@ -13,16 +13,17 @@ function test_oisv_equivalence
 % of legacy construct_Sigt.m), and the terminal rng state (same rng call
 % sequence).
 %
-% SOLE PATCH to the legacy scripts: SVARSV_MH.m line 24 carries the clock-seed
+% Two patches to the legacy copies. SVARSV_MH.m line 24 carries the clock-seed
 % line
 %   randn('seed',sum(clock*100)); rand('seed',sum(clock*1000));
 % ACTIVE (asserted: exactly one occurrence, not commented) - it re-seeds the
 % global stream from the wall clock (irreproducible) AND switches MATLAB to
 % the legacy v4/v5 generators, so it is removed from the tempdir copy.
 % CS_MH.m carries the same line already COMMENTED OUT (line 49; asserted: its
-% only occurrence is the commented one) and runs BYTE-VERBATIM. Every rng draw
-% in both scripts sits after that point, so seeding rng(seed,'twister') just
-% before dispatching aligns the whole run, chain-init draws included.
+% only occurrence is the commented one). Every rng draw in both scripts sits
+% after that point, so seeding rng(seed,'twister') just before dispatching
+% aligns the whole run, chain-init draws included. SVARSV_MH.m, CS_MH.m and
+% sample_SV.m also get the one-factor substitutions of one_factor_patch.
 % func_main_SVAR_v2.m's setup (lines 5-31) is replicated in the harness below
 % (run_legacy), which is also where the hard-coded nsim = 30000 / burnin =
 % 5000 of main_SVAR_fullsample.m are overridden: the sampler scripts read
@@ -34,7 +35,7 @@ repdir = fullfile(root, 'replications', 'chan_koop_yu2024_jbes_oisv');
 
 nsim = 30; burnin = 10; seed = 20260902;    % ~0.9 s/sweep at T=706, n=20, p=13 - sized to keep the test under ~3 minutes
 
-% --- tempdir with the patched OI script + byte-verbatim CS script/helper copies ---
+% --- tempdir with the patched OI and CS scripts and the helper copies ---
 tmp = tempname; mkdir(tmp);
 ctmp = onCleanup(@() cleanup_tmp(tmp));   % rmpath BEFORE rmdir, warning-free
 helpers = {'get_resid_var.m', 'get_C.m', 'getVbeta.m', 'vec.m', 'anormrnd.m', ...
@@ -42,6 +43,8 @@ helpers = {'get_resid_var.m', 'get_C.m', 'getVbeta.m', 'vec.m', 'anormrnd.m', ..
 for k = 1:numel(helpers)
     copyfile(fullfile(leg, 'utility', helpers{k}), fullfile(tmp, helpers{k}));
 end
+one_factor_patch(fullfile(tmp, 'sample_SV.m'), ...
+    'chan_koop_yu2024_jbes_oisv/legacy/utility/sample_SV.m');
 seedline = 'randn(''seed'',sum(clock*100)); rand(''seed'',sum(clock*1000));';
 
 % SVARSV_MH.m: exactly one clock-seed occurrence, ACTIVE (not commented) - remove it
@@ -51,17 +54,19 @@ assert(numel(strfind(txt, seedline)) == 1, ...
 assert(isempty(strfind(txt, ['%' seedline])), ...
     'the SVARSV_MH.m clock-seed line is expected to be ACTIVE');
 txt = strrep(txt, seedline, ...
-    '% [clock-seed line removed by test_oisv_equivalence - the sole patch]');
+    '% [clock-seed line removed by test_oisv_equivalence]');
 fid = fopen(fullfile(tmp, 'SVARSV_MH.m'), 'w');
 fwrite(fid, txt);
 fclose(fid);
+one_factor_patch(fullfile(tmp, 'SVARSV_MH.m'), 'chan_koop_yu2024_jbes_oisv/legacy/SVARSV_MH.m');
 
-% CS_MH.m: no ACTIVE clock-seed line (its only occurrence is commented out) - byte-verbatim
+% CS_MH.m: no ACTIVE clock-seed line (its only occurrence is commented out)
 txt = fileread(fullfile(leg, 'CS_MH.m'));
 assert(numel(strfind(txt, ['%' seedline])) == 1 ...
     && numel(strfind(txt, seedline)) == 1, ...
     'expected CS_MH.m''s only clock-seed occurrence to be the commented-out one');
 copyfile(fullfile(leg, 'CS_MH.m'), fullfile(tmp, 'CS_MH.m'));
+one_factor_patch(fullfile(tmp, 'CS_MH.m'), 'chan_koop_yu2024_jbes_oisv/legacy/CS_MH.m');
 
 addpath(tmp);   % removed by cleanup_tmp via ctmp, before the folder is deleted
 addpath(repdir); cp2 = onCleanup(@() rmpath(repdir));
@@ -185,7 +190,7 @@ end
 
 function out = run_legacy_cs(rev, leg, tmp, nsim, burnin, seed) %#ok<INUSD> % nsim/burnin are read by the dispatched script from this workspace
 % prime the workspace exactly as func_main_SVAR_v2.m does, dispatch the
-% byte-verbatim CS_MH copy from the tempdir, then replicate func_main's
+% CS_MH copy from the tempdir, then replicate func_main's
 % model-2 post-processing (lines 49-62) with the tempdir LEGACY construct_Sigt
 [Y0, Y, T, n, X, p] = prime_design(rev, leg);           %#ok<ASGLU> % Y0/Y/T/n/X/p are read by the dispatched script
 

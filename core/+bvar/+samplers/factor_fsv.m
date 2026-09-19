@@ -20,7 +20,8 @@ e = reshape((Y-X*A)',T*n,1);
 Xf = kron(speye(T),L);
 XfiSig = Xf'*sparse(1:T*n,1:T*n,reshape(exp(-h(:,1:n))',T*n,1));
 Kf = sparse(1:T*r,1:T*r,reshape(exp(-h(:,n+1:end))',T*r,1)) + XfiSig*Xf;
-f_hat = Kf\(XfiSig*e);
-f = f_hat + chol(Kf,'lower')'\randn(T*r,1);
+CKf = chol(Kf,'lower');
+f_hat = (CKf')\(CKf\(XfiSig*e));
+f = f_hat + CKf'\randn(T*r,1);
 F = reshape(f,r,T)';
 end

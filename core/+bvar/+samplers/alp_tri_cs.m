@@ -37,8 +37,9 @@ for ii=2:n
     iD = sparse(1:T,1:T,exp(-h(:,ii))./o.^2);
     iValpi = sparse(1:ii-1,1:ii-1,1./Valp(count_alp+1:count_alp+ii-1));
     Kalpi = iValpi + X_alpi'*iD*X_alpi;
-    alpi_hat = Kalpi\(X_alpi'*iD*E(:,ii));
-    alpi = alpi_hat + chol(Kalpi,'lower')'\randn(ii-1,1);
+    CKalpi = chol(Kalpi,'lower');
+    alpi_hat = (CKalpi')\(CKalpi\(X_alpi'*iD*E(:,ii)));
+    alpi = alpi_hat + CKalpi'\randn(ii-1,1);
     alp(count_alp+1:count_alp+ii-1) = alpi;
     count_alp = count_alp + ii-1;
 end

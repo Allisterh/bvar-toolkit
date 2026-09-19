@@ -14,7 +14,7 @@ function test_kron_equivalence
 % defects reproduced bitwise - and then assert the CORRECTED default mode
 % differs exactly where each bug lives and matches everywhere else.
 %
-% Two patches to the legacy copies. First, each of the seven MCMC estimation
+% Three patches to the legacy copies. First, each of the seven MCMC estimation
 % scripts carries the clock-seed line
 %   randn('seed',sum(clock*100)); rand('seed',sum(clock*1000));
 % ACTIVE (asserted: exactly one occurrence each, not commented) - it
@@ -24,9 +24,12 @@ function test_kron_equivalence
 % factor where bvar.ml.llike_ma and bvar.ml.lniwpdf take the lower one; for
 % a dense matrix the two factors can differ in the last bits, so their
 % copies get the same three chol(...,'lower') substitutions (each pattern
-% asserted to occur exactly once). BVAR.m (model 1, no MCMC) and all seven
-% ml_BVAR_*.m, four intlike_*.m and the other helper files are asserted
-% seed-line-free and copied BYTE-VERBATIM. Model 2/5/6/8 chain-init gamrnd
+% asserted to occur exactly once). Third, the seven MCMC scripts,
+% ml_BVAR_CSV.m, intlike_BVAR_CSV.m, intlike_BVAR_CSV_MA.m, sample_h.m and
+% lniwpdf.m get the one-factor substitutions of one_factor_patch. BVAR.m
+% (model 1, no MCMC), the other six ml_BVAR_*.m, the other two intlike_*.m
+% and the other helper files are asserted seed-line-free and copied
+% BYTE-VERBATIM. Model 2/5/6/8 chain-init gamrnd
 % draws sit before the removed line, so seeding rng(seed,'twister') before
 % dispatch aligns the whole run, chain init included. The harness replicates
 % main_BVAR.m lines 26-31 (data/dims priming) and overrides its hard-coded
@@ -54,7 +57,7 @@ for kf = 1:numel(mcmc_scripts)
     assert(isempty(strfind(txt, ['%' seedline])), ...
         'the clock-seed line in %s is expected to be ACTIVE', mcmc_scripts{kf});
     txt = strrep(txt, seedline, ...
-        '% [clock-seed line removed by test_kron_equivalence - the sole patch]');
+        '% [clock-seed line removed by test_kron_equivalence]');
     fid = fopen(fullfile(tmp, mcmc_scripts{kf}), 'w');
     fwrite(fid, txt);
     fclose(fid);
@@ -89,6 +92,13 @@ for kf = unique(lower_subs(:,1))'
     fid = fopen(fullfile(tmp, kf{1}), 'w');
     fwrite(fid, txt);
     fclose(fid);
+end
+
+one_factor = [mcmc_scripts, {'ml_BVAR_CSV.m', 'intlike_BVAR_CSV.m', ...
+    'intlike_BVAR_CSV_MA.m', 'sample_h.m', 'lniwpdf.m'}];
+for kf = 1:numel(one_factor)
+    one_factor_patch(fullfile(tmp, one_factor{kf}), ...
+        ['chan2020_jbes_kronecker/legacy/' one_factor{kf}]);
 end
 
 addpath(tmp);   % removed by cleanup_tmp via ctmp, before the folder is deleted

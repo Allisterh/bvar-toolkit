@@ -22,7 +22,11 @@
 % `seed` (or the ambient state) on the modern twister stream. The legacy
 % clock-seed sits AFTER the psi gamrnd chain-init draws, so under the dropped
 % line the whole run (init draws included) consumes one coherent stream.
-% The trailing legacy histogram figures are not reproduced.
+% The trailing legacy histogram figures are not reproduced. The core SV block
+% bvar.sv.ksc_rw_h0 solves with the Cholesky factor it draws with, where legacy
+% SVRW.m factors the precision matrix a second time; the solutions differ in
+% the last bits, so the equivalence test gives the legacy SVRW.m copy the
+% substitution of tests/unit/private/one_factor_patch.m.
 %
 % All constants come from preset.m in this folder (each field cites its legacy
 % source line); the data file is read from legacy/ READ-ONLY; the Gibbs blocks

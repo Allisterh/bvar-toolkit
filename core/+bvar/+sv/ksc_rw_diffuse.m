@@ -46,5 +46,5 @@ invOmegah = spdiags([1/Vh; 1/omega2h*ones(T-1,1)],0,T,T);
 d = mui(S)'; invSigystar = spdiags(1./sigma2i(S)',0,T,T);
 Kh = H'*invOmegah*H + invSigystar;
 Ch = chol(Kh,'lower');              % so that Ch*Ch' = Kh
-hhat = Kh\(invSigystar*(ystar-d));
+hhat = (Ch')\(Ch\(invSigystar*(ystar-d)));
 h = hhat + Ch'\randn(T,1);          % note the transpose

@@ -141,7 +141,7 @@ switch flag_marg
         end
 end
 store_w = zeros(M,1);
-c_h = -T*n/2*log(2*pi) + .5*bvar.util.ldet(Kh_hat);
+c_h = -T*n/2*log(2*pi) + sum(log(diag(CKh_hat)));
 for isim = 1:M
     if is_kappafixed
        kappa = [store_kappa(1,1:2),big_kappa4(isim)]';

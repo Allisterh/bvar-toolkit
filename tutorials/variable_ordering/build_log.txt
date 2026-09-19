@@ -1,4 +1,4 @@
-tutorials/variable_ordering/build.m, 2026-09-18 14:41, MATLAB 25.2.0.3150157 (R2025b) Update 4
+tutorials/variable_ordering/build.m, 2026-09-19 12:53, MATLAB 25.2.0.3150157 (R2025b) Update 4
 bvar-toolkit: core/ and third_party/ added to the path (<repo>).
   quick start:  cd examples; ex01_precision_sampler
   run tests:    run(fullfile('<repo>','tests','unit','run_unit_tests.m'))
@@ -9,35 +9,35 @@ variables, in the published order: IP, unemployment, PCE inflation, fed funds
 730 monthly observations from 1959:03, 24 as initial conditions, p = 13 lags
 30000 draws after 5000 burn-in, two seeds
 
-OI order 1             135 s
+OI order 1             155 s
 
-OI order 2             135 s
+OI order 2             203 s
 
-OI order 1, seed 2     154 s
+OI order 1, seed 2     148 s
 
-CS order 1             229 s
+CS order 1             327 s
 
-CS order 2             227 s
+CS order 2             224 s
 
-CS order 1, seed 2     225 s
+CS order 1, seed 2     207 s
 
 difference between two posterior-mean paths
 variances, as a share of their level   CS orders    CS seeds   OI orders    OI seeds
-  var(IP)                                 4.1%        0.3%        1.1%        1.2%
-  var(unemployment)                       7.7%        0.4%        0.5%        0.6%
-  var(PCE inflation)                      0.9%        0.3%        2.4%        2.4%
-  var(fed funds)                          1.7%        0.8%        0.9%        0.8%
+  var(IP)                                 4.1%        0.3%        0.6%        1.0%
+  var(unemployment)                       7.7%        0.4%        0.4%        0.7%
+  var(PCE inflation)                      0.9%        0.3%        2.4%        2.3%
+  var(fed funds)                          1.7%        0.8%        0.8%        0.9%
 correlations, in correlation points
-  corr(IP, unemployment)                 0.111       0.001       0.002       0.002
+  corr(IP, unemployment)                 0.111       0.001       0.001       0.002
   corr(IP, PCE inflation)                0.067       0.000       0.001       0.001
   corr(IP, fed funds)                    0.088       0.000       0.001       0.001
-  corr(unemployment, PCE inflation)       0.004       0.000       0.000       0.000
+  corr(unemployment, PCE inflation)       0.004       0.000       0.000       0.001
   corr(unemployment, fed funds)          0.086       0.000       0.001       0.001
-  corr(PCE inflation, fed funds)         0.022       0.000       0.001       0.001
+  corr(PCE inflation, fed funds)         0.022       0.000       0.001       0.000
 
 reversing the ordering moves the CS correlation between IP and unemployment by 0.111 on
 average, against 0.001 between two seeds of the same CS run. The same correlation
-under OI moves 0.002 with the ordering and 0.002 between seeds.
+under OI moves 0.001 with the ordering and 0.002 between seeds.
 
 The order-invariant model is drawn under two orderings that are the same model,
 so its two paths differ only by Monte Carlo error. The Cholesky model is drawn
@@ -46,21 +46,21 @@ under two orderings that are two different models.
 === Part 1: four variables, 30000 draws after 5000 burn-in ===
 | | Cholesky SV, two orderings | Cholesky SV, two seeds | order-invariant SV, two orderings | order-invariant SV, two seeds |
 |---|---|---|---|---|
-| var(IP) | 4.1% | 0.3% | 1.1% | 1.2% |
-| var(unemployment) | 7.7% | 0.4% | 0.5% | 0.6% |
-| var(PCE inflation) | 0.9% | 0.3% | 2.4% | 2.4% |
-| var(fed funds) | 1.7% | 0.8% | 0.9% | 0.8% |
-| corr(IP, unemployment) | 0.111 | 0.001 | 0.002 | 0.002 |
+| var(IP) | 4.1% | 0.3% | 0.6% | 1.0% |
+| var(unemployment) | 7.7% | 0.4% | 0.4% | 0.7% |
+| var(PCE inflation) | 0.9% | 0.3% | 2.4% | 2.3% |
+| var(fed funds) | 1.7% | 0.8% | 0.8% | 0.9% |
+| corr(IP, unemployment) | 0.111 | 0.001 | 0.001 | 0.002 |
 | corr(IP, PCE inflation) | 0.067 | 0.000 | 0.001 | 0.001 |
 | corr(IP, fed funds) | 0.088 | 0.000 | 0.001 | 0.001 |
-| corr(unemployment, PCE inflation) | 0.004 | 0.000 | 0.000 | 0.000 |
+| corr(unemployment, PCE inflation) | 0.004 | 0.000 | 0.000 | 0.001 |
 | corr(unemployment, fed funds) | 0.086 | 0.000 | 0.001 | 0.001 |
-| corr(PCE inflation, fed funds) | 0.022 | 0.000 | 0.001 | 0.001 |
+| corr(PCE inflation, fed funds) | 0.022 | 0.000 | 0.001 | 0.000 |
 range over time of the IP x unemployment correlation:
   Cholesky SV, published order         -0.35 to -0.18
   Cholesky SV, reversed order          -0.45 to -0.11
   order-invariant SV, published order  -0.55 to -0.12
-  order-invariant SV, reversed order   -0.55 to -0.11
+  order-invariant SV, reversed order   -0.55 to -0.12
 
 === Part 2: 20 variables, shipped posterior means (T = 706, n = 20) ===
 | | Cholesky SV | order-invariant SV |
@@ -149,4 +149,4 @@ RMSFE: lower is better. ALPL: average log predictive likelihood, higher is bette
 largest spread of RMSFE across the four models, by variable and horizon: 8.3%
 largest RMSFE difference between the two orderings: Cholesky SV 2.1%, order-invariant SV 0.4%
 
-build finished in 18.6 minutes
+build finished in 21.3 minutes

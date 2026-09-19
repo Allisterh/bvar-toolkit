@@ -16,7 +16,8 @@
 %       leftover Hpsi/psi ordinate loop and the line-108 leftover-Sig psi
 %       target). true reproduces each legacy ml script bitwise from the same
 %       seed and chain (once legacy llike_MA.m and lniwpdf.m take the lower
-%       Cholesky factor, as core does; see tests/variant_map.md), consuming
+%       Cholesky factor and the legacy copies solve with one Cholesky factor
+%       per matrix, as core does; see tests/variant_map.md), consuming
 %       run_all's out.state exactly as the legacy script consumes its
 %       workspace leftovers; false (default) runs the
 %       corrected computation (consistent evaluation point across all

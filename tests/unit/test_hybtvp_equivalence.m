@@ -17,7 +17,9 @@ function test_hybtvp_equivalence
 %   3. burnin (main 17), reduced from 1000;
 %   4. `clear; clc;` (main 14), removed - run from a function it would wipe the
 %      harness's own working-directory bookkeeping mid-run. It computes nothing.
-% None of the four touches an arithmetic line.
+% None of the four touches an arithmetic line. The copy (main 127) and
+% utility/sample_SVRW.m then get the one-factor substitutions of
+% one_factor_patch.
 % The var_id line is NOT patched. Instead the n = 3 selection on the commented
 % line 22 is used by patching which line is active, so the test exercises the
 % real index arithmetic at a dimension small enough to run in seconds.
@@ -55,6 +57,9 @@ txt = patch_once(txt, '% var_id = [1,95,59]; % n = 3', 'var_id = [1,95,59];', 'n
 txt = patch_once(txt, 'var_id = [1,95,59,144,22,133];   % n = 6', ...
     '% n = 6 selection retired by the test', 'n=6 selection');
 fid = fopen(fullfile(tmp, 'main_HYB_TVPSV.m'), 'w'); fwrite(fid, txt); fclose(fid);
+one_factor_patch(fullfile(tmp, 'main_HYB_TVPSV.m'), 'chan2023_jbes_hybtvp/legacy/main_HYB_TVPSV.m');
+one_factor_patch(fullfile(tmp, 'utility', 'sample_SVRW.m'), ...
+    'chan2023_jbes_hybtvp/legacy/utility/sample_SVRW.m');
 
 addpath(repdir); cp2 = onCleanup(@() rmpath(repdir)); %#ok<NASGU>
 

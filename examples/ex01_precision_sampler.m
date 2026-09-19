@@ -60,7 +60,7 @@ K     = K_tau + invOm;                            % POSTERIOR precision: still t
 
 % This is the whole sampler. Three lines.
 C      = chol(K, 'lower');                        % banded: L has 2 nonzero bands
-tau_hat = K\(K_tau*alph + invOm*y);               % posterior mean of the path
+tau_hat = (C')\(C\(K_tau*alph + invOm*y));        % posterior mean of the path
 tau_draw = tau_hat + C'\randn(T,1);               % one draw of the WHOLE path
 
 fprintf('\nsparsity of the T x T posterior precision K (T = %d):\n', T);
@@ -91,7 +91,7 @@ for isim = 1:nsim+burnin
     invOm = spdiags(1/sig2_eps_d*ones(T,1), 0, T, T);
     K     = K_tau + invOm;
     C     = chol(K, 'lower');
-    tau_h = K\(K_tau*alph + invOm*y);
+    tau_h = (C')\(C\(K_tau*alph + invOm*y));
     tau   = tau_h + C'\randn(T,1);
 
         % (b) draw sig2_eps | tau, y      (conjugate inverse gamma)
@@ -202,8 +202,8 @@ Kb    = Hb'*invSb*Hb;
 alphb = Hb\[b0; sparse(kk*T2-kk,1)];
 invOm2 = spdiags(1/sig2_e*ones(T2,1), 0, T2, T2);
 Kpost  = Kb + Xbig'*invOm2*Xbig;
-bhat   = Kpost\(Kb*alphb + Xbig'*invOm2*y2);
 Cb     = chol(Kpost,'lower');
+bhat   = (Cb')\(Cb\(Kb*alphb + Xbig'*invOm2*y2));
 
 nrep = 200; store_b = zeros(nrep, kk*T2);
 for r = 1:nrep

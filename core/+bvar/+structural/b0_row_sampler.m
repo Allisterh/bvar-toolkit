@@ -36,8 +36,9 @@ function B0 = b0_row_sampler(U,h,B0,B00,VB0)
 for ii=1:n
     EiOhi = U'*sparse(1:T,1:T,exp(-h(:,ii)));
     Kbi = sparse(1:n,1:n,1./VB0(ii,:)) + EiOhi*U;
-    mui = Kbi\(B00(ii,:)./VB0(ii,:))';
-    Ci = chol(Kbi,'lower')/sqrt(T);
+    CKbi = chol(Kbi,'lower');
+    mui = (CKbi')\(CKbi\(B00(ii,:)./VB0(ii,:))');
+    Ci = CKbi/sqrt(T);
     Gam_mi = B0([1:ii-1 ii+1:end],:)';
     Gam_miperp = null(Gam_mi');
 

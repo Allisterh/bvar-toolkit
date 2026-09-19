@@ -78,7 +78,7 @@ T = size(s2,1);
 Hrho = speye(T) - rho*sparse(2:T,1:(T-1),ones(1,T-1),T,T);
 HiSH = Hrho'*sparse(1:T,1:T,[(1-rho^2)/sigh2; 1/sigh2*ones(T-1,1)])*Hrho;
 errh = Inf; ht = ht_start; it_mode = 0;
-while ~(errh <= tol_mode)             % NaN fails this, so it hits the cap
+while ~(errh <= tol_mode)             % NaN fails this: chol or the cap then raises
     it_mode = it_mode + 1;
     if it_mode > maxit_mode
         error('bvar:sv:csv_armh:modeNotConverged', ...
@@ -90,11 +90,11 @@ while ~(errh <= tol_mode)             % NaN fails this, so it hits the cap
     fh = -n/2 + .5*sieht;
     Gh = .5*sieht;
     Kh = HiSH + sparse(1:T,1:T,Gh);
-    newht = Kh\(fh+Gh.*ht);
+    CKh = chol(Kh,'lower');
+    newht = (CKh')\(CKh\(fh+Gh.*ht));
     errh = max(abs(newht-ht));
     ht = newht;
 end
-CKh = chol(Kh,'lower');
 % AR-step
 hstar = ht;
 logc = -.5*hstar'*HiSH*hstar - n/2*sum(hstar) - .5*exp(-hstar)'*s2 + log(c_reject);

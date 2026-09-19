@@ -23,13 +23,18 @@
 %
 % Functionized 2026-09-03 (step 9). Reproduces main_varsv.m -> VAR_NCP.m /
 % VAR_CSV.m / VAR_ARSV_redu.m / VAR_FSV.m / VAR_ARSVO_redu.m draw-for-draw
-% bitwise (tests/unit/test_mlvarsv_equivalence.m) with one deliberate
-% divergence: the four MCMC scripts re-seed the global stream from the wall
-% clock (VAR_CSV.m 32, VAR_ARSV_redu.m 38, VAR_FSV.m 34, VAR_ARSVO_redu.m 45),
-% which is irreproducible and switches MATLAB to the legacy v4/v5 generators;
-% run_all drops those lines so the caller controls seeding. Every rng draw sits
-% after that point, so one seed aligns a whole run, chain init included. The
-% wall-clock timing displays and VAR_CSV.m's exp(h/2) figure are not reproduced.
+% bitwise (tests/unit/test_mlvarsv_equivalence.m) with two deliberate
+% divergences. First, the four MCMC scripts re-seed the global stream from the
+% wall clock (VAR_CSV.m 32, VAR_ARSV_redu.m 38, VAR_FSV.m 34, VAR_ARSVO_redu.m
+% 45), which is irreproducible and switches MATLAB to the legacy v4/v5
+% generators; run_all drops those lines so the caller controls seeding. Every
+% rng draw sits after that point, so one seed aligns a whole run, chain init
+% included. Second, run_all and the core blocks it calls factor each matrix
+% once and solve with that factor, where the legacy scripts solve with
+% backslash and factor the same matrix again. The solutions differ in the
+% last bits, so the equivalence test gives the legacy copies the
+% substitutions of tests/unit/private/one_factor_patch.m. The wall-clock timing
+% displays and VAR_CSV.m's exp(h/2) figure are not reproduced.
 %
 % Scope: estimation only. The marginal-likelihood routines utility/ml_var_*.m
 % are a separate phase and are not called here. Model 1 is the exception - its
@@ -47,7 +52,8 @@
 % bvar.util.build_lags / vec / vech / ldet / mgammaln, third_party/gigrnd.
 % The VAR-CSV (Sig,A) natural-conjugate joint draw has no core counterpart yet
 % - it is the same block chan2020_jbes_kronecker/run_all.m keeps inline, held
-% for the springer family pass - so it stays verbatim in mcmc_csv below.
+% for the springer family pass - so it stays inline in mcmc_csv below, with
+% K_A factored once.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large
@@ -217,19 +223,21 @@ end
 
 % -------------------------------------------------------------------------
 function res = ncp(Y, X, dims, Hyper)
-% VAR_NCP.m functionized line-for-line. No MCMC, no rng. The cp_ml block
-% (lines 18-21) is inline and analytic, so it is reproduced here.
+% VAR_NCP.m functionized line-for-line, with K_A factored once. No MCMC, no
+% rng. The cp_ml block (lines 18-21) is inline and analytic, so it is
+% reproduced here.
 T = dims.T; n = dims.n; k = dims.k;
 
 XX = X'*X;                                              % VAR_NCP.m 10
 A_tilde = XX\(X'*Y);                                    % 11
 K_A = sparse(1:k,1:k,1./Hyper.VA) + XX;                 % 12
+CK_A = chol(K_A,'lower');
     % posterior mean of the VAR coefficients, arranged as a k by n matrix
-A_hat = K_A\(sparse(1:k,1:k,Hyper.VA)\Hyper.A0 + XX*A_tilde);   % 14
+A_hat = (CK_A')\(CK_A\(sparse(1:k,1:k,Hyper.VA)\Hyper.A0 + XX*A_tilde));   % 14
 S_hat = Hyper.S0 + Hyper.A0'*sparse(1:k,1:k,1./Hyper.VA)*Hyper.A0 + Y'*Y - A_hat'*K_A*A_hat;  % 15
 S_hat = (S_hat+S_hat')/2;                               % 16
 
-lml = -n*T/2*log(pi) - n/2*(sum(log(Hyper.VA)) + bvar.util.ldet(K_A)) ...
+lml = -n*T/2*log(pi) - n/2*(sum(log(Hyper.VA)) + 2*sum(log(diag(CK_A)))) ...
     + Hyper.nu0/2*bvar.util.ldet(Hyper.S0) ...
     - (Hyper.nu0+T)/2*bvar.util.ldet(S_hat) ...
     + bvar.util.mgammaln(n,(Hyper.nu0+T)/2) - bvar.util.mgammaln(n,Hyper.nu0/2);  % 19-20
@@ -239,8 +247,8 @@ end
 
 % -------------------------------------------------------------------------
 function res = mcmc_csv(Y, X, Y0, dims, Hyper, kappa, kappa3, is_kappafixed, nsim, burnin, pr)
-% VAR_CSV.m functionized line-for-line (clock-seed line 32 dropped). Draw order
-% per sweep: (Sig,A) -> h -> (phi,sig2) -> kappa.
+% VAR_CSV.m functionized line-for-line (clock-seed line 32 dropped; K_A and Sig
+% factored once). Draw order per sweep: (Sig,A) -> h -> (phi,sig2) -> kappa.
 T = dims.T; n = dims.n; p = dims.p; k = dims.k;
 
     % storage [VAR_CSV.m 9-13]
@@ -272,13 +280,14 @@ for isim = 1:nsim + burnin
     iOh = sparse(1:T,1:T,exp(-h));
     XiOh = X'*iOh;
     K_A = sparse(1:k,1:k,1./Hyper.VA) + XiOh*X;
-    A_hat = K_A\(sparse(1:k,1:k,Hyper.VA)\Hyper.A0 + XiOh*Y);
+    CK_A = chol(K_A,'lower');
+    A_hat = (CK_A')\(CK_A\(sparse(1:k,1:k,Hyper.VA)\Hyper.A0 + XiOh*Y));
     S_hat = Hyper.S0 + Hyper.A0'*sparse(1:k,1:k,1./Hyper.VA)*Hyper.A0 ...
         + Y'*iOh*Y - A_hat'*K_A*A_hat;
     S_hat = (S_hat+S_hat')/2; % adjust for rounding errors
     Sig = iwishrnd(S_hat,Hyper.nu0+T);
     CSig = chol(Sig,'lower');
-    A = A_hat + (chol(K_A,'lower')'\randn(k,n))*CSig';
+    A = A_hat + (CK_A'\randn(k,n))*CSig';
 
         % sample h [49-57 -> bvar.sv.csv_armh]
     U = Y - X*A;
@@ -299,7 +308,7 @@ for isim = 1:nsim + burnin
 
         % sample kappa [66-70]
     if ~is_kappafixed
-        Q = diag((A-Hyper.A0)*(Sig\(A-Hyper.A0)'));
+        Q = diag((A-Hyper.A0)*((CSig')\(CSig\(A-Hyper.A0)')));
         tmpc = sum(Q(2:end)./C(2:end));
         kappa = gigrnd(Hyper.c0(1)-n^2*p/2,2*Hyper.c0(2),tmpc,1); % k=np+1
     end

@@ -103,7 +103,6 @@ psigrid = sort([theta_mean(1); linspace(-.99,.99,ngrid)']);
 psiidx = find(psigrid==theta_mean(1));
 
 U = shortY - X*A_mean;
-CSig = chol(Sig_mean,'lower');
 for isim = 1:nsims
 
     % sample lam

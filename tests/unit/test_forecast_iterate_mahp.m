@@ -8,10 +8,11 @@ function test_forecast_iterate_mahp
 % (tmpyhat1, tmpyhat4, all MCMC stores, kappa_hat, kappaCI) and on the
 % terminal rng state (same randn/rand/gamrnd call sequence).
 %
-% ZERO PATCHES: unlike the estimation scripts (BVAR_MNG.m etc., whose sole
-% clock-seed line test_mahp_equivalence removes), the forecast scripts carry
-% NO clock-seed line - verified below - so the tempdir copy runs byte-verbatim
-% and the harness controls seeding via rng(seed,'twister') before dispatch.
+% ONE PATCH: SVRW.m gets the one-factor substitution of one_factor_patch.
+% Unlike the estimation scripts (BVAR_MNG.m etc., whose sole clock-seed line
+% test_mahp_equivalence removes), the forecast scripts carry NO clock-seed
+% line - verified below - so forecast_BVAR_MNG.m runs byte-verbatim and the
+% harness controls seeding via rng(seed,'twister') before dispatch.
 % main_forecasting.m's per-vintage setup (lines 18-46 and 65-74) is replicated
 % in run_legacy below, which is also where the hard-coded nsim = 20000 /
 % burnin = 100 are overridden (the script reads them from the workspace).
@@ -29,8 +30,9 @@ files = {'forecast_BVAR_MNG.m', 'SVRW.m', 'getVtheta.m', 'get_C.m', ...
 for kf = 1:numel(files)
     copyfile(fullfile(leg, files{kf}), fullfile(tmpdir, files{kf}));
 end
+one_factor_patch(fullfile(tmpdir, 'SVRW.m'), 'chan2021_ijf_mahp/legacy/SVRW.m');
 assert(isempty(strfind(fileread(fullfile(tmpdir, 'forecast_BVAR_MNG.m')), 'randn(''seed''')), ...
-    'unexpected clock-seed line in forecast_BVAR_MNG.m - the zero-patch premise is broken'); %#ok<STREMP>
+    'unexpected clock-seed line in forecast_BVAR_MNG.m - the no-seed-patch premise is broken'); %#ok<STREMP>
 addpath(tmpdir);
 
     % shared data/design (main_forecasting.m lines 21-33), legacy csv read-only

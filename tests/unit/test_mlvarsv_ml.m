@@ -17,10 +17,12 @@ function test_mlvarsv_ml
 % corrected default is additionally asserted to consume the identical rng
 % stream and to move the weights by exactly the three corrections.
 %
-% Sole patch to the legacy scripts: the four MCMC scripts' clock-seed line, as
-% in test_mlvarsv_equivalence. The ml_var_* routines and every utility run
-% byte-verbatim. Model 1 has no ML routine (its log-ML is inline and analytic
-% in VAR_NCP.m) and is covered by test_mlvarsv_equivalence.
+% Two patches to the legacy copies, as in test_mlvarsv_equivalence: the four
+% MCMC scripts' clock-seed line is removed, and the four MCMC scripts,
+% sample_SV.m, sample_CSV.m, ml_var_csv.m and ml_var_fsv.m get the one-factor
+% substitutions of one_factor_patch. The other two ml_var_* routines and every
+% other utility run byte-verbatim. Model 1 has no ML routine (its log-ML is
+% inline and analytic in VAR_NCP.m) and is covered by test_mlvarsv_equivalence.
 %
 % T = 234 (the full sample) is deliberate: the o_hat linear-index defect only
 % has its published shape when T >= 32.
@@ -44,6 +46,9 @@ helpers = {'prior_Minn.m', 'prior_NCP.m', 'prior_B0.m', 'sample_SV.m', ...
 for k = 1:numel(helpers)
     copyfile(fullfile(leg, 'utility', helpers{k}), fullfile(tmp, helpers{k}));
 end
+for f = {'sample_SV.m', 'sample_CSV.m', 'ml_var_csv.m', 'ml_var_fsv.m'}
+    one_factor_patch(fullfile(tmp, f{1}), ['chan2023_joe_mlvarsv/legacy/utility/' f{1}]);
+end
 
 seedline = 'randn(''seed'',sum(clock*100)); rand(''seed'',sum(clock*1000));';
 patched = {'VAR_CSV.m', 'VAR_ARSV_redu.m', 'VAR_FSV.m', 'VAR_ARSVO_redu.m'};
@@ -51,12 +56,13 @@ for k = 1:numel(patched)
     txt = fileread(fullfile(leg, patched{k}));
     assert(numel(strfind(txt, seedline)) == 1, ...
         'expected exactly one clock-seed line in %s', patched{k});
-    txt = strrep(txt, seedline, '% [clock-seed line removed by test_mlvarsv_ml - the sole patch]');
+    txt = strrep(txt, seedline, '% [clock-seed line removed by test_mlvarsv_ml]');
     fid = fopen(fullfile(tmp, patched{k}), 'w');
     fwrite(fid, txt);
     fclose(fid);
+    one_factor_patch(fullfile(tmp, patched{k}), ['chan2023_joe_mlvarsv/legacy/' patched{k}]);
 end
-% the ML routines must be seed-line free (they run byte-verbatim)
+% the ML routines must be seed-line free
 mlfiles = {'ml_var_csv.m', 'ml_var_arsv_redu.m', 'ml_var_fsv.m', 'ml_var_arsvo_redu.m'};
 for k = 1:numel(mlfiles)
     txt = fileread(fullfile(leg, 'utility', mlfiles{k}));

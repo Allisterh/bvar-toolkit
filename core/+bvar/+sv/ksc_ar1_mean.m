@@ -47,6 +47,7 @@ Hrho = speye(T) - sparse(2:T,1:(T-1),rho*ones(1,T-1),T,T);
 HiSH = Hrho'*sparse(1:T,1:T,[1-rho^2, ones(1,T-1)])*Hrho;
 d = m_N(S)'; iOmega = sparse(1:T,1:T,1./sig2_N(S));
 Kh = HiSH/sig2 + iOmega;
-h_hat = Kh\(mu/sig2*HiSH*ones(T,1) + iOmega*(ystar-d));
-h = h_hat + chol(Kh,'lower')'\randn(T,1);
+CKh = chol(Kh,'lower');
+h_hat = (CKh')\(CKh\(mu/sig2*HiSH*ones(T,1) + iOmega*(ystar-d)));
+h = h_hat + CKh'\randn(T,1);
 end

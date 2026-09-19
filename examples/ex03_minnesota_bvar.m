@@ -107,12 +107,13 @@ fprintf('\ninverse-Wishart prior on Sig: nu0 = %d, S0 = diag(%s)\n', ...
 %       A | Sig, y ~ MN(Ahat, KA^-1, Sig),   Sig | y ~ IW(nu0 + T, Shat)
 %     so we draw Sig first and then A given Sig - INDEPENDENT draws, no
 %     Markov chain, no burn-in, no convergence to worry about.
-%     (These are the same six lines as replications/chan2020_jbes_kronecker/
-%      run_all.m, subfunction post_bvar.)
+%     (replications/chan2020_jbes_kronecker/run_all.m computes the same
+%      posterior in its subfunction post_bvar.)
 %  ------------------------------------------------------------------
 XX     = X'*X;
 KA     = sparse(1:k,1:k,1./VA0) + XX;
-Ahat   = KA\(sparse(1:k,1:k,VA0)\A0 + X'*Y);
+CKA    = chol(KA, 'lower');
+Ahat   = (CKA')\(CKA\(sparse(1:k,1:k,VA0)\A0 + X'*Y));
 Shat   = S0 + A0'*sparse(1:k,1:k,1./VA0)*A0 + Y'*Y - Ahat'*KA*Ahat;
 Shat   = (Shat + Shat')/2;                       % symmetrize against rounding
 
@@ -121,7 +122,6 @@ store_A   = zeros(nsim, k*n);
 store_Sig = zeros(n, n);
 store_fc  = zeros(nsim, n);
 z_next    = [1 shortY(end,:) shortY(end-1,:) shortY(end-2,:) shortY(end-3,:)];
-CKA       = chol(KA, 'lower');
 
 for isim = 1:nsim
     Sig  = iwishrnd(Shat, nu0 + T);              % Sig | y

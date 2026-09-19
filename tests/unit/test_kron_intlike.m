@@ -8,7 +8,10 @@ function test_kron_intlike
 % at a small importance-sample size R, on the REAL package data with an OLS
 % (A, Sig) evaluation point (so the Newton-Raphson / EM mode searches run
 % exactly as in production). Asserts isequal on [intlike, store_llike] and
-% on the terminal rng state (identical randn call sequence).
+% on the terminal rng state (identical randn call sequence). The two CSV
+% evaluators run from tempdir copies with the one-factor substitution of
+% one_factor_patch; the two t evaluators, whose mode searches factor each
+% matrix once, run from the legacy folder.
 root = getappdata(0, 'bvar_repo_root');
 leg = fullfile(root, 'replications', 'chan2020_jbes_kronecker', 'legacy');
 
@@ -31,9 +34,17 @@ Sig = U'*U/T; Sig = (Sig+Sig')/2;
 rho = .95; sigh2 = .05; psi = .1; nu = 10;
 R = 25; seed = 20260902;
 
+tmp = tempname; mkdir(tmp);
+for f = {'intlike_BVAR_CSV.m', 'intlike_BVAR_CSV_MA.m'}
+    copyfile(fullfile(leg, f{1}), tmp);
+    one_factor_patch(fullfile(tmp, f{1}), ['chan2020_jbes_kronecker/legacy/' f{1}]);
+end
 addpath(leg); c = onCleanup(@() rmpath(leg));
-assert(strncmpi(which('intlike_BVAR_CSV'), leg, numel(leg)), ...
-    'intlike_BVAR_CSV must resolve from the legacy folder');
+addpath(tmp); ct = onCleanup(@() cleanup_tmp(tmp));   % prepended -> patched copies shadow
+assert(strncmpi(which('intlike_BVAR_CSV'), tmp, numel(tmp)), ...
+    'intlike_BVAR_CSV must resolve from the patched tempdir copy');
+assert(strncmpi(which('intlike_BVAR_t_CSV'), leg, numel(leg)), ...
+    'intlike_BVAR_t_CSV must resolve from the legacy folder');
 
 cases = { ...
     @() bvar.ml.intlike_csv(shortY,X,A,Sig,rho,sigh2,R),          @() intlike_BVAR_CSV(shortY,X,A,Sig,rho,sigh2,R),          'intlike_csv'; ...
@@ -53,4 +64,9 @@ for kc = 1:size(cases, 1)
     assert(isequal(rc.State, rl.State), '%s: rng call sequence differs', cases{kc, 3});
     assert(isfinite(ic), '%s: intlike not finite - harness broken', cases{kc, 3});
 end
+end
+
+function cleanup_tmp(tmp)
+rmpath(tmp);
+rmdir(tmp, 's');
 end

@@ -27,7 +27,7 @@
 % legacy defects; see run_ml and tests/variant_map.md).
 %
 % Reproduces the legacy pipeline main_BVAR.m -> BVAR*.m draw-for-draw bitwise
-% (verified by tests/unit/test_kron_equivalence.m at small nsim) with two
+% (verified by tests/unit/test_kron_equivalence.m at small nsim) with three
 % deliberate divergences. First, every legacy MCMC script (models 2-8)
 % re-seeds the global stream from the wall clock at its "MCMC starts here"
 % banner (randn('seed',sum(clock*100)); rand('seed',sum(clock*1000))), which
@@ -44,7 +44,11 @@
 % bvar.ml.llike_ma takes chol(Sig,'lower') where legacy llike_MA.m takes
 % chol(Sig)'. For a dense Sig the two factors can differ in the last bits, so
 % test_kron_equivalence gives its legacy copy the same substitution
-% (tests/variant_map.md).
+% (tests/variant_map.md). Third, each (Sig,A) draw factors KA once and solves
+% for Ahat with that factor, where the legacy scripts solve KA\(...) and
+% factor KA again for the draw; bvar.sv.csv_armh does the same in its mode
+% search. The solutions differ in the last bits, so test_kron_equivalence
+% gives the legacy copies the substitutions of tests/unit/private/one_factor_patch.m.
 %
 % All constants come from preset.m in this folder (each field cites its legacy
 % source line); the data file is read from legacy/ READ-ONLY; core reuse:
@@ -57,7 +61,8 @@
 %   bvar.ml.llike_ma / llike_csv_ma = legacy llike_MA / ROOT llike_CSV_MA
 %                                    inside the psi-MH steps.
 % The Sig/A joint draw, lam, sigh2, rho-MH and psi-MH blocks have no core
-% counterpart and live verbatim in the per-model subfunctions below.
+% counterpart and live in the per-model subfunctions below, verbatim except
+% for the single factor of KA (the third divergence).
 %
 % Output struct: the legacy stores and script-tail posterior summaries (per
 % model), acceptance counters (legacy names), the design (shortY, X, Y0,
@@ -171,8 +176,8 @@ end
 
 % -------------------------------------------------------------------------
 function res = mcmc_t(shortY, X, pri, T, n, k, nsims, burnin, pr)
-% BVAR_t.m functionized line-for-line (clock-seed line 34 dropped; figures
-% not reproduced). Draw order per sweep: (Sig,A) -> lam -> nu.
+% BVAR_t.m functionized line-for-line (clock-seed line 34 dropped; KA factored
+% once; figures not reproduced). Draw order per sweep: (Sig,A) -> lam -> nu.
 A0 = pri.A0; VA0 = pri.VA0; nu0 = pri.nu0; S0 = pri.S0;
 nuub = pr.nuub;                         % BVAR_t.m line 11
 pri.nuub = nuub;
@@ -199,13 +204,14 @@ for isim = 1:nsims + burnin
     iOm = sparse(1:T,1:T,1./lam);
     XiOm = X'*iOm;
     KA = sparse(1:k,1:k,1./VA0) + XiOm*X;
-    Ahat = KA\(sparse(1:k,1:k,VA0)\A0 + XiOm*shortY);
+    CKA = chol(KA,'lower');
+    Ahat = (CKA')\(CKA\(sparse(1:k,1:k,VA0)\A0 + XiOm*shortY));
     Shat = S0 + A0'*sparse(1:k,1:k,1./VA0)*A0 + shortY'*iOm*shortY ...
         - Ahat'*KA*Ahat;
     Shat = (Shat+Shat')/2; % adjust for rounding errors
     Sig = iwishrnd(Shat,nu0+T);
     CSig = chol(Sig,'lower');
-    A = Ahat + (chol(KA,'lower')'\randn(k,n))*CSig';
+    A = Ahat + (CKA'\randn(k,n))*CSig';
 
         %% sample lam
     U = shortY - X*A;
@@ -253,8 +259,9 @@ end
 
 % -------------------------------------------------------------------------
 function res = mcmc_csv(shortY, X, pri, T, n, k, nsims, burnin, pr)
-% BVAR_CSV.m functionized line-for-line (clock-seed line 35 dropped; figures
-% not reproduced). Draw order per sweep: (Sig,A) -> h -> sigh2 -> rho.
+% BVAR_CSV.m functionized line-for-line (clock-seed line 35 dropped; KA
+% factored once; figures not reproduced). Draw order per sweep:
+% (Sig,A) -> h -> sigh2 -> rho.
 A0 = pri.A0; VA0 = pri.VA0; nu0 = pri.nu0; S0 = pri.S0;
 nuh0 = pr.nuh0; Sh0 = pr.Sh0;           % BVAR_CSV.m line 11
 rho0 = pr.rho0; Vrho = pr.Vrho;         % line 12
@@ -282,13 +289,14 @@ for isim = 1:nsims + burnin
     iOh = sparse(1:T,1:T,exp(-h));
     XiOh = X'*iOh;
     KA = sparse(1:k,1:k,1./VA0) + XiOh*X;
-    Ahat = KA\(sparse(1:k,1:k,VA0)\A0 + XiOh*shortY);
+    CKA = chol(KA,'lower');
+    Ahat = (CKA')\(CKA\(sparse(1:k,1:k,VA0)\A0 + XiOh*shortY));
     Shat = S0 + A0'*sparse(1:k,1:k,1./VA0)*A0 + shortY'*iOh*shortY ...
         - Ahat'*KA*Ahat;
     Shat = (Shat+Shat')/2; % adjust for rounding errors
     Sig = iwishrnd(Shat,nu0+T);
     CSig = chol(Sig,'lower');
-    A = Ahat + (chol(KA,'lower')'\randn(k,n))*CSig';
+    A = Ahat + (CKA'\randn(k,n))*CSig';
 
         %% sample h [legacy sample_h -> bvar.sv.csv_armh]
     U = shortY - X*A;
@@ -346,8 +354,8 @@ end
 
 % -------------------------------------------------------------------------
 function res = mcmc_ma(shortY, X, pri, T, n, k, nsims, burnin, pr)
-% BVAR_MA.m functionized line-for-line (clock-seed line 38 dropped; figures
-% not reproduced). Draw order per sweep: (Sig,A) -> psi.
+% BVAR_MA.m functionized line-for-line (clock-seed line 38 dropped; KA factored
+% once; figures not reproduced). Draw order per sweep: (Sig,A) -> psi.
 A0 = pri.A0; VA0 = pri.VA0; nu0 = pri.nu0; S0 = pri.S0;
 psi0 = pr.psi0; Vpsi = pr.Vpsi;         % BVAR_MA.m line 9
 lpri_psi = @(x) -.5*(x-psi0)^2/Vpsi -1e10*(x<-.99 || x>.99);    % line 10
@@ -380,13 +388,14 @@ for isim = 1:nsims + burnin
     iO = sparse(1:T,1:T,[1/(1+psi^2) ones(1,T-1)]);
     XtldiO = Xtld'*iO;
     KA = sparse(1:k,1:k,1./VA0) + XtldiO*Xtld;
-    Ahat = KA\(sparse(1:k,1:k,VA0)\A0 + XtldiO*Ytld);
+    CKA = chol(KA,'lower');
+    Ahat = (CKA')\(CKA\(sparse(1:k,1:k,VA0)\A0 + XtldiO*Ytld));
     Shat = S0 + A0'*sparse(1:k,1:k,1./VA0)*A0 + Ytld'*iO*Ytld ...
         - Ahat'*KA*Ahat;
     Shat = (Shat+Shat')/2; % adjust for rounding errors
     Sig = iwishrnd(Shat,nu0+T);
     CSig = chol(Sig,'lower');
-    A = Ahat + (chol(KA,'lower')'\randn(k,n))*CSig';
+    A = Ahat + (CKA'\randn(k,n))*CSig';
 
     %% sample psi [legacy llike_MA -> bvar.ml.llike_ma]
     U = shortY - X*A;
@@ -444,8 +453,8 @@ end
 
 % -------------------------------------------------------------------------
 function res = mcmc_t_csv(shortY, X, pri, T, n, k, nsims, burnin, pr)
-% BVAR_t_CSV.m functionized line-for-line (clock-seed line 43 dropped;
-% figures not reproduced). Draw order per sweep:
+% BVAR_t_CSV.m functionized line-for-line (clock-seed line 43 dropped; KA
+% factored once; figures not reproduced). Draw order per sweep:
 % (Sig,A) -> h -> lam -> nu -> sigh2 -> rho.
 A0 = pri.A0; VA0 = pri.VA0; nu0 = pri.nu0; S0 = pri.S0;
 nuh0 = pr.nuh0; Sh0 = pr.Sh0;           % BVAR_t_CSV.m line 10
@@ -481,13 +490,14 @@ for isim = 1:nsims + burnin
     iOm = sparse(1:T,1:T,exp(-h)./lam);
     XiOm = X'*iOm;
     KA = sparse(1:k,1:k,1./VA0) + XiOm*X;
-    Ahat = KA\(sparse(1:k,1:k,VA0)\A0 + XiOm*shortY);
+    CKA = chol(KA,'lower');
+    Ahat = (CKA')\(CKA\(sparse(1:k,1:k,VA0)\A0 + XiOm*shortY));
     Shat = S0 + A0'*sparse(1:k,1:k,1./VA0)*A0 + shortY'*iOm*shortY ...
         - Ahat'*KA*Ahat;
     Shat = (Shat+Shat')/2; % adjust for rounding errors
     Sig = iwishrnd(Shat,nu0+T);
     CSig = chol(Sig,'lower');
-    A = Ahat + (chol(KA,'lower')'\randn(k,n))*CSig';
+    A = Ahat + (CKA'\randn(k,n))*CSig';
 
         %% sample h [legacy sample_h -> bvar.sv.csv_armh]
     U = shortY - X*A;
@@ -565,8 +575,9 @@ end
 
 % -------------------------------------------------------------------------
 function res = mcmc_t_ma(shortY, X, pri, T, n, k, nsims, burnin, pr)
-% BVAR_t_MA.m functionized line-for-line (clock-seed line 45 dropped;
-% figures not reproduced). Draw order per sweep: (Sig,A) -> psi1 -> lam -> nu.
+% BVAR_t_MA.m functionized line-for-line (clock-seed line 45 dropped; KA
+% factored once; figures not reproduced). Draw order per sweep:
+% (Sig,A) -> psi1 -> lam -> nu.
 A0 = pri.A0; VA0 = pri.VA0; nu0 = pri.nu0; S0 = pri.S0;
 psi0 = pr.psi0; Vpsi = pr.Vpsi;         % BVAR_t_MA.m line 9
 lpri_psi = @(x) -.5*(x-psi0)^2/Vpsi -1e10*(x<-.99 || x>.99);    % line 10
@@ -606,13 +617,14 @@ for isim = 1:nsims + burnin
     iO_lam = sparse(1:T,1:T,1./lam);
     XiO = Xtld'*iO_lam;
     KA = sparse(1:k,1:k,1./VA0) + XiO*Xtld;
-    Ahat = KA\(sparse(1:k,1:k,VA0)\A0 + XiO*Ytld);
+    CKA = chol(KA,'lower');
+    Ahat = (CKA')\(CKA\(sparse(1:k,1:k,VA0)\A0 + XiO*Ytld));
     Shat = S0 + A0'*sparse(1:k,1:k,1./VA0)*A0 + Ytld'*iO_lam*Ytld ...
         - Ahat'*KA*Ahat;
     Shat = (Shat+Shat')/2; % adjust for rounding errors
     Sig = iwishrnd(Shat,nu0+T);
     CSig = chol(Sig,'lower');
-    A = Ahat + (chol(KA,'lower')'\randn(k,n))*CSig';
+    A = Ahat + (CKA'\randn(k,n))*CSig';
 
       %% sample psi1 [legacy llike_CSV_MA (ROOT copy) -> bvar.ml.llike_csv_ma,
       %  reused with h := log(lam)]
@@ -693,8 +705,8 @@ end
 
 % -------------------------------------------------------------------------
 function res = mcmc_csv_ma(shortY, X, pri, T, n, k, nsims, burnin, pr)
-% BVAR_CSV_MA.m functionized line-for-line (clock-seed line 45 dropped;
-% figures not reproduced). Draw order per sweep:
+% BVAR_CSV_MA.m functionized line-for-line (clock-seed line 45 dropped; KA
+% factored once; figures not reproduced). Draw order per sweep:
 % (Sig,A) -> h -> sigh2 -> rho -> psi.
 A0 = pri.A0; VA0 = pri.VA0; nu0 = pri.nu0; S0 = pri.S0;
 psi0 = pr.psi0; Vpsi = pr.Vpsi;         % BVAR_CSV_MA.m line 9
@@ -736,13 +748,14 @@ for isim = 1:nsims + burnin
     iO_hpsi = sparse(1:T,1:T,[1/(1+psi^2)*exp(-h(1)); exp(-h(2:end))]);
     XiO = Xtld'*iO_hpsi;
     KA = sparse(1:k,1:k,1./VA0) + XiO*Xtld;
-    Ahat = KA\(sparse(1:k,1:k,VA0)\A0 + XiO*Ytld);
+    CKA = chol(KA,'lower');
+    Ahat = (CKA')\(CKA\(sparse(1:k,1:k,VA0)\A0 + XiO*Ytld));
     Shat = S0 + A0'*sparse(1:k,1:k,1./VA0)*A0 + Ytld'*iO_hpsi*Ytld ...
         - Ahat'*KA*Ahat;
     Shat = (Shat+Shat')/2; % adjust for rounding errors
     Sig = iwishrnd(Shat,nu0+T);
     CSig = chol(Sig,'lower');
-    A = Ahat + (chol(KA,'lower')'\randn(k,n))*CSig';
+    A = Ahat + (CKA'\randn(k,n))*CSig';
 
         %% sample h [legacy sample_h -> bvar.sv.csv_armh]
     U = shortY - X*A;
@@ -833,8 +846,8 @@ end
 
 % -------------------------------------------------------------------------
 function res = mcmc_csv_t_ma(shortY, X, pri, T, n, k, nsims, burnin, pr)
-% BVAR_CSV_t_MA.m functionized line-for-line (clock-seed line 51 dropped;
-% figures not reproduced). Draw order per sweep:
+% BVAR_CSV_t_MA.m functionized line-for-line (clock-seed line 51 dropped; KA
+% factored once; figures not reproduced). Draw order per sweep:
 % (Sig,A) -> lam -> h -> sigh2 -> rho -> psi -> nu.
 % Verbatim legacy quirks kept (see preset and tests/variant_map.md): the rho
 % MH truncation bound is .99 here (models 3/5/7 use .9999), and the lam step
@@ -885,13 +898,14 @@ for isim = 1:nsims + burnin
     iO_h_lam_psi = sparse(1:T,1:T,[1/(1+psi^2)*exp(-h(1));exp(-h(2:end))]./lam);
     XiO = Xtld'*iO_h_lam_psi;
     KA = sparse(1:k,1:k,1./VA0) + XiO*Xtld;
-    Ahat = KA\(sparse(1:k,1:k,VA0)\A0 + XiO*Ytld);
+    CKA = chol(KA,'lower');
+    Ahat = (CKA')\(CKA\(sparse(1:k,1:k,VA0)\A0 + XiO*Ytld));
     Shat = S0 + A0'*sparse(1:k,1:k,1./VA0)*A0 + Ytld'*iO_h_lam_psi*Ytld ...
         - Ahat'*KA*Ahat;
     Shat = (Shat+Shat')/2; % adjust for rounding errors
     Sig = iwishrnd(Shat,nu0+T);
     CSig = chol(Sig,'lower');
-    A = Ahat + (chol(KA,'lower')'\randn(k,n))*CSig';
+    A = Ahat + (CKA'\randn(k,n))*CSig';
 
         % sample lam [NO (1+psi^2) first-observation correction - verbatim]
     U = shortY - X*A;

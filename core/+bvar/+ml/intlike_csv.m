@@ -28,11 +28,11 @@ while errh> 10^(-3)
     fh = -n/2 + .5*sieht;
     Gh = .5*sieht;
     Kh = HiSH + sparse(1:T,1:T,Gh);
-    newht = Kh\(fh+Gh.*ht);
+    CKh = chol(Kh,'lower');
+    newht = (CKh')\(CKh\(fh+Gh.*ht));
     errh = max(abs(newht-ht));
     ht = newht;
 end
-CKh = chol(Kh,'lower');
 
 %% evaluate the importance weights
 c_pri = -T/2*log(2*pi*sigh2) -.5*log(1/(1-rho^2));

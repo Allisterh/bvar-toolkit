@@ -150,7 +150,7 @@ end
 store_w = zeros(M,1);
 L = [eye(r); ones(n-r,r)];
 L_idx = find(tril(ones(n,r),-1)~=0); % index of free elements of L
-c_hi = .5*bvar.util.ldet(Kh_hat);
+c_hi = sum(log(diag(CKh_hat)));
 for isim = 1:M
     longh = h_hat + CKh_hat'\randn(T*(n+r),1);
     h = reshape(longh,T,n+r);
@@ -240,10 +240,11 @@ Omega = sparse(1:T*r,1:T*r,reshape(exp(h(:,n+1:n+r))',T*r,1));
 Sig = sparse(1:T*n,1:T*n,reshape(exp(h(:,1:n))',T*n,1));
 
 Sy = kron(speye(T),L)*Omega*kron(speye(T),L') + Sig;
-XiSy = bigX'/Sy;
+CSy = chol(Sy,'lower');
+XiSy = ((CSy')\(CSy\bigX))';
 Kalp = sparse(1:k_alp,1:k_alp,1./Hyper.Valp) + XiSy*bigX;
 CKalp = chol(Kalp,'lower');
 tmpc = CKalp\(Hyper.alp0./Hyper.Valp + XiSy*y);
-lden = -T*n/2*log(2*pi) -.5*bvar.util.ldet(Sy) -.5*sum(log(Hyper.Valp)) -sum(log(diag(CKalp)))...
-    -.5*(y'*(Sy\y) +sum(Hyper.alp0.^2./Hyper.Valp) -sum(tmpc.^2));
+lden = -T*n/2*log(2*pi) -sum(log(diag(CSy))) -.5*sum(log(Hyper.Valp)) -sum(log(diag(CKalp)))...
+    -.5*(y'*((CSy')\(CSy\y)) +sum(Hyper.alp0.^2./Hyper.Valp) -sum(tmpc.^2));
 end

@@ -9,8 +9,9 @@ function test_kron_ml_densities
 % Cholesky factor where the legacy copies take the upper one; for a dense
 % matrix the two factors can differ in the last bits, so these two are
 % checked bitwise against legacy copies carrying the same three
-% substitutions as in test_kron_equivalence, and against the unmodified
-% copies to within 1e-12 relative, at n = 4 and at n = 20.
+% substitutions as in test_kron_equivalence (lniwpdf.m also the one-factor
+% substitution of one_factor_patch), and against the unmodified copies to
+% within 1e-12 relative, at n = 4 and at n = 20.
 % Plus the never-merge direction check: the realtime_forecasts copy of
 % llike_CSV_MA omits the -n/2*sum(h) term, so the two must DIFFER by
 % n/2*sum(h) (up to one-rounding tolerance - the term is folded into the
@@ -66,7 +67,7 @@ assert(isequal(l_root, c_lcsvma), ...
     'bvar.ml.llike_csv_ma differs from the legacy ROOT llike_CSV_MA');
 clear c1
 
-% --- lniwpdf.m and llike_MA.m with the lower-Cholesky substitution, bitwise ---
+% --- lniwpdf.m and llike_MA.m with the substitutions, bitwise ---
 tmp = tempname; mkdir(tmp);
 c3 = onCleanup(@() cleanup_tmp(tmp));
 lower_subs = {'llike_MA.m', 'CSig = chol(Sig)'';', 'CSig = chol(Sig,''lower'');'; ...
@@ -83,6 +84,7 @@ for kf = unique(lower_subs(:,1))'
     fwrite(fid, txt);
     fclose(fid);
 end
+one_factor_patch(fullfile(tmp, 'lniwpdf.m'), 'chan2020_jbes_kronecker/legacy/lniwpdf.m');
 addpath(tmp);
 assert(strncmpi(which('lniwpdf'), tmp, numel(tmp)), ...
     'lniwpdf must resolve from the substituted copy');

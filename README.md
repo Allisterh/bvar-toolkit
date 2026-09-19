@@ -105,8 +105,10 @@ stands in for and which pairs must never be merged.
 
 Most library functions are extracted from a published package, and a unit test runs the
 original code alongside the function and requires identical output, draw for draw under a fixed
-seed. Where a function has since been improved, for example with an option in place of a
-hard-coded constant, its default still reproduces the published computation and the
+seed. Where the library factors a matrix once and the original code factors it twice, the test
+first applies the substitutions declared in `tests/unit/private/one_factor_patch.m` to the
+original code. Where a function has since been improved, for example with an option in place
+of a hard-coded constant, its default still reproduces the published computation and the
 improvement has a test of its own. New functions, such as `bvar.models.var_sv`, are tested
 against the code they replace. The marginal likelihood code of two packages, Chan (2020, JBES)
 and Chan (2023, JoE), contains defects; the library corrects them by default and reproduces the

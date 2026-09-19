@@ -103,12 +103,13 @@ k = size(Hyper.A0,1);
 iOh = sparse(1:T,1:T,exp(-h));
 XiOh = X'*iOh;
 K_A = sparse(1:k,1:k,1./Hyper.VA) + XiOh*X;
-A_hat = K_A\(sparse(1:k,1:k,Hyper.VA)\Hyper.A0 + XiOh*Y);
+CK_A = chol(K_A,'lower');
+A_hat = (CK_A')\(CK_A\(sparse(1:k,1:k,Hyper.VA)\Hyper.A0 + XiOh*Y));
 S_hat = Hyper.S0 + Hyper.A0'*sparse(1:k,1:k,1./Hyper.VA)*Hyper.A0 ...
     + Y'*iOh*Y - A_hat'*K_A*A_hat;
 S_hat = (S_hat+S_hat')/2; % adjust for rounding errors
 
-lden = -n*T/2*log(pi) -n/2*sum(h) -n/2*(sum(log(Hyper.VA)) +bvar.util.ldet(K_A))...
+lden = -n*T/2*log(pi) -n/2*sum(h) -n/2*(sum(log(Hyper.VA)) +2*sum(log(diag(CK_A))))...
     +Hyper.nu0/2*bvar.util.ldet(Hyper.S0) -(Hyper.nu0+T)/2*bvar.util.ldet(S_hat) ...
     +bvar.util.mgammaln(n,(Hyper.nu0+T)/2) -bvar.util.mgammaln(n,Hyper.nu0/2);
 end

@@ -12,8 +12,9 @@ function test_forecast_iterate_springer
 % (is_last_miss true: the extra pre-step simulation draw) and one without -
 % models 6/7/8 at the missing-latest vintage. Asserts isequal on tmpyhat0,
 % tmpyhat1 and the terminal rng state (same randn/rand/gamrnd/iwishrnd call
-% sequence). ZERO PATCHES: none of the springer forecast scripts carries a
-% clock-seed line (verified below); the tempdir copies run byte-verbatim with
+% sequence). ONE PATCH: sample_h.m gets the one-factor substitution of
+% one_factor_patch. None of the springer forecast scripts carries a clock-seed
+% line (verified below); the other tempdir copies run byte-verbatim with
 % nsims/burnin overridden from the harness workspace.
 %
 % The 20-file vintage xlsread (main_forecasting.m lines 34-53) is slow, so it
@@ -36,8 +37,9 @@ files = {'forecast_BVAR_Minn.m', 'forecast_BVAR_CSV.m', 'forecast_BVAR_CSV_t.m',
 for kf = 1:numel(files)
     copyfile(fullfile(leg, files{kf}), fullfile(tmpdir, files{kf}));
     assert(isempty(strfind(fileread(fullfile(tmpdir, files{kf})), 'randn(''seed''')), ...
-        'unexpected clock-seed line in %s - the zero-patch premise is broken', files{kf}); %#ok<STREMP>
+        'unexpected clock-seed line in %s - the no-seed-patch premise is broken', files{kf}); %#ok<STREMP>
 end
+one_factor_patch(fullfile(tmpdir, 'sample_h.m'), 'chan2020_springer_largebvar/legacy/sample_h.m');
 addpath(tmpdir);
 
     % fixed setup (main_forecasting.m lines 26-56, 68-78)

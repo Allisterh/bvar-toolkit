@@ -1,6 +1,7 @@
 function test_ksc_rw_diffuse
 % bvar.sv.ksc_rw_diffuse must reproduce the sp_code SVRW.m (diffuse h_1 ~ N(0,Vh),
-% returns indicators) draw-for-draw under one seed - path AND indicators.
+% returns indicators) draw-for-draw under one seed - path AND indicators - run
+% from a tempdir copy with the one-factor substitution of one_factor_patch.
 root = getappdata(0, 'bvar_repo_root');
 
 rng(42, 'twister');                          % fixed test data
@@ -14,12 +15,20 @@ Vh = 9;
 rng(8, 'twister');
 [h_core, S_core] = bvar.sv.ksc_rw_diffuse(ystar, h_in, omega2h, Vh);
 
-leg = fullfile(root, 'replications', 'chan_jeliazkov2009_statespace', 'legacy', 'sp_code');
-addpath(leg); c = onCleanup(@() rmpath(leg));  % prepended -> legacy copy shadows
+rel = 'chan_jeliazkov2009_statespace/legacy/sp_code/SVRW.m';
+tmp = tempname; mkdir(tmp);
+copyfile(fullfile(root, 'replications', rel), tmp);
+one_factor_patch(fullfile(tmp, 'SVRW.m'), rel);
+addpath(tmp); c = onCleanup(@() cleanup_tmp(tmp));  % prepended -> patched copy shadows
 rng(8, 'twister');
 [h_leg, S_leg] = SVRW(ystar, h_in, omega2h, Vh);
 
 assert(isequal(h_leg, h_core), 'ksc_rw_diffuse: h differs from legacy sp_code SVRW');
 assert(isequal(S_leg, S_core), 'ksc_rw_diffuse: indicators differ from legacy sp_code SVRW');
 assert(all(ismember(S_core, 1:7)), 'ksc_rw_diffuse: indicators outside 1..7');
+end
+
+function cleanup_tmp(tmp)
+rmpath(tmp);
+rmdir(tmp, 's');
 end

@@ -8,10 +8,10 @@
 %   nsim, burnin  - default 50000 / 1000 (main_HYB_TVPSV.m 16-17)
 %   seed          - seeds the stream ONCE, before initialization. The legacy file
 %                   seeds from the clock at line 85, AFTER its initialize block
-%                   has already drawn n volatility paths; removing that line (the
-%                   only edit the equivalence test makes) leaves one continuous
-%                   stream covering initialization and the loop, which is what
-%                   this function reproduces.
+%                   has already drawn n volatility paths; removing that line, as
+%                   the equivalence test does, leaves one continuous stream
+%                   covering initialization and the loop, which is what this
+%                   function reproduces.
 %   varid         - variable selection; default preset.varid, the n = 6 set that
 %                   is the active line in the legacy file. preset also carries
 %                   varid_n3 and varid_n20.
@@ -28,11 +28,15 @@
 % bvar.priors.minnesota_C (get_C), bvar.priors.vtheta (getVtheta - this package
 % hard-codes kappa_3 = .2 and kappa_4 = 1, supplied here as kappa(3:4)),
 % bvar.samplers.eq_hyb_tvp (sample_gam_thetai_ver2), bvar.sv.ksc_rw_h0
-% (sample_SVRW - the two are bitwise identical, verified over 200 randomized
-% inputs), bvar.util.gam_mode (get_gammode), third_party/gigrnd.m.
+% (sample_SVRW - bitwise identical once sample_SVRW solves with its Cholesky
+% factor, verified over 200 randomized inputs), bvar.util.gam_mode
+% (get_gammode), third_party/gigrnd.m.
 %
 % Functionized 2026-09-05 (step 11). Draw-for-draw equivalence against the
-% unmodified legacy script: tests/unit/test_hybtvp_equivalence.m.
+% legacy script: tests/unit/test_hybtvp_equivalence.m. run_all and
+% bvar.sv.ksc_rw_h0 solve with the Cholesky factor they draw with, where the
+% legacy code factors the same matrix a second time, so the test gives the
+% legacy copies the substitutions of tests/unit/private/one_factor_patch.m.
 %
 % See:
 % Chan, J.C.C. (2023). Large Hybrid Time-Varying Parameter VARs, Journal of
@@ -205,8 +209,9 @@ for isim = 1:nsim + burnin
         Wi = [Xi Xi.*tilde_Thetai];
         WiSig  = Wi'*sparse(1:T,1:T,exp(-hi));
         Kmui = sparse(1:2*ki,1:2*ki,1./Vmui) + WiSig*Wi;
-        mui_hat = Kmui\(WiSig*Yi);
-        mui = mui_hat + chol(Kmui,'lower')'\randn(2*ki,1);
+        CKmui = chol(Kmui,'lower');
+        mui_hat = (CKmui')\(CKmui\(WiSig*Yi));
+        mui = mui_hat + CKmui'\randn(2*ki,1);
         beta0(idx_b0:idx_b1) = mui(1:k_beta/n);
         alp0(idx_a0:idx_a1) = mui(k_beta/n+1:ki);
         Sigbeta(idx_b0:idx_b1) = mui(ki+1:ki+k_beta/n).^2;

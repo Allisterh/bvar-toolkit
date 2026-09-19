@@ -8,13 +8,14 @@ function test_mlvarsv_equivalence
 % variable subset. Asserts isequal on ALL stored draws (not just means),
 % counters, the script-tail summaries, and the terminal rng state.
 %
-% Sole patch to the legacy scripts: the four MCMC scripts carry
+% Two patches to the legacy copies. The four MCMC scripts carry
 %   randn('seed',sum(clock*100)); rand('seed',sum(clock*1000));
 % active (asserted: exactly one occurrence each, not commented) - it re-seeds
 % from the wall clock and switches MATLAB to the v4/v5 generators, so it is
-% removed. VAR_NCP.m has no such line (asserted) and runs byte-verbatim. Every
-% rng draw sits after that point, so rng(seed,'twister') before dispatch aligns
-% the whole run, chain init included.
+% removed. Every rng draw sits after that point, so rng(seed,'twister') before
+% dispatch aligns the whole run, chain init included. VAR_NCP.m has no
+% clock-seed line (asserted). All five scripts, sample_SV.m and sample_CSV.m
+% get the one-factor substitutions of one_factor_patch.
 %
 % Scope: estimation only. cp_ml = 0 for models 2-5 so the utility/ml_var_*
 % routines (a separate phase) are never entered; model 1 runs with cp_ml = 1
@@ -35,6 +36,9 @@ helpers = {'prior_Minn.m', 'prior_NCP.m', 'prior_B0.m', 'sample_SV.m', ...
 for k = 1:numel(helpers)
     copyfile(fullfile(leg, 'utility', helpers{k}), fullfile(tmp, helpers{k}));
 end
+for f = {'sample_SV.m', 'sample_CSV.m'}
+    one_factor_patch(fullfile(tmp, f{1}), ['chan2023_joe_mlvarsv/legacy/utility/' f{1}]);
+end
 
 seedline = 'randn(''seed'',sum(clock*100)); rand(''seed'',sum(clock*1000));';
 patched = {'VAR_CSV.m', 'VAR_ARSV_redu.m', 'VAR_FSV.m', 'VAR_ARSVO_redu.m'};
@@ -45,15 +49,17 @@ for k = 1:numel(patched)
     assert(isempty(strfind(txt, ['%' seedline])), ...
         'the %s clock-seed line is expected to be ACTIVE', patched{k});
     txt = strrep(txt, seedline, ...
-        '% [clock-seed line removed by test_mlvarsv_equivalence - the sole patch]');
+        '% [clock-seed line removed by test_mlvarsv_equivalence]');
     fid = fopen(fullfile(tmp, patched{k}), 'w');
     fwrite(fid, txt);
     fclose(fid);
+    one_factor_patch(fullfile(tmp, patched{k}), ['chan2023_joe_mlvarsv/legacy/' patched{k}]);
 end
-% VAR_NCP.m: no MCMC, no clock-seed line - byte-verbatim
+% VAR_NCP.m: no MCMC, no clock-seed line
 txt = fileread(fullfile(leg, 'VAR_NCP.m'));
 assert(isempty(strfind(txt, 'clock*100')), 'VAR_NCP.m is expected to carry no clock-seed line');
 copyfile(fullfile(leg, 'VAR_NCP.m'), fullfile(tmp, 'VAR_NCP.m'));
+one_factor_patch(fullfile(tmp, 'VAR_NCP.m'), 'chan2023_joe_mlvarsv/legacy/VAR_NCP.m');
 
 addpath(tmp);   % removed by cleanup_tmp via ctmp, before the folder is deleted
 addpath(repdir); cp2 = onCleanup(@() rmpath(repdir)); %#ok<NASGU>

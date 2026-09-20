@@ -9,7 +9,7 @@
 % them as drawn parameters.
 %
 %   [lml,lmlstd,out] = bvar.ml.mlvarsv_fsv(X,Y,Y0,M,Hyper,flag_marg,store_h,...
-%       store_hpara,store_l,store_kappa,is_kappafixed,is_kappasym)
+%       store_hpara,store_l,store_kappa,is_kappafixed,is_kappasym,'gram','full')
 %
 %   flag_marg   - 1 or 2; any other value raises an error. VAR-FSV is the
 %                 only model in this family that implements 1; run_ml passes 2
@@ -21,6 +21,13 @@
 %   store_hpara - nsim x 3(n+r), columns [mu' phi' sig2']
 %   store_l     - nsim x kl free loadings
 %   store_kappa - nsim x 2
+%   'gram'      - how the weighted Gram matrix bigX'*inv(Sy)*bigX in the
+%                 precision of the VAR coefficients is formed: 'full' (default,
+%                 as the published code) solves with the Tn x Tn matrix Sy;
+%                 'blocks' sums kron(P_t, x_t'*x_t) over t, where P_t is the
+%                 inverse of the n x n block L*G_t*L' + D_t of Sy. The two agree
+%                 to rounding and draw the same random numbers, and 'blocks' is
+%                 faster when n is large
 %   out: store_w, bigml (the 50 batch values), and the fitted IS parameters
 %
 % Core used: bvar.priors.minn (n0pre = 4), bvar.util.tnormrnd,
@@ -31,7 +38,18 @@
 % Bayesian VARs, Journal of Econometrics, 235(2), 1419-1446.
 
 function [lml,lmlstd,out] = mlvarsv_fsv(X,Y,Y0,M,Hyper,flag_marg,store_h,...
-    store_hpara,store_l,store_kappa,is_kappafixed,is_kappasym)
+    store_hpara,store_l,store_kappa,is_kappafixed,is_kappasym,varargin)
+gram = 'full';
+for iv = 1:2:numel(varargin)
+    switch lower(varargin{iv})
+        case 'gram', gram = varargin{iv+1};
+        otherwise, error('bvar:ml:mlvarsv_fsv:badOption', ...
+                'unknown option ''%s''', varargin{iv});
+    end
+end
+assert(any(strcmp(gram, {'full','blocks'})), 'bvar:ml:mlvarsv_fsv:badGram', ...
+    'gram must be ''full'' or ''blocks''');
+blocks = strcmp(gram, 'blocks');
 assert(isequal(flag_marg,1) || isequal(flag_marg,2), 'bvar:ml:mlvarsv_fsv:flagMarg', ...
     'flag_marg must be 1 or 2 (as in the legacy switch)');
 
@@ -190,7 +208,11 @@ for isim = 1:M
         end
     end
     lh_g = c_hi -.5*(longh-h_hat)'*Kh_hat*(longh-h_hat);
-    llike = deny_fsv(X,Y,L,h,Hyper);
+    if blocks
+        llike = deny_fsv_blocks(X,Y,L,h,Hyper);
+    else
+        llike = deny_fsv(X,Y,L,h,Hyper);
+    end
     switch flag_marg
         case 1
             store_w(isim) = llike + lh_prior - lh_g ...
@@ -247,4 +269,32 @@ CKalp = chol(Kalp,'lower');
 tmpc = CKalp\(Hyper.alp0./Hyper.Valp + XiSy*y);
 lden = -T*n/2*log(2*pi) -sum(log(diag(CSy))) -.5*sum(log(Hyper.Valp)) -sum(log(diag(CKalp)))...
     -.5*(y'*((CSy')\(CSy\y)) +sum(Hyper.alp0.^2./Hyper.Valp) -sum(tmpc.^2));
+end
+
+% -------------------------------------------------------------------------
+function lden = deny_fsv_blocks(X,Y,L,h,Hyper)
+% deny_fsv with bigX'*inv(Sy)*bigX = sum over t of kron(P_t, x_t'*x_t), where P_t
+% is the inverse of the tth n x n block of Sy; Sy and bigX are not formed.
+[T,n] = size(Y);
+k = size(X,2);
+r = size(h,2)-n;
+P = zeros(T,n*n);
+PY = zeros(T,n);
+yPy = 0;
+ldSy = 0;
+for t=1:T
+    CSt = chol(L*diag(exp(h(t,n+1:n+r)))*L' + diag(exp(h(t,1:n))),'lower');
+    Pt = (CSt')\(CSt\eye(n));
+    P(t,:) = Pt(:)';
+    PY(t,:) = Y(t,:)*Pt;
+    yPy = yPy + PY(t,:)*Y(t,:)';
+    ldSy = ldSy + sum(log(diag(CSt)));
+end
+XX = reshape(X.*permute(X,[1 3 2]),T,k*k);              % row t is vec(x_t'*x_t)
+XPX = reshape(permute(reshape(XX'*P,k,k,n,n),[1 3 2 4]),n*k,n*k);
+Kalp = sparse(1:n*k,1:n*k,1./Hyper.Valp) + XPX;
+CKalp = chol(Kalp,'lower');
+tmpc = CKalp\(Hyper.alp0./Hyper.Valp + reshape(X'*PY,n*k,1));
+lden = -T*n/2*log(2*pi) -ldSy -.5*sum(log(Hyper.Valp)) -sum(log(diag(CKalp)))...
+    -.5*(yPy +sum(Hyper.alp0.^2./Hyper.Valp) -sum(tmpc.^2));
 end

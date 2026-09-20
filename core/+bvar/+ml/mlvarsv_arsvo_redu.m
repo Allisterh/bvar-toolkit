@@ -7,7 +7,7 @@
 %
 %   [lml,lmlstd,out] = bvar.ml.mlvarsv_arsvo_redu(X,Y,Y0,M,Hyper,flag_marg,...
 %       store_h,store_beta,store_hpara,store_kappa,store_o,store_po,o_grid,...
-%       is_kappafixed,is_kappasym, 'bugcompat',false)
+%       is_kappafixed,is_kappasym, 'bugcompat',false, 'gram','full')
 %
 %   flag_marg - 2 only; any other value raises an error
 %   Hyper: as bvar.ml.mlvarsv_arsv_redu plus p0a, p0b (the beta prior on po)
@@ -24,6 +24,8 @@
 %              Jacobian -n*sum(log(o)) of the outlier scaling is omitted. The
 %              default fixes all three. None of the fixes consumes rng, so both
 %              modes draw the identical stream and differ only in the weights.
+%   gram     - as in bvar.ml.mlvarsv_arsv_redu, with the weights
+%              exp(-h(:,i))./o.^2
 %   out: store_w, bigml, store_lr_o, store_lJ_o (the o Jacobian actually
 %        applied; all zeros under bugcompat), o_hat, and the fitted IS parameters
 %
@@ -41,13 +43,18 @@
 function [lml,lmlstd,out] = mlvarsv_arsvo_redu(X,Y,Y0,M,Hyper,flag_marg,store_h,...
     store_beta,store_hpara,store_kappa,store_o,store_po,o_grid,is_kappafixed,is_kappasym,varargin)
 bugcompat = false;
+gram = 'full';
 for iv = 1:2:numel(varargin)
     switch lower(varargin{iv})
         case 'bugcompat', bugcompat = varargin{iv+1};
+        case 'gram', gram = varargin{iv+1};
         otherwise, error('bvar:ml:mlvarsv_arsvo_redu:badOption', ...
                 'unknown option ''%s''', varargin{iv});
     end
 end
+assert(any(strcmp(gram, {'full','blocks'})), 'bvar:ml:mlvarsv_arsvo_redu:badGram', ...
+    'gram must be ''full'' or ''blocks''');
+blocks = strcmp(gram, 'blocks');
 assert(isequal(flag_marg,2), 'bvar:ml:mlvarsv_arsvo_redu:flagMarg', ...
     'only flag_marg = 2 is implemented (as in the legacy switch)');
 [T,n] = size(Y);
@@ -213,13 +220,20 @@ for isim = 1:M
 
     c1 = -n*T/2*log(2*pi) -.5*sum(sum(h)) -.5*sum(log(Hyper.Valp)) + lJ_o;
     iValp = sparse(1:n*k,1:n*k,1./Hyper.Valp);
-    diag_sqrt_D = bvar.util.vec(exp(h/2).*repmat(o,1,n));
-    ytilde = bvar.util.vec(Y*B0')./diag_sqrt_D;
-    Xtilde = kron(B0,X)./diag_sqrt_D;
-    Kalp = iValp + Xtilde'*Xtilde;
-    CKalp = chol(Kalp,'lower');
-    tmpc = CKalp\(iValp*Hyper.alp0 + Xtilde'*ytilde);
-    lclike = c1 -sum(log(diag(CKalp))) -.5*(sum(ytilde.^2) +sum(Hyper.alp0.^2./Hyper.Valp) -tmpc'*tmpc);
+    if blocks
+        [XWX,XWy,yWy] = bvar.util.kron_gram(X,B0,exp(-h)./o.^2,Y*B0');
+        CKalp = chol(iValp + XWX,'lower');
+        tmpc = CKalp\(iValp*Hyper.alp0 + XWy);
+    else
+        diag_sqrt_D = bvar.util.vec(exp(h/2).*repmat(o,1,n));
+        ytilde = bvar.util.vec(Y*B0')./diag_sqrt_D;
+        Xtilde = kron(B0,X)./diag_sqrt_D;
+        Kalp = iValp + Xtilde'*Xtilde;
+        CKalp = chol(Kalp,'lower');
+        tmpc = CKalp\(iValp*Hyper.alp0 + Xtilde'*ytilde);
+        yWy = sum(ytilde.^2);
+    end
+    lclike = c1 -sum(log(diag(CKalp))) -.5*(yWy +sum(Hyper.alp0.^2./Hyper.Valp) -tmpc'*tmpc);
     lh_pri = 0;
     switch flag_marg
         case 2

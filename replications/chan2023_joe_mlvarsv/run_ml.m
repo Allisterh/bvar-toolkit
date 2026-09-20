@@ -7,7 +7,7 @@
 %
 %   out = run_ml(model, is_kappafixed, is_kappasym, nsim, burnin, seed, varid)
 %   out = run_ml(..., 'M', 10000, 'flag_marg', 2, 'bugcompat', true)
-%   out = run_ml(..., 'data', D, 'r', r)
+%   out = run_ml(..., 'data', D, 'r', r, 'gram', 'blocks')
 %
 %   model .. varid - exactly as run_all (seed seeds rng ONCE, before the
 %       estimation; the ML computation continues the same stream)
@@ -23,6 +23,10 @@
 %       the other models the flag is accepted and ignored - clean bills.
 %       See tests/variant_map.md for the audit.
 %   'data', 'r' - passed to run_all
+%   'gram'      - 'full' (default) or 'blocks', passed to the VAR-SV, VAR-FSV
+%       and VAR-SVO routines: how the weighted Gram matrix in the precision of
+%       the VAR coefficients is formed. 'blocks' agrees with the published
+%       computation to rounding and is faster when n is large
 %
 % VAR-NCP (model 1) computes its log marginal likelihood inline and
 % analytically, so run_all already returns it and run_ml only reports it.
@@ -49,11 +53,13 @@ M = [];                     % filled from preset below (main_varsv.m 28)
 flag_marg = [];             % (main_varsv.m 30)
 bugcompat = false;
 pass = {};                  % options for run_all
+gram = 'full';
 for iv = 1:2:numel(varargin)
     switch lower(varargin{iv})
         case 'm', M = varargin{iv+1};
         case 'flag_marg', flag_marg = varargin{iv+1};
         case 'bugcompat', bugcompat = varargin{iv+1};
+        case 'gram', gram = varargin{iv+1};
         case {'data', 'r'}, pass = [pass, varargin(iv:iv+1)]; %#ok<AGROW>
         otherwise, error('run_ml:badOption', 'unknown option ''%s''', varargin{iv});
     end
@@ -89,14 +95,14 @@ switch out.model_num
             out.store_h,out.store_hpara,out.store_kappa,kfix);
     case 3
         [lml,lmlstd,detail] = bvar.ml.mlvarsv_arsv_redu(X,Y,Y0,M,Hyper,flag_marg, ...
-            out.store_h,out.store_beta,out.store_hpara,out.store_kappa,kfix,ksym);
+            out.store_h,out.store_beta,out.store_hpara,out.store_kappa,kfix,ksym,'gram',gram);
     case 4
         [lml,lmlstd,detail] = bvar.ml.mlvarsv_fsv(X,Y,Y0,M,Hyper,flag_marg, ...
-            out.store_h,out.store_hpara,out.store_l,out.store_kappa,kfix,ksym);
+            out.store_h,out.store_hpara,out.store_l,out.store_kappa,kfix,ksym,'gram',gram);
     case 5
         [lml,lmlstd,detail] = bvar.ml.mlvarsv_arsvo_redu(X,Y,Y0,M,Hyper,flag_marg, ...
             out.store_h,out.store_beta,out.store_hpara,out.store_kappa, ...
-            out.store_o,out.store_po,out.o_grid,kfix,ksym,'bugcompat',bugcompat);
+            out.store_o,out.store_po,out.o_grid,kfix,ksym,'bugcompat',bugcompat,'gram',gram);
 end
 
 out.lml = lml;
@@ -105,6 +111,7 @@ out.ml = detail;
 out.ml_M = M;
 out.ml_flag_marg = flag_marg;
 out.ml_bugcompat = bugcompat;
+out.ml_gram = gram;
 
 fprintf(['log marginal likelihood of ' out.model_name ': %.1f \n'], lml);  % main_varsv.m 140
 end

@@ -8,7 +8,7 @@
 % batches, which also gives the numerical standard error.
 %
 %   [lml,lmlstd,out] = bvar.ml.mlvarsv_arsv_redu(X,Y,Y0,M,Hyper,flag_marg,...
-%       store_h,store_beta,store_hpara,store_kappa,is_kappafixed,is_kappasym)
+%       store_h,store_beta,store_hpara,store_kappa,is_kappafixed,is_kappasym,'gram','full')
 %
 %   flag_marg   - 2 only; any other value raises an error
 %   Hyper: alp0, Valp, beta0, Vbeta, c0, nuh, Sh, mu0, Vmu, phi0, Vphi. The
@@ -18,6 +18,12 @@
 %   store_beta  - nsim x k_beta
 %   store_hpara - nsim x 3n, columns [mu' phi' sig2']
 %   store_kappa - nsim x 3, columns [kappa1 kappa2 kappa4]
+%   'gram'      - how the weighted Gram matrix Xtilde'*Xtilde in the precision
+%                 of the VAR coefficients is formed: 'full' (default, as the
+%                 published code) multiplies out the Tn x nk matrix Xtilde;
+%                 'blocks' sums its k x k blocks (bvar.util.kron_gram). The two
+%                 agree to rounding and draw the same random numbers, and
+%                 'blocks' is faster when n is large
 %   out: store_w, bigml (the 50 batch values), and the fitted IS parameters
 %
 % Under is_kappasym the kappa prior is scored with rows 2:3 of Hyper.c0 while
@@ -32,7 +38,18 @@
 % Bayesian VARs, Journal of Econometrics, 235(2), 1419-1446.
 
 function [lml,lmlstd,out] = mlvarsv_arsv_redu(X,Y,Y0,M,Hyper,flag_marg,store_h,...
-    store_beta,store_hpara,store_kappa,is_kappafixed,is_kappasym)
+    store_beta,store_hpara,store_kappa,is_kappafixed,is_kappasym,varargin)
+gram = 'full';
+for iv = 1:2:numel(varargin)
+    switch lower(varargin{iv})
+        case 'gram', gram = varargin{iv+1};
+        otherwise, error('bvar:ml:mlvarsv_arsv_redu:badOption', ...
+                'unknown option ''%s''', varargin{iv});
+    end
+end
+assert(any(strcmp(gram, {'full','blocks'})), 'bvar:ml:mlvarsv_arsv_redu:badGram', ...
+    'gram must be ''full'' or ''blocks''');
+blocks = strcmp(gram, 'blocks');
 assert(isequal(flag_marg,2), 'bvar:ml:mlvarsv_arsv_redu:flagMarg', ...
     'only flag_marg = 2 is implemented (as in the legacy switch)');
 [T,n] = size(Y);
@@ -163,13 +180,20 @@ for isim = 1:M
     B0(B0_id) = beta;
     c1 = -n*T/2*log(2*pi) -.5*sum(sum(h)) -.5*sum(log(Hyper.Valp));
     iValp = sparse(1:n*k,1:n*k,1./Hyper.Valp);
-    diag_sqrt_D = bvar.util.vec(exp(h/2));
-    ytilde = bvar.util.vec(Y*B0')./diag_sqrt_D;
-    Xtilde = kron(B0,X)./diag_sqrt_D;
-    Kalp = iValp + Xtilde'*Xtilde;
-    CKalp = chol(Kalp,'lower');
-    tmpc = CKalp\(iValp*Hyper.alp0 + Xtilde'*ytilde);
-    lclike = c1 -sum(log(diag(CKalp))) -.5*(sum(ytilde.^2) +sum(Hyper.alp0.^2./Hyper.Valp) -tmpc'*tmpc);
+    if blocks
+        [XWX,XWy,yWy] = bvar.util.kron_gram(X,B0,exp(-h),Y*B0');
+        CKalp = chol(iValp + XWX,'lower');
+        tmpc = CKalp\(iValp*Hyper.alp0 + XWy);
+    else
+        diag_sqrt_D = bvar.util.vec(exp(h/2));
+        ytilde = bvar.util.vec(Y*B0')./diag_sqrt_D;
+        Xtilde = kron(B0,X)./diag_sqrt_D;
+        Kalp = iValp + Xtilde'*Xtilde;
+        CKalp = chol(Kalp,'lower');
+        tmpc = CKalp\(iValp*Hyper.alp0 + Xtilde'*ytilde);
+        yWy = sum(ytilde.^2);
+    end
+    lclike = c1 -sum(log(diag(CKalp))) -.5*(yWy +sum(Hyper.alp0.^2./Hyper.Valp) -tmpc'*tmpc);
     lh_pri = 0;
     switch flag_marg
         case 2

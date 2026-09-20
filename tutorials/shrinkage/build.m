@@ -223,7 +223,7 @@ for io = 1:nor
         rng(20260919 + t, 'twister');       % common random numbers across the priors
         [Alp, Beta, Sg] = bvar.samplers.acp_theta_sig(Y0, Yf, p, prior, nsim_f);
         [Bt, St] = bvar.structural.reduced_form(Alp, Beta, Sg);
-        [mu, sd] = predictive(Bt, St, ylag, n, p, H, 1:n);
+        [mu, sd] = bvar.forecast.predictive(Bt, St, ylag, H);
         for ih = 1:2
             if isnan(actual(io,1,ih)), continue; end
             m = mu(:,:,hs(ih));  sv = sd(:,:,hs(ih));
@@ -316,32 +316,6 @@ function out = run_in(folder, fname)
 % call a function that exists under the same name in several packages, from its folder
 od = cd(folder);  back = onCleanup(@() cd(od));
 out = feval(fname);
-end
-
-function [mu, sd] = predictive(Bt, St, ylag, n, p, H, tgt)
-% Mean and standard deviation of the h-step predictive distribution, h = 1..H,
-% of the variables tgt, one row per posterior draw. Given the parameters, the
-% h-step forecast of a VAR is Gaussian: the mean follows by iterating the VAR,
-% the variance is the sum of Psi_j Sigma Psi_j' over j = 0..h-1.
-nsim = size(Bt, 1);  k = n*p + 1;  nt = numel(tgt);
-mu = zeros(nsim, nt, H);  sd = zeros(nsim, nt, H);
-for d = 1:nsim
-    A = reshape(Bt(d,:), k, n);
-    Sig = reshape(St(d,:,:), n, n);
-    c = A(1,:)';
-    Phi = reshape(A(2:end,:)', n, n, p);
-    Psi = zeros(n, n, H);  Psi(:,:,1) = eye(n);
-    yl = ylag;  V = zeros(n);
-    for h = 1:H
-        yh = c;
-        for l = 1:p, yh = yh + Phi(:,:,l)*yl(:,l); end
-        yl = [yh, yl(:,1:p-1)];
-        for l = 1:min(h-1, p), Psi(:,:,h) = Psi(:,:,h) + Phi(:,:,l)*Psi(:,:,h-l); end
-        V = V + Psi(:,:,h)*Sig*Psi(:,:,h)';
-        mu(d,:,h) = yh(tgt);
-        sd(d,:,h) = sqrt(diag(V(tgt,tgt)));
-    end
-end
 end
 
 function s = stars(z)

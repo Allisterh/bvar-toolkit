@@ -42,8 +42,15 @@ sampler ex06 used inline, moved into the library, with the prior constants of th
 `test_var_sv` pins it draw for draw to a frozen copy of that inline sampler and checks the
 constants against `preset.m`; its `'draws'` option, 2026-09-19, returns the parameter draws,
 and its default phi step, the same day, is the truncated candidate of Deviations from legacy),
-and the `bvar.diag` namespace (2026-09-19; the book's chapter 6 diagnostics, see the section
-at the end of this file). None of these is retrofitted into a legacy body: they exist for new code, and the
+the `bvar.diag` namespace (2026-09-19; the book's chapter 6 diagnostics, see the section
+at the end of this file), `bvar.forecast.predictive` (2026-09-20; the mean and standard
+deviation of the h-step predictive distribution of a reduced-form VAR, one row per posterior
+draw, promoted from the local helper of tutorials/shrinkage/build.m, whose numbers it leaves
+unchanged; `test_forecast_predictive` checks it against a companion-form computation of the
+same quantities), `bvar.util.report` (2026-09-20; writes a comparison table, or a struct
+of them, to csv files and the tables with the settings behind them to a mat file, which the
+tutorials' your_data.m scripts call at the end; the destination defaults to tempdir so that a
+run leaves the working tree clean). None of these is retrofitted into a legacy body: they exist for new code, and the
 legacy spellings they generalize stay as they are.
 
 Edits made during extraction, in full: provenance header prepended; function renamed where

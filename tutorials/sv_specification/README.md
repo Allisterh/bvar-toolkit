@@ -25,7 +25,7 @@ Two commands, from the root of the repository:
 
 | Command | What it produces | Time |
 |---|---|---|
-| `run tutorials/sv_specification/your_data.m` | the comparison on the same five series with short chains | under a minute |
+| `run tutorials/sv_specification/your_data.m` | the comparison on the same five series with short chains, and the exported report | under a minute |
 | `run tutorials/sv_specification/build.m` | every number and figure on this page | 14 minutes |
 
 The short demonstration checks that the workflow runs end to end. Its chains are far too short to
@@ -329,6 +329,14 @@ first eight rows are the initial conditions, as in Chan (2023), so data of anoth
 should be aggregated to quarters, as `your_data.m` does with its `rows = "months"` setting. The
 order of the columns is part of the Cholesky and factor specifications, so it is worth choosing
 deliberately and repeating the comparison from a second seed.
+
+The script writes the comparison to `outdir`, which defaults to `tempdir` so that a run leaves
+the repository unchanged. `sv_specification_report_models.csv` holds one row per specification
+with its log marginal likelihood, numerical standard error and running time,
+`sv_specification_report_outliers.csv` the posterior outlier probability and the posterior mean
+of the multiplier $`o_t`$ for each period, and `sv_specification_report.mat` both tables together
+with the settings behind them, including the prior hyperparameters and the posterior mean of the
+shrinkage hyperparameters of each model. Setting `outdir = ''` turns the export off.
 
 ## Implementations in R and Python
 

@@ -23,7 +23,7 @@ Two commands, from the root of the repository:
 
 | Command | What it produces | Time |
 |---|---|---|
-| `run tutorials/shrinkage/your_data.m` | the three priors, the lag-length scan and the contour plot | about 10 seconds |
+| `run tutorials/shrinkage/your_data.m` | the three priors, the lag-length scan, the contour plot, forecasts and the exported report | about 15 seconds |
 | `run tutorials/shrinkage/build.m` | every number and figure on this page, including the forecast comparison | about 13 minutes |
 
 With the settings as they ship, `your_data.m` reports an own-lag hyperparameter of 0.406 and an
@@ -277,13 +277,15 @@ statistics of the asymmetric prior against the two benchmarks are 7.1 and 6.3.
 
 The script [`your_data.m`](your_data.m) applies the same analysis to any dataset. Set the file,
 the columns, their names, the date column, which variables are nonstationary, the lag lengths and
-the number of initial conditions in its settings block. Columns may be given by number, counting
-every column of the file, or by name. The script drops rows missing at either end of the sample,
-and stops on a missing value inside it, on unevenly spaced dates when a date column is given, and
-on a constant series. It then chooses $`\kappa_2`$ and $`\kappa_3`$ under the three priors, repeats
-the choice for each lag length, and plots the marginal likelihood around the optimum on a
-logarithmic grid. With its default settings, which use the dataset of this tutorial, it
-reproduces Tables 1 and 2 in about 10 seconds.
+the number of initial conditions, the forecast horizon and where the report goes in its settings
+block. Columns may be given by number, counting every column of the file, or by name. The script
+drops rows missing at either end of the sample, and stops on a missing value inside it, on
+unevenly spaced dates when a date column is given, and on a constant series. It then chooses
+$`\kappa_2`$ and $`\kappa_3`$ under the three priors, repeats the choice for each lag length,
+plots the marginal likelihood around the optimum on a logarithmic grid, forecasts `H` periods
+past the end of the sample under each prior, and writes the whole comparison to a csv and a mat
+file. With its default settings, which use the dataset of this tutorial, it reproduces Tables 1
+and 2 in about 15 seconds.
 
 The `nonstationary` setting lists the variables whose first own lag has prior mean one. It
 centers the prior and leaves the data alone: a stationary interest rate can enter untransformed
@@ -312,6 +314,31 @@ Each row of `A` is one draw of the reduced-form coefficients, stacked equation b
 the intercept first, and `Sigma(d,:,:)` is the error covariance matrix of draw `d`. The published
 application of Chan (2022) sets the prior on the reduced-form coefficients instead; replacing
 `'stru'` with `'redu'` and `acp_stru` with `acp_redu` selects that version.
+
+Those draws are what the forecasts are built from. Given the coefficients and the error
+covariance matrix, the $`h`$-step forecast of a VAR is Gaussian: the mean iterates the VAR
+forward, and the variance is $`\sum_{j=0}^{h-1}\Psi_j \Sigma \Psi_j'`$, with $`\Psi_j`$ the
+moving-average matrices (Chan, forthcoming, Section 12.2.3). One call returns that mean and
+standard deviation for every draw, variable and horizon:
+
+```matlab
+[mu, sd] = bvar.forecast.predictive(A, Sigma, ylag, H);
+```
+
+Here `ylag` holds the last $`p`$ observations with the most recent first, and `mu(d,i,h)` and
+`sd(d,i,h)` belong to draw `d`, variable `i` and horizon `h`. Each row conditions on one draw of
+the parameters, so the spread of `mu` across rows is parameter uncertainty, and `sd` is the width
+of the forecast density given those parameters. The predictive distribution is the mixture over
+the rows, and `mu + sd.*randn(size(mu))` samples it directly. `your_data.m` reports its mean,
+standard deviation and 68% band for each variable and each horizon up to `H`, under all three
+priors.
+
+The script then writes what it computed to `outdir`, which defaults to `tempdir` so that a run
+leaves the repository unchanged. `shrinkage_report_models.csv` holds one row per prior and per
+lag length, `shrinkage_report_forecasts.csv` one row per prior, variable and horizon, and
+`shrinkage_report.mat` holds both tables together with the settings behind them: the file, the
+columns, the sample, the seed, the chain length and the chosen hyperparameters. Setting
+`outdir = ''` turns the export off.
 
 ## Implementations in R and Python
 

@@ -5,12 +5,13 @@
 % (VAR-CSV), Cholesky (VAR-SV, under the asymmetric and the symmetric prior),
 % factor (VAR-FSV, for each number of factors in rs) and Cholesky with an outlier
 % component (VAR-SVO). It then prints the log marginal likelihood of each with its
-% numerical standard error and plots the posterior probability that each period is
-% an outlier. The models, priors and estimators are those of Chan (2023): four
-% lags, the first eight rows as initial conditions, and prior means of zero on the
-% VAR coefficients, so the series must be stationary. The defaults use the five
-% series of the tutorial with short chains; the tutorial keeps 20,000 draws after
-% 1,000 burn-in and uses 10,000 importance-sampling draws.
+% numerical standard error, plots the posterior probability that each period is an
+% outlier, and writes the comparison to a csv and a mat file. The models, priors
+% and estimators are those of Chan (2023): four lags, the first eight rows as
+% initial conditions, and prior means of zero on the VAR coefficients, so the
+% series must be stationary. The defaults use the five series of the tutorial with
+% short chains; the tutorial keeps 20,000 draws after 1,000 burn-in and uses
+% 10,000 importance-sampling draws.
 %
 % Give cols as column names, read with readtable. The selected columns must have
 % no missing values inside the sample; rows missing at either end are dropped.
@@ -22,6 +23,7 @@
 tdir = fileparts(mfilename('fullpath'));
 repo = fileparts(fileparts(tdir));
 run(fullfile(repo, 'setup.m'))
+lastwarn('');       % the report records the last warning raised from here on
 
 %% ---- settings ----
 file    = fullfile(tdir, 'macro5_Q.csv');
@@ -35,6 +37,7 @@ nsim    = 1000;                      % draws kept
 burnin  = 200;                       % draws discarded first
 M       = 1000;                      % importance-sampling draws
 seed    = 1;
+outdir  = tempdir;                   % where the report goes; '' for none
 
 %% ---- data ----
 raw = readtable(file, 'VariableNamingRule', 'preserve');
@@ -83,9 +86,11 @@ back = onCleanup(@() rmpath(pkg));
 spec = [{'VAR-NCP', false, 1}; {'VAR-CSV', false, 1}; {'VAR-SV', false, 1}; {'VAR-SV', true, 1}; ...
         [repmat({'VAR-FSV'}, numel(rs), 1), repmat({false}, numel(rs), 1), num2cell(rs(:))]; ...
         {'VAR-SVO', false, 1}];
-label = strings(size(spec, 1), 1);
-lml = zeros(size(spec, 1), 1);  nse = nan(size(spec, 1), 1);
-for s = 1:size(spec, 1)
+nspec = size(spec, 1);
+label = strings(nspec, 1);
+lml = zeros(nspec, 1);  nse = nan(nspec, 1);  secs = zeros(nspec, 1);
+kap = cell(nspec, 1);  hyper = cell(nspec, 1);
+for s = 1:nspec
     t0 = tic;
     res = run_ml(spec{s,1}, false, spec{s,2}, nsim, burnin, seed, [], 'data', data, ...
         'r', spec{s,3}, 'M', M);
@@ -94,13 +99,17 @@ for s = 1:size(spec, 1)
     label(s) = string(spec{s,1});
     if spec{s,2}, label(s) = label(s) + ", symmetric prior"; end
     if strcmp(spec{s,1}, 'VAR-FSV'), label(s) = label(s) + sprintf(", r = %d", spec{s,3}); end
-    if strcmp(spec{s,1}, 'VAR-SVO'), pout = mean(res.store_o > 1, 1)'; end
-    fprintf('%s: %.0f s\n', label(s), toc(t0));
+    if strcmp(spec{s,1}, 'VAR-SVO'), pout = mean(res.store_o > 1, 1)'; omean = mean(res.store_o, 1)'; end
+    if isfield(res, 'kappa_mean'), kap{s} = res.kappa_mean(:)'; end
+    hyper{s} = res.Hyper;
+    secs(s) = toc(t0);
+    fprintf('%s: %.0f s\n', label(s), secs(s));
 end
+T = res.T;  n = res.n;        % the estimation sample, past the 8 initial conditions
 
 fprintf('\nlog marginal likelihood (numerical standard error)\n');
 [~, best] = max(lml);
-for s = 1:numel(lml)
+for s = 1:nspec
     if isnan(nse(s)), se = "    -"; else, se = compose("%5.2f", nse(s)); end
     fprintf('%-32s %11.1f (%s) %9.1f\n', label(s), lml(s), se, lml(s) - lml(best));
 end
@@ -117,3 +126,26 @@ set(gca, 'XTick', tk, 'XTickLabel', lab(8 + tk));
 ylim([0 1]); box off
 ylabel('posterior probability');
 title('Probability that each period is an outlier, VAR-SVO');
+
+%% ---- the report ----
+% One row per specification, the outlier probabilities of VAR-SVO in their own
+% file, and the settings in the mat file, which also holds the prior
+% hyperparameters and the posterior mean of the shrinkage kappa of each model.
+if ~isempty(outdir)
+    rcol = cell2mat(spec(:,3));
+    rcol(~strcmp(spec(:,1), 'VAR-FSV')) = NaN;    % r is the number of factors, FSV only
+    models = table(label, cell2mat(spec(:,2)), rcol, lml, nse, ...
+        lml - lml(best), secs, repmat([n T res.p nsim burnin M seed], nspec, 1), ...
+        'VariableNames', {'model', 'symmetric_prior', 'r', 'log_ML', 'nse', ...
+        'gap_to_best', 'seconds', 'settings'});
+    models = splitvars(models, 'settings', 'NewVariableNames', ...
+        {'n', 'T', 'p', 'nsim', 'burnin', 'M', 'seed'});
+    outliers = table(string(lab(9:end)), pout, omean, ...
+        'VariableNames', {'period', 'probability', 'mean_multiplier'});
+    meta = struct('file', file, 'columns', cols, 'pct', pct, 'rows', rows, ...
+        'datecol', datecol, 'n', n, 'T', T, 'p', res.p, 'rs', rs, 'nsim', nsim, ...
+        'burnin', burnin, 'M', M, 'seed', seed, 'sample', string(lab([9 end])), ...
+        'kappa_mean', {kap}, 'hyper', {hyper});
+    bvar.util.report('sv_specification_report', ...
+        struct('models', models, 'outliers', outliers), meta, outdir);
+end

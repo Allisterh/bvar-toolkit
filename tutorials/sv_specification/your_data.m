@@ -8,7 +8,7 @@
 % numerical standard error and plots the posterior probability that each period is
 % an outlier. The models, priors and estimators are those of Chan (2023): four
 % lags, the first eight rows as initial conditions, and prior means of zero on the
-% VAR coefficients, so the series must be stationary. The defaults use the four
+% VAR coefficients, so the series must be stationary. The defaults use the five
 % series of the tutorial with short chains; the tutorial keeps 20,000 draws after
 % 1,000 burn-in and uses 10,000 importance-sampling draws.
 %
@@ -24,11 +24,11 @@ repo = fileparts(fileparts(tdir));
 run(fullfile(repo, 'setup.m'))
 
 %% ---- settings ----
-file    = fullfile(tdir, 'FRED_MD_25vars.csv');
-cols    = ["INDPRO" "UNRATE" "PCEPI" "FEDFUNDS"];
-pct     = [true false true false];   % log differences, multiplied by 100
+file    = fullfile(tdir, 'macro5_Q.csv');
+cols    = ["UNRATE" "PCECTPI" "FEDFUNDS" "NFCI" "GDPC1"];    % the order is a normalization
+pct     = [false false false false false];   % which columns to multiply by 100
 datecol = "Date";                    % the column holding the dates; "" to skip the check
-rows    = "months";                  % "months": average the months of each quarter;
+rows    = "periods";                 % "months": average the months of each quarter;
                                      % "periods": use the rows as they are
 rs      = [1 2];                     % numbers of factors in VAR-FSV
 nsim    = 1000;                      % draws kept
@@ -63,9 +63,15 @@ if rows == "months"
     q = q(cnt == 3);
     lab = compose('%dQ%d', floor((q - 1)/4), q - 4*floor((q - 1)/4));
 elseif ~isempty(dates)
-    step = diff(double(dates));
-    assert(all(step > 0) && max(abs(step - median(step))) <= 1e-6*max(1, abs(median(step))), ...
-        'the dates of the rows kept are not evenly spaced');
+    if isdatetime(dates)
+        step = days(diff(dates));
+        even = all(step > 0) && max(abs(step - median(step))) <= 3;   % calendar months vary
+    else
+        step = diff(double(dates));
+        even = all(step > 0) && max(abs(step - median(step))) <= 1e-6*max(1, abs(median(step)));
+    end
+    assert(even, 'the dates of the rows kept are not evenly spaced');
+    if isdatetime(dates), lab = cellstr(string(dates, 'uuuuQQQ')); end
 end
 fprintf('\n%d variables, %d observations after 8 initial conditions (%s to %s)\n', ...
     numel(cols), size(data, 1) - 8, lab{9}, lab{end});

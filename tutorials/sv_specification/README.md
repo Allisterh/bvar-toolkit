@@ -364,8 +364,8 @@ The seven specifications are each estimated twice, and `build.m` saves every run
 folder next to itself, so an interrupted build resumes where it stopped. Setting `build_runs` to
 a subset of 1:7 before running the script computes only those specifications, which spreads them
 over several MATLAB sessions. The computation took 12.8 minutes using MATLAB R2025b on a
-computer with an Intel Core Ultra 7 255U processor and 32 GB of RAM. All results in this tutorial
-are printed in [`build_log.txt`](build_log.txt), and the figure is saved in the same folder. The
+computer with an Intel Core Ultra 7 255U processor and 32 GB of RAM. The script prints every
+result in this tutorial and saves the figure in the same folder as this page. The
 data file [`macro5_Q.csv`](macro5_Q.csv) joins the four series of the book's
 `chapter12/macro4_Q.csv` with the NFCI column of its `chapter04/GDP_NFCI_merged.csv` on the
 quarter; the two files date a quarter by its last and its first month, and the GDP column they

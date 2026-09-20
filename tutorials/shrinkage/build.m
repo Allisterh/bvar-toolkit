@@ -8,14 +8,14 @@
 % tests/golden. The figure it writes uses a logarithmic grid instead, which spans
 % the three priors. Part 2 draws from the posterior under each prior and scans the
 % lag length. Part 3 repeats the paper's recursive forecasting exercise, whose code
-% is not in the package. Everything printed goes to build_log.txt and the figures
-% are written next to this file.
+% is not in the package. The figures are written next to this file and everything
+% printed goes to a log in tempdir.
 %
 % Usage, from anywhere:  run tutorials/shrinkage/build.m
 
 tdir = fileparts(mfilename('fullpath'));
 repo = fileparts(fileparts(tdir));
-logf = fullfile(tdir, 'build_log.txt');
+logf = fullfile(tempdir, 'bvar_shrinkage_build_log.txt');
 if exist(logf, 'file'), delete(logf); end
 diary(logf);
 fprintf('tutorials/shrinkage/build.m, %s, MATLAB %s\n', ...
@@ -309,8 +309,6 @@ close(fig)
 
 fprintf('\nbuild finished in %.1f minutes\n', toc(t0)/60);
 diary off
-txt = strrep(fileread(logf), repo, '<repo>');     % keep this machine's paths out of the log
-fid = fopen(logf, 'w');  fwrite(fid, txt);  fclose(fid);
 
 function out = run_in(folder, fname)
 % call a function that exists under the same name in several packages, from its folder

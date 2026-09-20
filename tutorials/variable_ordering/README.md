@@ -318,9 +318,9 @@ The script `build.m` estimates the models in ex06 with 30,000 posterior draws af
 period of 5,000 draws. The computation took 18.6, 19.0 and 30.9 minutes in three runs, using
 MATLAB R2025b on a computer with an Intel Core Ultra 7 255U processor and 32 GB of RAM. The
 script then reads the 20-variable results in the replication package, recomputes the forecast
-comparison from the stored forecasts and checks it against the capture in `tests/golden`. All
-results in this tutorial are printed in [`build_log.txt`](build_log.txt) or computed from
-numbers printed there, and the figures are saved in the same folder.
+comparison from the stored forecasts and checks it against the capture in `tests/golden`. The
+script prints every result in this tutorial, or the numbers they are computed from, and saves
+the figures in the same folder as this page.
 
 ## References
 

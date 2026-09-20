@@ -8,7 +8,8 @@ drivers must reproduce these numbers within Monte Carlo tolerance.
 
 1. `run_golden.ps1 -Slug <slug> -Entry <script.m>` does, in order:
    - copies `replications/<slug>/legacy/` to `%LOCALAPPDATA%\bvar-toolkit\golden_runs\<slug>\` (fresh copy;
-     deliberately outside the repo - Dropbox sync locks freshly written files and should not sync MCMC scratch),
+     deliberately outside the repo - a sync client locks freshly written files and should not
+     sync MCMC scratch),
    - overlays `tests/golden_runs/patches/<slug>/` if that folder exists (minimal run-enablement
      patches only - e.g. a deprecated `xlsread` call or a legacy `rand('seed',...)` line; every
      patch file must carry a header comment stating exactly what was changed and why),

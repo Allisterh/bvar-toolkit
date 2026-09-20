@@ -11,7 +11,7 @@
 % resumes where it stopped. Part 2 reports the marginal likelihoods, the shrinkage
 % hyperparameters and the outlier probabilities, and Part 3 the MCMC diagnostics
 % and the repeat estimates. Everything
-% printed goes to build_log.txt and the figures are written next to this file.
+% printed goes to a log in tempdir and the figures are written next to this file.
 %
 % Usage, from anywhere:  run tutorials/sv_specification/build.m
 %
@@ -23,7 +23,7 @@ tdir = fileparts(mfilename('fullpath'));
 repo = fileparts(fileparts(tdir));
 only = exist('build_runs', 'var');
 if ~only
-    logf = fullfile(tdir, 'build_log.txt');
+    logf = fullfile(tempdir, 'bvar_sv_specification_build_log.txt');
     if exist(logf, 'file'), delete(logf); end
     diary(logf);
 end
@@ -219,8 +219,6 @@ fprintf('\nbuild finished in %.1f minutes (runs included: %.1f hours)\n', toc(t0
      sum(cellfun(@(s) s.seconds, A)))/3600);
 diary off
 rmpath(pkg);
-txt = strrep(fileread(logf), repo, '<repo>');     % keep this machine's paths out of the log
-fid = fopen(logf, 'w');  fwrite(fid, txt);  fclose(fid);
 
 function s = cached(rdir, i, q, key)
 % the saved run, when its settings match

@@ -22,7 +22,9 @@
 % CSV -8514.1, MA -8703.3, t-CSV -8500.5, t-MA -8522.2, CSV-MA -8485.9,
 % CSV-t-MA -8468.4.
 
-repdir = 'C:\Users\joshu\Dropbox\website\Github\bvar-toolkit\replications\chan2020_jbes_kronecker';
+here = fileparts(mfilename('fullpath'));      % tests/golden/<slug>/<capture>/
+repdir = fullfile(fileparts(fileparts(fileparts(fileparts(here)))), ...
+    'replications', 'chan2020_jbes_kronecker');
 addpath(repdir);
 
 nsim   = 30000;

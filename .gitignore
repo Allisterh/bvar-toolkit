@@ -3,3 +3,4 @@ desktop.ini
 .DS_Store
 build/
 tutorials/sv_specification/runs/
+tutorials/*/build_log.txt

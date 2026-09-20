@@ -5,14 +5,14 @@
 % that the Chan, Koop and Yu (2024) package ships in its results_mat folder. Part 3
 % runs the package's Table3_forecasting.m on a temporary copy of the package, which
 % recomputes the forecast comparison from the shipped forecasts, and checks the
-% result against the capture in tests/golden. Everything printed goes to
-% build_log.txt and the figures are written next to this file.
+% result against the capture in tests/golden. Everything printed goes to a log in
+% tempdir and the figures are written next to this file.
 %
 % Usage, from anywhere:  run tutorials/variable_ordering/build.m
 
 tut_dir = fileparts(mfilename('fullpath'));
 tut_repo = fileparts(fileparts(tut_dir));
-tut_log = fullfile(tut_dir, 'build_log.txt');
+tut_log = fullfile(tempdir, 'bvar_variable_ordering_build_log.txt');
 if exist(tut_log, 'file'), delete(tut_log); end
 diary(tut_log);
 fprintf('tutorials/variable_ordering/build.m, %s, MATLAB %s\n', ...
@@ -227,8 +227,6 @@ fprintf('largest RMSFE difference between the two orderings: Cholesky SV %.1f%%,
 
 fprintf('\nbuild finished in %.1f minutes\n', toc(tut_t0)/60);
 diary off
-tut_txt = strrep(fileread(tut_log), tut_repo, '<repo>');     % keep this machine's paths out of the log
-tut_fid = fopen(tut_log, 'w');  fwrite(tut_fid, tut_txt);  fclose(tut_fid);
 
 function draw_four(x, Y, style, labels)
 % The four paths in the columns of Y (Cholesky 1 and 2, order-invariant 1 and 2),

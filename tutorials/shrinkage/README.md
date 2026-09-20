@@ -367,9 +367,9 @@ against Table 2 of the paper, and evaluates the marginal likelihood over the gri
 Figure 1, which gives the intervals quoted above, and over the wider logarithmic grid of Figure 1
 here. It then draws from the posterior, scans the lag length and runs the forecasting exercise,
 whose code is not part of the package. The computation took 12.7 minutes using MATLAB
-R2025b on a computer with an Intel Core Ultra 7 255U processor and 32 GB of RAM. All results in
-this tutorial are printed in [`build_log.txt`](build_log.txt) or computed from numbers printed
-there, and the figures are saved in the same folder.
+R2025b on a computer with an Intel Core Ultra 7 255U processor and 32 GB of RAM. The script
+prints every result in this tutorial, or the numbers they are computed from, and saves the
+figures in the same folder as this page.
 
 ## References
 

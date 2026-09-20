@@ -1,0 +1,250 @@
+%% build - regenerate the figures and numbers of tutorials/forecasting/README.md
+%
+% A recursive, pseudo-out-of-sample comparison of three reduced-form BVARs on the
+% five quarterly series of tutorials/sv_specification: a homoskedastic VAR, a VAR
+% with one common volatility factor (VAR-CSV), and a VAR with one log-volatility
+% per equation under the order-invariant impact matrix of Chan, Koop and Yu
+% (2024) (VAR-SV). None of the three depends on the order of the columns, so the
+% comparison never asks the reader to justify an ordering.
+%
+% At each origin every model is re-estimated on the sample to that date and
+% forecast one to four quarters ahead, one simulated path per posterior draw
+% through bvar.forecast.simulate. Point forecasts are scored by RMSFE and density
+% forecasts by the log predictive likelihood, which is the log of the average of
+% exp(log density) over the draws. The homoskedastic model is also scored exactly,
+% through bvar.forecast.predictive, which measures the simulation noise in the
+% other two.
+%
+% Everything printed goes to build_log.txt and the figures are written next to
+% this file.
+%
+% Usage, from anywhere:  run tutorials/forecasting/build.m
+
+tdir = fileparts(mfilename('fullpath'));
+repo = fileparts(fileparts(tdir));
+logf = fullfile(tdir, 'build_log.txt');
+if exist(logf, 'file'), delete(logf); end
+diary(logf);
+fprintf('tutorials/forecasting/build.m, %s, MATLAB %s\n', ...
+    char(datetime('now', 'Format', 'yyyy-MM-dd HH:mm')), version);
+t_all = tic;
+run(fullfile(repo, 'setup.m'));
+
+%% ---- settings ----
+p = 4;  n0 = 8;  H = 4;  hs = [1 4];
+nsim = 5000;  burnin = 1000;
+first_forecast = datetime(1990,1,1);
+seed0 = 20260921;
+mname = ["homoskedastic" "VAR-CSV" "VAR-SV"];
+nm = numel(mname);
+
+%% ---- data, the panel of tutorial 3 ----
+tbl = readtable(fullfile(repo, 'tutorials', 'sv_specification', 'macro5_Q.csv'), ...
+    'VariableNamingRule', 'preserve');
+vars = {'UNRATE','PCECTPI','FEDFUNDS','NFCI','GDPC1'};
+vlabel = ["Unemployment" "PCE inflation" "Fed funds" "NFCI" "GDP growth"];
+data = tbl{:, vars};
+dates = tbl.Date;
+[nobs, n] = size(data);
+k = 1 + n*p;
+origins = find(dates >= first_forecast, 1) - 1 : nobs - 1;   % each has an h=1 outturn
+no = numel(origins);
+fprintf('\n%d variables, %d quarters (%s to %s)\n', n, nobs, ...
+    datestr(dates(1),'yyyyQQ'), datestr(dates(end),'yyyyQQ'));
+fprintf('%d forecast origins, %s to %s; %d draws after %d burn-in per model and origin\n', ...
+    no, datestr(dates(origins(1)),'yyyyQQ'), datestr(dates(origins(end)),'yyyyQQ'), nsim, burnin);
+fprintf('the models are re-estimated at every origin, on data up to that quarter only\n');
+
+point = nan(no, n, 2, nm);        % point forecast, by origin, variable, horizon, model
+lpl = nan(no, n, 2, nm);          % log predictive likelihood, per variable
+ljnt = nan(no, 2, nm);            % joint log predictive likelihood
+psd = nan(no, n, 2, nm);          % predictive standard deviation
+actual = nan(no, n, 2);
+lpl_exact = nan(no, n, 2);        % the homoskedastic model scored without simulation
+
+for io = 1:no
+    t = origins(io);
+    Y0 = data(1:n0, :);  Y = data(n0+1:t, :);
+    T = size(Y, 1);
+    ylag = data(t:-1:t-p+1, :)';
+    hmax = min(H, nobs - t);
+    yobs = data(t+1:t+hmax, :);
+    for ih = 1:2
+        if t + hs(ih) <= nobs, actual(io,:,ih) = data(t+hs(ih), :); end
+    end
+    cfg = struct('ylag', ylag, 'H', H, 'yobs', yobs);
+
+        % ---- model 1: homoskedastic, natural conjugate ----
+    [~, X] = bvar.util.build_lags([Y0(end-p+1:end,:); Y], p);
+    [A0, VA0, nu0, S0] = bvar.priors.niw(p, [.2^2 100], Y0, Y, 'mlvarsv_ncp');
+    iVA0 = sparse(1:k, 1:k, 1./VA0);
+    KA = iVA0 + X'*X;
+    CKA = chol(KA, 'lower');
+    Ahat = (CKA')\(CKA\(sparse(1:k,1:k,VA0)\A0 + X'*Y));
+    Shat = S0 + A0'*iVA0*A0 + Y'*Y - Ahat'*KA*Ahat;
+    Shat = (Shat + Shat')/2;
+    rng(seed0 + io, 'twister');
+    Ad = zeros(nsim, k*n);  Sd = zeros(nsim, n, n);
+    for d = 1:nsim
+        Sig = iwishrnd(Shat, nu0 + T);
+        A = Ahat + (CKA'\randn(k,n))*chol(Sig,'lower')';
+        Ad(d,:) = A(:)';  Sd(d,:,:) = Sig;
+    end
+    [yh, ld, lj, sd] = run_draws('gauss', Ad, Sd, [], cfg, n, k, H);
+    [point, lpl, ljnt, psd] = store(point, lpl, ljnt, psd, io, 1, yh, ld, lj, sd, hs, nobs, t);
+
+        % the same model scored exactly, with no simulation
+    [mu, sdx] = bvar.forecast.predictive(Ad, Sd, ylag, H);
+    for ih = 1:2
+        if t + hs(ih) > nobs, continue; end
+        z = (actual(io,:,ih) - mu(:,:,hs(ih)))./sdx(:,:,hs(ih));
+        ldx = -.5*log(2*pi*sdx(:,:,hs(ih)).^2) - .5*z.^2;
+        lpl_exact(io,:,ih) = bvar.util.logsumexp(ldx) - log(nsim);
+    end
+
+        % ---- model 2: VAR-CSV ----
+    c = bvar.models.var_csv(Y0, Y, p, 'nsim', nsim, 'burnin', burnin, ...
+        'seed', seed0 + io, 'draws', true);
+    [yh, ld, lj, sd] = run_draws('csv', c.draws.A, c.draws.Sig, c.draws, cfg, n, k, H);
+    [point, lpl, ljnt, psd] = store(point, lpl, ljnt, psd, io, 2, yh, ld, lj, sd, hs, nobs, t);
+
+        % ---- model 3: VAR-SV, order invariant ----
+    s = bvar.models.var_sv(Y0, Y, p, 'model', 'OI', 'nsim', nsim, 'burnin', burnin, ...
+        'seed', seed0 + io, 'draws', true);
+    [yh, ld, lj, sd] = run_draws('oisv', s.draws.A, s.draws.impact, s.draws, cfg, n, k, H);
+    [point, lpl, ljnt, psd] = store(point, lpl, ljnt, psd, io, 3, yh, ld, lj, sd, hs, nobs, t);
+
+    if mod(io, 20) == 0
+        fprintf('  %d of %d origins, %.1f minutes\n', io, no, toc(t_all)/60);
+    end
+    if io == no                       % how well the two chains mix at the longest sample
+        IFc = bvar.diag.inefficiency_factor([c.draws.phi, c.draws.sigh2, c.draws.Sig(:,1)], 200);
+        IFs = bvar.diag.inefficiency_factor([s.draws.phi(:,1), s.draws.sig2(:,1), s.draws.h_T(:,1)], 200);
+    end
+end
+
+%% ---- the scores ----
+fprintf('\n=== Accuracy relative to the homoskedastic VAR ===\n');
+odate = dates(origins);
+covid = odate >= datetime(2020,1,1);
+blocks = {true(no,1), ~covid, covid};
+bname = ["whole sample" "through 2019" "2020 onwards"];
+
+for ib = 1:numel(blocks)
+    sel = blocks{ib};
+    fprintf('\n%s (%d origins)\n', bname(ib), nnz(sel));
+    fprintf('%-16s %8s %26s %26s\n', '', 'horizon', 'RMSFE, percent gain', ...
+        'log score, gain per quarter');
+    for im = 2:nm
+        for ih = 1:2
+            ok = sel & ~isnan(actual(:,1,ih));
+            e0 = squeeze(point(ok,:,ih,1)) - actual(ok,:,ih);
+            em = squeeze(point(ok,:,ih,im)) - actual(ok,:,ih);
+            gain = 100*(1 - sqrt(mean(em.^2,1))./sqrt(mean(e0.^2,1)));
+            dj = ljnt(ok,ih,im) - ljnt(ok,ih,1);
+            fprintf('%-16s %8d %12.1f (median) %26.3f\n', mname(im), hs(ih), ...
+                median(gain), mean(dj));
+        end
+    end
+end
+
+fprintf('\nDiebold-Mariano tests against the homoskedastic VAR, joint log score\n');
+fprintf('%-16s %8s %12s %10s\n', '', 'horizon', 'mean gain', 'DM');
+for im = 2:nm
+    for ih = 1:2
+        ok = ~isnan(actual(:,1,ih));
+        dj = ljnt(ok,ih,im) - ljnt(ok,ih,1);
+        fprintf('%-16s %8d %12.3f %10.2f\n', mname(im), hs(ih), mean(dj), dm_stat(dj, hs(ih)));
+    end
+end
+fprintf('a statistic beyond 1.96 rejects equal accuracy at the 5%% level\n');
+
+fprintf('\nsimulation noise: the homoskedastic model scored by simulation and exactly\n');
+for ih = 1:2
+    ok = ~isnan(actual(:,1,ih));
+    d = lpl(ok,:,ih,1) - lpl_exact(ok,:,ih);
+    fprintf('  h = %d: mean difference %.4f, largest %.4f, over %d origins and %d variables\n', ...
+        hs(ih), mean(d(:)), max(abs(d(:))), nnz(ok), n);
+end
+
+fprintf('\ninefficiency factors at the last origin, %d draws\n', nsim);
+fprintf('  VAR-CSV  phi %.0f, sigh2 %.0f, Sig(1,1) %.0f\n', IFc);
+fprintf('  VAR-SV   phi_1 %.0f, sig2_1 %.0f, h_T1 %.0f\n', IFs);
+
+fprintf('\npredictive standard deviation of GDP growth at h = 1, median over origins\n');
+for im = 1:nm
+    fprintf('  %-16s through 2019 %6.2f, 2020 onwards %6.2f\n', mname(im), ...
+        median(psd(~covid,5,1,im), 'omitnan'), median(psd(covid,5,1,im), 'omitnan'));
+end
+
+%% ---- figures ----
+figure('Position', [100 100 760 320]);
+hold on
+for im = 2:nm
+    ok = ~isnan(ljnt(:,1,im));
+    plot(odate(ok), cumsum(ljnt(ok,1,im) - ljnt(ok,1,1)), 'LineWidth', 1.2);
+end
+yline(0, 'k:'); hold off; box off
+legend(mname(2:nm), 'Location', 'northwest', 'Box', 'off');
+ylabel('cumulative log score difference');
+title('Density forecasts against the homoskedastic VAR, one quarter ahead');
+exportgraphics(gcf, fullfile(tdir, 'fig_cumscore.png'), 'Resolution', 150);
+
+figure('Position', [100 100 760 320]);
+hold on
+for im = 1:nm
+    plot(odate, psd(:,5,1,im), 'LineWidth', 1.1);
+end
+hold off; box off
+legend(mname, 'Location', 'northwest', 'Box', 'off');
+ylabel('predictive standard deviation');
+title('One-quarter-ahead predictive standard deviation of GDP growth');
+exportgraphics(gcf, fullfile(tdir, 'fig_psd.png'), 'Resolution', 150);
+
+fprintf('\nbuild finished in %.1f minutes\n', toc(t_all)/60);
+diary off
+
+%% -------------------------------------------------------------------------
+function [yh, ld, lj, sd] = run_draws(spec, Acol, Scol, D, cfg, n, k, H)
+% One simulated path per draw, and the four quantities averaged or collected.
+nd = size(Acol, 1);
+yh = zeros(nd, n, H);  ld = zeros(nd, n, H);  lj = zeros(nd, H);  sd = zeros(nd, n, H);
+for d = 1:nd
+    dr.A = reshape(Acol(d,:), k, n);
+    switch spec
+        case 'gauss'
+            dr.Sig = reshape(Scol(d,:,:), n, n);
+        case 'csv'
+            dr.Sig = reshape(Scol(d,:), n, n);
+            dr.h_T = D.h(d,end);  dr.phi = D.phi(d);  dr.sigh2 = D.sigh2(d);
+        case 'oisv'
+            dr.impact = reshape(Scol(d,:), n, n);
+            dr.h_T = D.h_T(d,:);  dr.phi = D.phi(d,:);  dr.sig2 = D.sig2(d,:);
+    end
+    [y1, l1, j1, s1] = bvar.forecast.simulate(spec, dr, cfg);
+    yh(d,:,:) = y1';  ld(d,:,:) = l1';  lj(d,:) = j1';  sd(d,:,:) = s1';
+end
+end
+
+function [point, lpl, ljnt, psd] = store(point, lpl, ljnt, psd, io, im, yh, ld, lj, sd, hs, nobs, t)
+% Average the draws into the point forecast, the log predictive likelihoods and
+% the predictive standard deviation, at the two horizons that are evaluated.
+nd = size(yh, 1);
+for ih = 1:2
+    h = hs(ih);
+    if t + h > nobs, continue; end
+    point(io,:,ih,im) = mean(yh(:,:,h), 1);
+    lpl(io,:,ih,im) = bvar.util.logsumexp(ld(:,:,h)) - log(nd);
+    ljnt(io,ih,im) = bvar.util.logsumexp(lj(:,h)) - log(nd);
+    psd(io,:,ih,im) = sqrt(mean(sd(:,:,h).^2, 1) + var(yh(:,:,h), 0, 1));
+end
+end
+
+function z = dm_stat(d, h)
+% Diebold-Mariano statistic for the loss differential d, with a Newey-West
+% long-run variance using h-1 lags
+T = numel(d);  u = d - mean(d);
+lrv = (u'*u)/T;
+for l = 1:h-1, lrv = lrv + 2*(1 - l/h)*(u(1+l:end)'*u(1:end-l))/T; end
+z = mean(d)/sqrt(lrv/T);
+end

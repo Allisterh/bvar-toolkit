@@ -14,10 +14,10 @@
 % sampler of replications/chan2023_joe_mlvarsv/legacy/VAR_CSV.m without its
 % shrinkage-hyperparameter block.
 %
-% THE SAMPLER. Three blocks per sweep:
+% THE SAMPLER. bvar.models.var_csv, three blocks per sweep:
 %
 %   1. (A, Sig) | h          the natural-conjugate posterior of ex03, with each
-%                            observation weighted by exp(-h_t), written inline
+%                            observation weighted by exp(-h_t)
 %   2. h | A, Sig            bvar.sv.csv_armh
 %   3. (phi, sigh2) | h      bvar.sv.sv0_params
 %
@@ -102,9 +102,12 @@ fprintf('  series standard deviations %s, average correlation %.2f\n', ...
 nsim = 2000; burnin = 500;
 fprintf('\n1. ESTIMATION\n');
 fprintf('running %d sweeps (%d kept)...\n', nsim+burnin, nsim);
-est = csv_chain(Y0, Y, p, nsim, burnin, 3, 20260917);
+t_est = tic;
+est = bvar.models.var_csv(Y0, Y, p, 'nsim', nsim, 'burnin', burnin, ...
+    'seed', 20260917, 'c_reject', 3, 'draws', true);
+est.elapsed = toc(t_est);
 
-h_band = quantile(est.store_h, [.16 .84]);
+h_band = quantile(est.draws.h, [.16 .84]);
 cover  = mean(h_true' >= h_band(1,:) & h_true' <= h_band(2,:));
 fprintf('done in %.1f seconds (%.1f ms per sweep)\n', est.elapsed, ...
     1e3*est.elapsed/(nsim+burnin));
@@ -126,6 +129,13 @@ fprintf('   from its starting path)\n');
 %% ------------------------------------------------------------------
 %  3. The screening constant of the accept-reject step
 %  ------------------------------------------------------------------
+    % the standardized residual sums of the last sweep, which the h draw
+    % conditions on
+[~, Xdes] = bvar.util.build_lags([Y0(end-p+1:end,:); Y], p);
+A_last = reshape(est.draws.A(end,:), 1+n*p, n);
+Sig_last = reshape(est.draws.Sig(end,:), n, n);
+s2_last = sum(((Y - Xdes*A_last)/chol(Sig_last,'lower')').^2, 2);
+
 fprintf('\n2. THE ENVELOPE CONSTANT c_reject\n');
 fprintf('  The screen keeps a proposal with probability f(h)/(c*q(h)), so a\n');
 fprintf('  larger c asks for more proposals and returns a candidate closer to\n');
@@ -135,12 +145,14 @@ c_list = [1.5 3 10];
 short = cell(numel(c_list), 1);
 bench = zeros(numel(c_list), 2);
 for ic = 1:numel(c_list)
-    short{ic} = csv_chain(Y0, Y, p, 400, 100, c_list(ic), 424242);
-        % the cost of the h draw alone, at one fixed set of conditioning values
+    short{ic} = bvar.models.var_csv(Y0, Y, p, 'nsim', 400, 'burnin', 100, ...
+        'seed', 424242, 'c_reject', c_list(ic));
+        % the cost of the h draw alone, at one fixed set of conditioning values:
+        % the coefficients and covariance matrix of the last sweep above
     rng(11, 'twister');
     n_acc = 0; tic;
     for rep = 1:500
-        [~, is_accept] = bvar.sv.csv_armh(est.s2_last, est.phi_mean, ...
+        [~, is_accept] = bvar.sv.csv_armh(s2_last, est.phi_mean, ...
             est.sigh2_mean, est.h_mean, n, false, [], 'c_reject', c_list(ic));
         n_acc = n_acc + is_accept;
     end
@@ -179,7 +191,8 @@ Yb  = Yall2(Tall-T+1:end, :);
 H_true = H_all(Tall-T+1:end, :);
 H_true = H_true - mean(H_true);
 
-estb = csv_chain(Y0b, Yb, p, 1000, 250, 3, 20260918);
+estb = bvar.models.var_csv(Y0b, Yb, p, 'nsim', 1000, 'burnin', 250, ...
+    'seed', 20260918, 'c_reject', 3);
 fprintf('  the four true paths move apart: pairwise correlations %.2f to %.2f\n', ...
     min(nonzeros(tril(corr(H_true),-1))), max(nonzeros(tril(corr(H_true),-1))));
 fprintf('\n  correlation of the single estimated path with\n');
@@ -220,76 +233,3 @@ legend([hsep(1) havg hcom], {'the four true paths','their average','estimated co
 fprintf('\nex05 done. Next: ex06_variable_ordering_sv (does the order matter?).\n');
 
 %% ------------------------------------------------------------------
-function out = csv_chain(Y0, Y, p, nsim, burnin, c_reject, seed)
-% The three-block sampler. Returns the stored h draws and posterior means.
-rng(seed, 'twister');
-[T, n] = size(Y);
-k = 1 + n*p;
-[~, X] = bvar.util.build_lags([Y0(end-p+1:end,:); Y], p);
-
-    % natural-conjugate prior, the one VAR_CSV.m uses (kappa = .2^2, intercept 100)
-[A0, VA0, nu0, S0] = bvar.priors.niw(p, [.2^2 100], Y0, Y, 'mlvarsv_ncp');
-Hyper = struct('nuh', 3, 'Sh', .2, 'phi0', .98, 'Vphi', .05^2);
-
-phi = Hyper.phi0;
-sigh2 = 1/gamrnd(Hyper.nuh, 1/Hyper.Sh);
-h = zeros(T,1);
-iVA0 = sparse(1:k, 1:k, 1./VA0);
-VA0iA0 = sparse(1:k, 1:k, VA0)\A0;
-
-store_h = zeros(nsim, T);
-store_phi = zeros(nsim, 1);
-store_sigh2 = zeros(nsim, 1);
-store_A = zeros(nsim, k*n);
-Sig_sum = zeros(n);
-n_accept = 0; n_mh = 0;
-
-tic;
-for isim = 1:nsim + burnin
-        % ---- BLOCK 1: (A, Sig) | h, one joint draw ----
-    iOh = sparse(1:T, 1:T, exp(-h));
-    XiOh = X'*iOh;
-    KA = iVA0 + XiOh*X;
-    CKA = chol(KA, 'lower');
-    Ahat = (CKA')\(CKA\(VA0iA0 + XiOh*Y));
-    Shat = S0 + A0'*iVA0*A0 + Y'*iOh*Y - Ahat'*KA*Ahat;
-    Shat = (Shat + Shat')/2;                       % symmetrize against rounding
-    Sig = iwishrnd(Shat, nu0 + T);
-    CSig = chol(Sig, 'lower');
-    A = Ahat + (CKA'\randn(k,n))*CSig';
-
-        % ---- BLOCK 2: h | A, Sig ----
-    U = Y - X*A;
-    tmp = U/CSig';
-    s2 = sum(tmp.^2, 2);
-    if isim <= 20
-        h = bvar.sv.csv_armh(s2, phi, sigh2, h, n, true, [], 'c_reject', c_reject);
-    else
-        [h, is_accept] = bvar.sv.csv_armh(s2, phi, sigh2, h, n, false, [], ...
-            'c_reject', c_reject);
-        n_accept = n_accept + is_accept;
-        n_mh = n_mh + 1;
-    end
-
-        % ---- BLOCK 3: (phi, sigh2) | h ----
-    [phi, sigh2] = bvar.sv.sv0_params(h, phi, Hyper);
-
-    if isim > burnin
-        i = isim - burnin;
-        store_h(i,:) = h';
-        store_phi(i) = phi;
-        store_sigh2(i) = sigh2;
-        store_A(i,:) = A(:)';
-        Sig_sum = Sig_sum + Sig;
-    end
-end
-out.elapsed = toc;
-out.store_h = store_h;
-out.h_mean = mean(store_h)';
-out.phi_mean = mean(store_phi);
-out.sigh2_mean = mean(store_sigh2);
-out.A_mean = reshape(mean(store_A)', k, n);
-out.Sig_mean = Sig_sum/nsim;
-out.accept_rate = n_accept/max(n_mh,1);
-out.s2_last = s2;
-end

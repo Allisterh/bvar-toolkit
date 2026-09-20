@@ -18,8 +18,10 @@
 %              otherwise the current stream is used
 %   'draws'  : true also returns res.draws, the parameter draws, one row per
 %              draw: kappa (nsim x 2), A (nsim x k*n, each row A(:)'), impact
-%              (nsim x n^2), phi and sig2 (nsim x n) and, under 'CS', mu
-%              (nsim x n); default false. The log-volatility paths are not kept.
+%              (nsim x n^2), phi and sig2 (nsim x n), h_T (nsim x n, the
+%              log-volatilities at the end of the sample, which a forecast
+%              continues from) and, under 'CS', mu (nsim x n); default false.
+%              The rest of the log-volatility paths are not kept.
 %   'phi_proposal' : under 'OI', the candidate of the Metropolis-Hastings step for
 %              the log-volatility persistence phi, passed to bvar.sv.sv0_params:
 %              'truncated' (default) or 'untruncated', the step of the Chan, Koop
@@ -156,6 +158,7 @@ if keep_draws
     D.impact = zeros(nsim, n^2);
     D.phi = zeros(nsim, n);
     D.sig2 = zeros(nsim, n);
+    D.h_T = zeros(nsim, n);
     if ~is_oi, D.mu = zeros(nsim, n); end
 end
 for isim = 1:nsim + burnin
@@ -219,6 +222,7 @@ for isim = 1:nsim + burnin
             end
             D.phi(r,:) = phi';
             D.sig2(r,:) = sig2';
+            D.h_T(r,:) = h(end,:);
         end
     end
 end

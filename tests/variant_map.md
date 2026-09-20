@@ -50,7 +50,17 @@ unchanged; `test_forecast_predictive` checks it against a companion-form computa
 same quantities), `bvar.util.report` (2026-09-20; writes a comparison table, or a struct
 of them, to csv files and the tables with the settings behind them to a mat file, which the
 tutorials' your_data.m scripts call at the end; the destination defaults to tempdir so that a
-run leaves the working tree clean). None of these is retrofitted into a legacy body: they exist for new code, and the
+run leaves the working tree clean), and `bvar.models.var_csv` (2026-09-20; the three-block sampler of a VAR with
+common stochastic volatility under the natural conjugate prior, promoted from the inline sampler
+of ex05, whose printed numbers it leaves unchanged; `test_var_csv` pins its draws to a frozen
+copy of that sampler), and `bvar.forecast.simulate` (2026-09-20; the h-step
+forecast of a reduced-form VAR whose error covariance varies over time, one simulated path per
+draw as the branches of `bvar.forecast.iterate` do, with the log predictive likelihood of the
+outturn at each horizon. It exists because those branches fix their horizons and expect their
+own paper's draw structure. `test_forecast_simulate` checks each specification against the
+analytic Gaussian density when the volatility is switched off, and that the conditional means
+average over simulated paths to the deterministic iteration `bvar.forecast.predictive` returns).
+None of these is retrofitted into a legacy body: they exist for new code, and the
 legacy spellings they generalize stay as they are.
 
 Edits made during extraction, in full: provenance header prepended; function renamed where

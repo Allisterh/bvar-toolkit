@@ -1,0 +1,237 @@
+%% build - regenerate the figures and numbers of tutorials/sv_specification/README.md
+%
+% The data are four of the monthly FRED-MD series of the book's chapter 14 panel,
+% FRED_MD_25vars.csv in this folder, averaged over quarters. The models, priors,
+% lag length and marginal likelihood estimators are those of Chan (2023), archived
+% in replications/chan2023_joe_mlvarsv. Part 1 estimates the eight specifications
+% and their log marginal likelihoods with that package's run_ml and saves a summary
+% of each run in runs/ next to this file; a run whose summary exists with the same
+% settings is not repeated, so an interrupted build resumes where it stopped. Part
+% 2 reports the marginal likelihoods, the shrinkage hyperparameters and the outlier
+% probabilities, and Part 3 the MCMC diagnostics. Everything printed goes to
+% build_log.txt and the figures are written next to this file.
+%
+% Usage, from anywhere:  run tutorials/sv_specification/build.m
+%
+% The runs are independent. To spread them over several MATLAB sessions, set
+% build_runs to a subset of 1:8 before running the script in each; the script then
+% computes and saves only those runs. A final run without build_runs writes the log.
+
+tdir = fileparts(mfilename('fullpath'));
+repo = fileparts(fileparts(tdir));
+only = exist('build_runs', 'var');
+if ~only
+    logf = fullfile(tdir, 'build_log.txt');
+    if exist(logf, 'file'), delete(logf); end
+    diary(logf);
+end
+fprintf('tutorials/sv_specification/build.m, %s, MATLAB %s\n', ...
+    char(datetime('now', 'Format', 'yyyy-MM-dd HH:mm')), version);
+t0 = tic;
+run(fullfile(repo, 'setup.m'));
+pkg = fullfile(repo, 'replications', 'chan2023_joe_mlvarsv');
+addpath(pkg);
+
+    % the book's panel as its chapter14/forecast_largeVAR.m prepares it: 100 times
+    % the log-differenced series, the series in percentage points unscaled
+vars = {'INDPRO','UNRATE','PCEPI','FEDFUNDS'};
+in_pp = ismember(vars, {'CUMFNS','UNRATE','CES0600000007','GS5', ...
+    'GS10','BAAFFM','FEDFUNDS','TB3MS','GS1'});
+raw = readtable(fullfile(tdir, 'FRED_MD_25vars.csv'), 'VariableNamingRule', 'preserve');
+Xm = raw{:, vars};
+Xm(:, ~in_pp) = 100*Xm(:, ~in_pp);
+ok = all(~isnan(Xm), 2);
+Xm = Xm(ok, :);
+am = round(12*raw{ok, 'Date'});                   % year*12 + month
+assert(all(diff(am) == 1), 'the complete months are not consecutive');
+yr = floor((am - 1)/12);
+[qi, ~, iq] = unique(4*yr + ceil((am - 12*yr)/3));
+cnt = accumarray(iq, 1);
+Q = zeros(numel(qi), numel(vars));
+for j = 1:numel(vars), Q(:, j) = accumarray(iq, Xm(:, j))./cnt; end
+Q = Q(cnt == 3, :);  qi = qi(cnt == 3);
+qd = datetime(floor((qi - 1)/4), 3*(qi - 4*floor((qi - 1)/4)) - 2, 1);   % first month of the quarter
+n0 = 8;  n = numel(vars);  T = numel(qi) - n0;
+fprintf('data: %d complete months, %s to %s, averaged over %d quarters, %s to %s\n', ...
+    numel(am), mlab(am(1)), mlab(am(end)), numel(qi), qlab(qd(1)), qlab(qd(end)));
+fprintf('estimation sample %s to %s, T = %d after %d initial conditions, n = %d, p = 4\n', ...
+    qlab(qd(n0+1)), qlab(qd(end)), T, n0, n);
+
+%% ------------------------------------------------------------------
+%  Part 1. The eight specifications
+%  ------------------------------------------------------------------
+nsim = 20000;  burnin = 1000;  M = 10000;         % Section 5 of Chan (2023)
+spec = struct('model', {'VAR-NCP', 'VAR-CSV', 'VAR-SV', 'VAR-SV', 'VAR-FSV', 'VAR-FSV', ...
+                        'VAR-FSV', 'VAR-SVO'}, ...
+              'sym',   {false, false, false, true, false, false, false, false}, ...
+              'r',     {1, 1, 1, 1, 1, 2, 3, 1});
+nrun = numel(spec);
+key = [nsim, burnin, M, sum(Q(:))];               % a saved run is reused only under these
+rdir = fullfile(tdir, 'runs');
+if ~exist(rdir, 'dir'), mkdir(rdir); end
+S = cell(1, nrun);
+for i = 1:nrun
+    f = fullfile(rdir, sprintf('run%d.mat', i));
+    if exist(f, 'file')
+        c = load(f);
+        if isequal(c.s.key, key), S{i} = c.s; end
+    end
+end
+todo = find(cellfun(@isempty, S));
+fprintf('\n=== Part 1: %d draws after %d burn-in, %d importance-sampling draws ===\n', nsim, burnin, M);
+fprintf('%d of %d runs saved by an earlier build\n', nrun - numel(todo), nrun);
+if only, todo = intersect(todo, build_runs, 'stable'); end
+for i = reshape(todo, 1, [])              % a 0-by-1 empty would run the body once
+    S{i} = one_run(spec(i), Q, nsim, burnin, M, 20260919 + i, key, rdir, i);
+    fprintf('run %d, %s: %.1f minutes\n', i, S{i}.name, S{i}.seconds/60);
+end
+if only
+    rmpath(pkg);
+    return
+end
+fprintf('run times in minutes:');
+fprintf(' %d %.1f;', [1:nrun; cellfun(@(s) s.seconds, S)/60]);
+fprintf('\n');
+
+%% ------------------------------------------------------------------
+%  Part 2. Marginal likelihoods, shrinkage and outliers
+%  ------------------------------------------------------------------
+fprintf('\n=== Part 2: log marginal likelihoods ===\n');
+lml = cellfun(@(s) s.lml, S);
+nse = cellfun(@(s) s.nse, S);
+main = [1 2 3 5 6 7 8];                           % Table 1; run 4 is the symmetric prior
+[~, ib] = max(lml(main));  ib = main(ib);
+fprintf('\nTable 1\n');
+fprintf('| Model | log marginal likelihood | numerical standard error | difference from %s |\n', S{ib}.name);
+fprintf('|---|---|---|---|\n');
+for i = main
+    fprintf('| %s | %.1f | %s | %.1f |\n', S{i}.name, lml(i), nsestr(nse(i)), lml(i) - lml(ib));
+end
+fprintf('VAR-NCP has no standard error: its log marginal likelihood is available in closed form\n');
+
+fprintf('\nTable 2: the prior (posterior mean and standard deviation of each shrinkage hyperparameter)\n');
+fprintf('| Model | log marginal likelihood | own lags | other lags | impact matrix |\n');
+fprintf('|---|---|---|---|---|\n');
+for i = [2 4 3 5 6 7 8]
+    k = S{i}.kappa;
+    c = repmat({''}, 1, 3);
+    if size(k, 2) == 1                                    % VAR-CSV: one kappa for all lags
+        c(1:2) = {msd(k)};
+    else
+        c(1:2) = {msd(k(:,1)), msd(k(:,2))};
+        if size(k, 2) == 3, c{3} = msd(k(:,3)); end
+    end
+    fprintf('| %s | %.1f | %s | %s | %s |\n', S{i}.name, lml(i), c{:});
+end
+fprintf('symmetric minus asymmetric prior, VAR-SV: %.1f; VAR-SV (symmetric) minus VAR-CSV: %.1f\n', ...
+    lml(4) - lml(3), lml(4) - lml(2));
+
+fprintf('\n=== Part 2b: the outlier component of VAR-SVO ===\n');
+so = S{8};
+dq = qd(n0+1:end);
+fprintf('posterior mean of the outlier probability po: %.4f (sd %.4f); prior mean %.4f\n', ...
+    mean(so.po), std(so.po), 2.5/40);
+fprintf('expected number of outlier quarters: %.1f of %d\n', sum(so.pout), T);
+fprintf('quarters with an outlier probability above 0.5:\n');
+for t = find(so.pout' > 0.5)
+    fprintf('  %s: probability %.2f, posterior mean of o_t %.2f\n', qlab(dq(t)), so.pout(t), so.o_mean(t));
+end
+sc = S{2};
+fprintf('VAR-CSV: posterior mean of exp(h_t/2) from %.2f (%s) to %.2f (%s)\n', ...
+    min(sc.csv_std), qlab(dq(find(sc.csv_std == min(sc.csv_std), 1))), ...
+    max(sc.csv_std), qlab(dq(find(sc.csv_std == max(sc.csv_std), 1))));
+
+fig = figure('Visible', 'off', 'Units', 'centimeters', 'Position', [2 2 18 12]);
+tiledlayout(2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
+nexttile; hold on; box off
+plot(dq, sc.csv_std, 'k-', 'LineWidth', 1.2);
+ylabel('e^{h_t/2}');
+title('Common volatility, VAR-CSV (posterior mean)');
+nexttile; hold on; box off
+bar(dq, so.pout, 1, 'FaceColor', [0.4 0.4 0.4], 'EdgeColor', 'none');
+ylim([0 1]); ylabel('probability');
+title('Probability that the quarter is an outlier, VAR-SVO');
+exportgraphics(fig, fullfile(tdir, 'fig_outliers.png'), 'Resolution', 150);
+close(fig)
+
+%% ------------------------------------------------------------------
+%  Part 3. MCMC diagnostics
+%  ------------------------------------------------------------------
+fprintf('\n=== Part 3: MCMC diagnostics (bvar.diag) ===\n');
+L = 200;
+fprintf('inefficiency factors at L = %d and Geweke''s Z at the default lag, by parameter group\n', L);
+fprintf('| Model | kappa | mu | phi | sigma^2 | Geweke p < 0.05 |\n');
+fprintf('|---|---|---|---|---|---|\n');
+gwk = strings(0, 1);
+for i = [2 3 4 5 6 7 8]
+    s = S{i};
+    m = size(s.hpara, 2);
+    if m == 2                                   % VAR-CSV: [phi sig2], no mu
+        grp = {s.kappa, [], s.hpara(:,1), s.hpara(:,2)};
+    else
+        q = m/3;
+        grp = {s.kappa, s.hpara(:,1:q), s.hpara(:,q+1:2*q), s.hpara(:,2*q+1:3*q)};
+    end
+    cells = strings(1, 4);  rej = strings(1, 4);  nrej = 0;  ntot = 0;
+    for g = 1:4
+        if isempty(grp{g}), cells(g) = "-";  rej(g) = "-";  continue; end
+        IF = bvar.diag.inefficiency_factor(grp{g}, L);
+        [~, pv] = bvar.diag.geweke(grp{g});
+        cells(g) = sprintf('%.0f to %.0f', min(IF), max(IF));
+        rej(g) = sprintf('%d of %d', nnz(pv < 0.05), numel(pv));
+        nrej = nrej + nnz(pv < 0.05);  ntot = ntot + numel(pv);
+    end
+    fprintf('| %s | %s | %s | %s | %s | %d of %d |\n', s.name, cells, nrej, ntot);
+    gwk(end+1) = sprintf('| %s | %s | %s | %s | %s |', s.name, rej); %#ok<SAGROW>
+end
+fprintf('\nGeweke rejections at the 5%% level, by group\n');
+fprintf('| Model | kappa | mu | phi | sigma^2 |\n|---|---|---|---|---|\n');
+fprintf('%s\n', gwk);
+fprintf('numerical standard errors of the log marginal likelihoods: %.2f to %.2f\n', min(nse(2:end)), max(nse(2:end)));
+
+fprintf('\nbuild finished in %.1f minutes (runs included: %.1f hours)\n', toc(t0)/60, ...
+    sum(cellfun(@(s) s.seconds, S))/3600);
+diary off
+rmpath(pkg);
+txt = strrep(fileread(logf), repo, '<repo>');     % keep this machine's paths out of the log
+fid = fopen(logf, 'w');  fwrite(fid, txt);  fclose(fid);
+
+function s = one_run(sp, Q, nsim, burnin, M, seed, key, rdir, i)
+% estimate one specification and its log marginal likelihood, and save what
+% Parts 2 and 3 need; the draws of the VAR coefficients and log-volatilities are
+% not kept
+t0 = tic;
+est = @() run_ml(sp.model, false, sp.sym, nsim, burnin, seed, [], 'data', Q, 'r', sp.r, 'M', M); %#ok<NASGU>
+[~, out] = evalc('est()');                        % keeps the progress messages out of the log
+s = struct('key', key, 'seed', seed, 'lml', out.lml, 'nse', NaN, 'seconds', []);
+s.name = string(sp.model);
+if sp.sym, s.name = s.name + " (symmetric prior)"; end
+if strcmp(sp.model, 'VAR-FSV'), s.name = s.name + sprintf(", r = %d", sp.r); end
+if ~isempty(out.lmlstd), s.nse = out.lmlstd; end
+if isfield(out, 'store_kappa')
+    s.kappa = out.store_kappa;  s.hpara = out.store_hpara;  s.count_phi = out.count_phi;
+end
+if isfield(out, 'CSV_std_mean'), s.csv_std = out.CSV_std_mean; end
+if isfield(out, 'store_o')
+    s.pout = mean(out.store_o > 1, 1)';  s.o_mean = out.o_mean;  s.po = out.store_po;
+end
+s.seconds = toc(t0);
+save(fullfile(rdir, sprintf('run%d.mat', i)), 's');
+end
+
+function s = msd(x)
+s = sprintf('%.3g (%.2g)', mean(x), std(x));
+end
+
+function s = nsestr(x)
+if isnan(x), s = '-'; else, s = sprintf('%.2f', x); end
+end
+
+function s = qlab(d)
+s = sprintf('%dQ%d', year(d), quarter(d));
+end
+
+function s = mlab(am)
+y = floor((am - 1)/12);
+s = sprintf('%dM%d', y, am - 12*y);
+end

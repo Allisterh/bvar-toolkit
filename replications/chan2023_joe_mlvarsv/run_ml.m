@@ -7,6 +7,7 @@
 %
 %   out = run_ml(model, is_kappafixed, is_kappasym, nsim, burnin, seed, varid)
 %   out = run_ml(..., 'M', 10000, 'flag_marg', 2, 'bugcompat', true)
+%   out = run_ml(..., 'data', D, 'r', r)
 %
 %   model .. varid - exactly as run_all (seed seeds rng ONCE, before the
 %       estimation; the ML computation continues the same stream)
@@ -21,6 +22,7 @@
 %       ml_var_arsvo_redu.m bitwise; false runs the corrected computation. For
 %       the other models the flag is accepted and ignored - clean bills.
 %       See tests/variant_map.md for the audit.
+%   'data', 'r' - passed to run_all
 %
 % VAR-NCP (model 1) computes its log marginal likelihood inline and
 % analytically, so run_all already returns it and run_ml only reports it.
@@ -46,17 +48,19 @@ if nargin < 7, varid = []; end
 M = [];                     % filled from preset below (main_varsv.m 28)
 flag_marg = [];             % (main_varsv.m 30)
 bugcompat = false;
+pass = {};                  % options for run_all
 for iv = 1:2:numel(varargin)
     switch lower(varargin{iv})
         case 'm', M = varargin{iv+1};
         case 'flag_marg', flag_marg = varargin{iv+1};
         case 'bugcompat', bugcompat = varargin{iv+1};
+        case {'data', 'r'}, pass = [pass, varargin(iv:iv+1)]; %#ok<AGROW>
         otherwise, error('run_ml:badOption', 'unknown option ''%s''', varargin{iv});
     end
 end
 
     % estimation (seeds the stream; the ML computation continues it)
-out = run_all(model, is_kappafixed, is_kappasym, nsim, burnin, seed, varid);
+out = run_all(model, is_kappafixed, is_kappasym, nsim, burnin, seed, varid, pass{:});
 if isempty(M),         M = out.preset.ml.M;                 end
 if isempty(flag_marg), flag_marg = out.preset.ml.flag_marg; end
 
@@ -67,7 +71,7 @@ if out.model_num == 5
     if bugcompat
         fprintf(['note: bugcompat is on - reproducing the published computation, including\n' ...
                  'its three documented defects. The corrected version (the default) differs.\n']);
-    else
+    elseif out.is_package_data     % the comparison with the paper needs its data
         fprintf(['note: the published ml_var_arsvo_redu.m has three defects in the density\n' ...
                  'evaluation; this run uses the corrected version, so the value will differ\n' ...
                  'from Table 6 of the paper. Pass ''bugcompat'', true to reproduce the\n' ...

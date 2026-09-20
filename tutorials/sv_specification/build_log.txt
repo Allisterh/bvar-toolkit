@@ -1,0 +1,78 @@
+tutorials/sv_specification/build.m, 2026-09-19 20:01, MATLAB 25.2.0.3150157 (R2025b) Update 4
+bvar-toolkit: core/ and third_party/ added to the path (<repo>).
+  quick start:  cd examples; ex01_precision_sampler
+  run tests:    run(fullfile('<repo>','tests','unit','run_unit_tests.m'))
+data: 799 complete months, 1959M3 to 2025M9, averaged over 266 quarters, 1959Q2 to 2025Q3
+estimation sample 1961Q2 to 2025Q3, T = 258 after 8 initial conditions, n = 4, p = 4
+
+=== Part 1: 20000 draws after 1000 burn-in, 10000 importance-sampling draws ===
+0 of 8 runs saved by an earlier build
+run 1, VAR-NCP: 0.0 minutes
+run 2, VAR-CSV: 0.3 minutes
+run 3, VAR-SV: 0.8 minutes
+run 4, VAR-SV (symmetric prior): 1.0 minutes
+run 5, VAR-FSV, r = 1: 1.4 minutes
+run 6, VAR-FSV, r = 2: 1.2 minutes
+run 7, VAR-FSV, r = 3: 1.1 minutes
+run 8, VAR-SVO: 0.7 minutes
+run times in minutes: 1 0.0; 2 0.3; 3 0.8; 4 1.0; 5 1.4; 6 1.2; 7 1.1; 8 0.7;
+
+=== Part 2: log marginal likelihoods ===
+
+Table 1
+| Model | log marginal likelihood | numerical standard error | difference from VAR-FSV, r = 1 |
+|---|---|---|---|
+| VAR-NCP | 99.9 | - | -377.2 |
+| VAR-CSV | 418.9 | 0.11 | -58.1 |
+| VAR-SV | 463.0 | 0.30 | -14.0 |
+| VAR-FSV, r = 1 | 477.1 | 0.55 | 0.0 |
+| VAR-FSV, r = 2 | 469.0 | 0.45 | -8.1 |
+| VAR-FSV, r = 3 | 456.9 | 0.56 | -20.1 |
+| VAR-SVO | 463.5 | 0.25 | -13.5 |
+VAR-NCP has no standard error: its log marginal likelihood is available in closed form
+
+Table 2: the prior (posterior mean and standard deviation of each shrinkage hyperparameter)
+| Model | log marginal likelihood | own lags | other lags | impact matrix |
+|---|---|---|---|---|
+| VAR-CSV | 418.9 | 0.118 (0.04) | 0.118 (0.04) |  |
+| VAR-SV (symmetric prior) | 441.2 | 0.0281 (0.008) | 0.0281 (0.008) | 0.0421 (0.061) |
+| VAR-SV | 463.0 | 0.109 (0.039) | 0.00231 (0.0015) | 0.0367 (0.051) |
+| VAR-FSV, r = 1 | 477.1 | 0.1 (0.037) | 0.00132 (0.0011) |  |
+| VAR-FSV, r = 2 | 469.0 | 0.0998 (0.037) | 0.00185 (0.0014) |  |
+| VAR-FSV, r = 3 | 456.9 | 0.0958 (0.036) | 0.00207 (0.0015) |  |
+| VAR-SVO | 463.5 | 0.101 (0.036) | 0.00295 (0.0018) | 0.0448 (0.062) |
+symmetric minus asymmetric prior, VAR-SV: -21.8; VAR-SV (symmetric) minus VAR-CSV: 22.3
+
+=== Part 2b: the outlier component of VAR-SVO ===
+posterior mean of the outlier probability po: 0.0224 (sd 0.0105); prior mean 0.0625
+expected number of outlier quarters: 4.2 of 258
+quarters with an outlier probability above 0.5:
+  2020Q2: probability 1.00, posterior mean of o_t 10.76
+  2020Q3: probability 1.00, posterior mean of o_t 9.16
+VAR-CSV: posterior mean of exp(h_t/2) from 0.65 (1964Q1) to 8.59 (2020Q2)
+
+=== Part 3: MCMC diagnostics (bvar.diag) ===
+inefficiency factors at L = 200 and Geweke's Z at the default lag, by parameter group
+| Model | kappa | mu | phi | sigma^2 | Geweke p < 0.05 |
+|---|---|---|---|---|---|
+| VAR-CSV | 47 to 47 | - | 25 to 25 | 31 to 31 | 2 of 3 |
+| VAR-SV | 1 to 22 | 1 to 2 | 6 to 15 | 22 to 45 | 4 of 15 |
+| VAR-SV (symmetric prior) | 1 to 5 | 1 to 2 | 7 to 14 | 23 to 41 | 8 of 15 |
+| VAR-FSV, r = 1 | 3 to 44 | 2 to 13 | 9 to 80 | 34 to 105 | 9 of 17 |
+| VAR-FSV, r = 2 | 4 to 40 | 1 to 17 | 7 to 16 | 22 to 65 | 8 of 20 |
+| VAR-FSV, r = 3 | 4 to 34 | 1 to 17 | 7 to 37 | 26 to 102 | 4 of 23 |
+| VAR-SVO | 2 to 18 | 1 to 3 | 7 to 18 | 26 to 58 | 6 of 15 |
+
+Geweke rejections at the 5% level, by group
+| Model | kappa | mu | phi | sigma^2 |
+|---|---|---|---|---|
+| VAR-CSV | 1 of 1 | - | 1 of 1 | 0 of 1 |
+| VAR-SV | 0 of 3 | 0 of 4 | 2 of 4 | 2 of 4 |
+| VAR-SV (symmetric prior) | 2 of 3 | 0 of 4 | 3 of 4 | 3 of 4 |
+| VAR-FSV, r = 1 | 0 of 2 | 2 of 5 | 3 of 5 | 4 of 5 |
+| VAR-FSV, r = 2 | 1 of 2 | 2 of 6 | 1 of 6 | 4 of 6 |
+| VAR-FSV, r = 3 | 1 of 2 | 2 of 7 | 0 of 7 | 1 of 7 |
+| VAR-SVO | 0 of 3 | 3 of 4 | 1 of 4 | 2 of 4 |
+numerical standard errors of the log marginal likelihoods: 0.11 to 0.56
+
+build finished in 6.6 minutes (runs included: 0.1 hours)

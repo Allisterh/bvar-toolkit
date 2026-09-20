@@ -5,6 +5,7 @@
 % (VAR-SVO).
 %
 %   out = run_all(model, is_kappafixed, is_kappasym, nsim, burnin, seed, varid)
+%   out = run_all(..., varid, 'data', D, 'r', r)
 %
 %   model         - 'VAR-NCP' | 'VAR-CSV' | 'VAR-SV' | 'VAR-FSV' | 'VAR-SVO',
 %                   or the legacy numeric code 1-5 (main_varsv.m line 20);
@@ -20,6 +21,10 @@
 %   varid         - data columns; default the active n = 15 selection
 %                   (main_varsv.m 35). preset also carries the commented n = 7
 %                   and n = 30 selections.
+%   'data'        - a data matrix used in place of the package's file (varid is
+%                   then ignored); its first 8 rows are initial conditions, as
+%                   with the file
+%   'r'           - number of factors in VAR-FSV; default 2 (main_varsv.m 25)
 %
 % Functionized 2026-09-03 (step 9). Reproduces main_varsv.m -> VAR_NCP.m /
 % VAR_CSV.m / VAR_ARSV_redu.m / VAR_FSV.m / VAR_ARSVO_redu.m draw-for-draw
@@ -59,7 +64,7 @@
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large
 % Bayesian VARs, Journal of Econometrics, 235(2), 1419-1446.
 
-function out = run_all(model, is_kappafixed, is_kappasym, nsim, burnin, seed, varid)
+function out = run_all(model, is_kappafixed, is_kappasym, nsim, burnin, seed, varid, varargin)
 thisdir = fileparts(mfilename('fullpath'));
 
     % make bvar.* and gigrnd resolvable when called standalone
@@ -95,15 +100,37 @@ if nargin < 4 || isempty(nsim),          nsim   = pr.nsim_default;       end
 if nargin < 5 || isempty(burnin),        burnin = pr.burnin_default;     end
 if nargin < 6, seed = []; end
 if nargin < 7 || isempty(varid),         varid = pr.varid;               end
+data_user = []; r = pr.r;
+if mod(numel(varargin), 2) ~= 0
+    error('run_all:badOption', 'options must come in name-value pairs');
+end
+for iv = 1:2:numel(varargin)
+    switch lower(char(string(varargin{iv})))
+        case 'data', data_user = varargin{iv+1};
+        case 'r',    r = varargin{iv+1};
+        otherwise, error('run_all:badOption', 'unknown option ''%s''', char(string(varargin{iv})));
+    end
+end
+if ~isempty(data_user) && ~(isnumeric(data_user) && ismatrix(data_user) ...
+        && size(data_user,2) >= 2 && size(data_user,1) > pr.n0 && all(isfinite(data_user(:))))
+    error('run_all:badData', 'data must be a finite matrix with at least 2 columns and more than %d rows', pr.n0);
+end
+if ~(isnumeric(r) && isscalar(r) && r >= 1 && r == fix(r))
+    error('run_all:badOption', 'r must be a positive integer');
+end
 if ~isempty(seed)
     rng(seed, 'twister');
 end
 
     % data and design [main_varsv.m 33-53]
 p = pr.p;
-r = pr.r;
-data_all = load(fullfile(thisdir, 'legacy', pr.data_file));   % legacy folder, read-only
-data = data_all(:, varid);
+if isempty(data_user)
+    data_all = load(fullfile(thisdir, 'legacy', pr.data_file));   % legacy folder, read-only
+    data = data_all(:, varid);
+else
+    data = double(data_user);
+    varid = [];
+end
 Y0 = data(1:pr.n0, :);
 Y  = data(pr.n0+1:end, :);
 [T, n] = size(Y);
@@ -214,6 +241,7 @@ out.is_kappafixed = is_kappafixed;
 out.is_kappasym = is_kappasym;
 out.nsim = nsim; out.burnin = burnin; out.seed = seed;
 out.varid = varid;
+out.is_package_data = isempty(data_user);
 out.T = T; out.n = n; out.p = p; out.r = r;
 out.k = k; out.k_alp = k_alp; out.k_beta = k_beta;
 out.Y = Y; out.X = X; out.Y0 = Y0;   % the ML phase needs them (run_ml.m)

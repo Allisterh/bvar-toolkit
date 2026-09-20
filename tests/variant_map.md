@@ -528,6 +528,13 @@ New replication driver (not core): `replications/chan2023_joe_mlvarsv/run_ml.m` 
 continuous rng stream, as the legacy script tails do. `run_all` gained three output fields
 (`out.Y`, `out.X`, `out.Y0`) so run_ml need not rebuild the design.
 
+Both drivers take two more options (2026-09-19): `'data'`, a data matrix used in place of the
+package's file, and `'r'`, the number of VAR-FSV factors. On the package's own data, with
+`'r'` = 2, they reproduce the default calls bitwise for all five models
+(`tests/unit/test_mlvarsv_options.m`). On other data, run_ml leaves out its notice that the
+corrected VAR-SVO value differs from the published one; the `'bugcompat'` notice prints
+either way.
+
 Edits made during extraction, in full: provenance headers; the four routines renamed
 `ml_var_*` -> `mlvarsv_*` with the legacy positional outputs `[lml,lmlstd]` kept and the third
 output promoted from the bare `store_w` to a detail struct (`out.store_w`, `out.bigml`, the

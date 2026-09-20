@@ -1,4 +1,4 @@
-tutorials/shrinkage/build.m, 2026-09-19 07:33, MATLAB 25.2.0.3150157 (R2025b) Update 4
+tutorials/shrinkage/build.m, 2026-09-19 20:08, MATLAB 25.2.0.3150157 (R2025b) Update 4
 bvar-toolkit: core/ and third_party/ added to the path (<repo>).
   quick start:  cd examples; ex01_precision_sampler
   run tests:    run(fullfile('<repo>','tests','unit','run_unit_tests.m'))
@@ -15,9 +15,9 @@ Table 1
 | asymmetric | 0.4057 | 0.0092 | -9201.1 | 0.0 |
 full precision: asymmetric (0.4056704347, 0.009173412548) -9201.070551; symmetric 0.03870408216 -9436.275274; subjective -9371.876095
 kappa2 / kappa3: 44.2; kappa2 / symmetric kappa: 10.5; kappa3 / symmetric kappa: 0.24
-grid of 91 x 41: maximum -9201.072 at (0.41, 0.0092)
-posterior on the grid: kappa2 mean 0.428, 90% interval [0.32, 0.56]; kappa3 mean 0.0094, 90% interval [0.0074, 0.0114]
-posterior mass at the edges of the grid: kappa2 0.0031, kappa3 6.2e-11
+grid of 91 x 41 over kappa2 in [0.25, 0.65] and kappa3 in [0.002, 0.020]: maximum -9201.072 at (0.41, 0.0092)
+grid approximations on that support: kappa2 mean 0.428, 90% interval [0.32, 0.56]; kappa3 mean 0.0094, 90% interval [0.0074, 0.0114]
+mass at the edges of the grid: kappa2 0.0031, kappa3 6.2e-11
 published version, 15 variables: log ML asymmetric 4341.6, symmetric 4333.3, difference 8.3
 
 === Part 2: posterior means of the VAR coefficients, and the lag length ===
@@ -46,19 +46,24 @@ lag length with the highest log marginal likelihood: asymmetric p = 8, symmetric
 asymmetric minus symmetric, by lag length: 225.5 220.0 234.5 235.2 239.2 245.1 248.0 248.9 
 
 === Part 3: recursive forecasts ===
+pseudo-out-of-sample: the exercise truncates this one vintage at each origin, so the
+early samples hold the revised values, and each forecast conditions on the hyperparameters
+that maximize the marginal likelihood at that origin
 136 forecast origins, 1984Q4 to 2018Q3; 10000 posterior draws per prior and origin; p = 4 throughout
 optimal kappa over the origins: kappa2 0.405 to 0.487, kappa3 0.0086 to 0.0135, symmetric kappa 0.039 to 0.067
 number of forecasts: h = 1: 136, h = 4: 133
 
-Table 3 (percentage gains of the asymmetric prior; significant = two-sided DM test at 5%)
-| Benchmark | h | median RMSFE gain | RMSFE gains / significant / significant losses | median ALPL gain | ALPL gains / significant / significant losses |
+Table 3 (gains of the asymmetric prior: RMSFE in percent, ALPL as 100 x the
+difference in average log predictive likelihood; significant = two-sided DM test at 5%)
+| Benchmark | h | median RMSFE gain | RMSFE gains / significant / significant losses | median 100 x ALPL difference | ALPL gains / significant / significant losses |
 |---|---|---|---|---|---|
 | symmetric | 1 | 3.61 | 20 / 8 / 0 | 2.55 | 18 / 5 / 0 |
 | symmetric | 4 | 0.52 | 11 / 2 / 0 | 1.17 | 13 / 4 / 0 |
 | subjective | 1 | 1.93 | 14 / 0 / 0 | 3.55 | 15 / 11 / 0 |
 | subjective | 4 | -0.36 | 10 / 0 / 2 | 1.11 | 12 / 1 / 0 |
 
-Table 4 (percentage gains of the asymmetric prior by variable; stars: two-sided DM test at 10/5/1%)
+Table 4 (gains of the asymmetric prior by variable: RMSFE in percent, ALPL as 100 x the
+difference; stars: two-sided DM test at 10/5/1%)
 | Variable | RMSFE h=1, vs symmetric | RMSFE h=4, vs symmetric | ALPL h=1, vs symmetric | ALPL h=4, vs symmetric | RMSFE h=1, vs subjective | RMSFE h=4, vs subjective | ALPL h=1, vs subjective | ALPL h=4, vs subjective |
 |---|---|---|---|---|---|---|---|---|
 | GDP | 0.7 | 0.5 | -0.6 | 1.3 | 5.0 | 2.9 | 5.9*** | 2.4* |
@@ -87,4 +92,4 @@ joint log predictive likelihood of all 21 variables one quarter ahead, exact (a 
 of log marginal likelihoods), summed over 136 origins: symmetric -5112.4, subjective -5062.9, asymmetric -4974.1
 DM, asymmetric against: symmetric 7.10, subjective 6.32
 
-build finished in 12.8 minutes
+build finished in 12.7 minutes

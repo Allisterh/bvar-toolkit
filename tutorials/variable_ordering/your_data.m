@@ -7,9 +7,11 @@
 % under the Cholesky model. The defaults use the four FRED-MD series of ex06 with
 % short chains; Chan, Koop and Yu (2024) use 30,000 draws after 5,000 burn-in.
 %
-% The file is read with readmatrix, so it may have a header row. The selected
-% columns must be stationary, transformed as needed, and have no missing values.
-% The first n0 rows serve as initial conditions: at least max(p,4) of them.
+% The file is read with readmatrix, so it may have a header row, and the column
+% numbers count every column of the file. The selected columns must be stationary,
+% transformed as needed, and have no missing values inside the sample; rows missing
+% at either end are dropped. Setting datecol checks that the rows kept are evenly
+% spaced. The first n0 rows serve as initial conditions: at least max(p,4) of them.
 
 repo = fileparts(fileparts(fileparts(mfilename('fullpath'))));
 run(fullfile(repo, 'setup.m'))
@@ -18,16 +20,33 @@ run(fullfile(repo, 'setup.m'))
 file   = fullfile(repo, 'replications', 'chan_koop_yu2024_jbes_oisv', 'legacy', 'FRED_MD_20vars.csv');
 cols   = [4 6 12 13];                          % columns of the file, in the order to use
 names  = ["IP" "unemployment" "PCE inflation" "fed funds"];
+datecol = [];                                  % the column holding the dates; [] to skip the check
 p      = 13;                                   % lags
 n0     = 24;                                   % rows used as initial conditions
 nsim   = 1000;                                 % draws kept
 burnin = 200;                                  % draws discarded first
 seed   = 1;
 
+%% ---- data ----
+raw = readmatrix(file);
+sel = raw(:, cols);
+assert(numel(names) == numel(cols), 'names and cols must have the same length');
+keep = all(isfinite(sel), 2);
+assert(any(keep), 'every row of the selected columns has a missing value');
+lo = find(keep, 1);  hi = find(keep, 1, 'last');
+assert(all(keep(lo:hi)), 'the selected columns have missing values inside the sample');
+data = sel(lo:hi, :);
+flat = std(data) == 0;
+assert(~any(flat), 'these series are constant: %s', strjoin(names(flat), ', '));
+if ~isempty(datecol)
+    step = diff(raw(lo:hi, datecol));
+    assert(all(step > 0) && max(abs(step - median(step))) <= 1e-6*max(1, abs(median(step))), ...
+        'the dates of the rows kept are not evenly spaced');
+end
+
 %% ---- estimation: both models, the order given and its reverse ----
-data = readmatrix(file);
-Y0 = data(1:n0, cols);
-Y  = data(n0+1:end, cols);
+Y0 = data(1:n0, :);
+Y  = data(n0+1:end, :);
 n = numel(cols);
 rev = n:-1:1;
 runs = {'CS', false; 'CS', true; 'OI', false; 'OI', true};

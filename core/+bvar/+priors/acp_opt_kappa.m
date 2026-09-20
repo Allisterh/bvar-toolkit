@@ -10,7 +10,9 @@
 %   p      : lag length
 %   k0     : starting values [kappa1, kappa2]; ignored when 'symmetric' is true
 %   type   : 'redu' or 'stru', selecting bvar.priors.acp_redu or acp_stru
-%   idx_ns : indices of variables entering in levels (default none)
+%   idx_ns : indices of nonstationary variables, whose first own lag gets prior
+%            mean one (default none); this centers the prior and says nothing
+%            about how the data are transformed
 %   'symmetric' : default false, which optimizes log kappa1 and log kappa2 with
 %               fminsearch, so the arguments stay positive without a constrained
 %               solver; true imposes kappa1 = kappa2 and uses fminbnd on (0,1)

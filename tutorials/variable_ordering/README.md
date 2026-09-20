@@ -254,8 +254,11 @@ order better density forecasts of the federal funds rate six and twelve months a
 ## Applying the Order-Invariant Model to Other Data
 
 The script [`your_data.m`](your_data.m) in this folder runs the comparison on any data set. Set
-the file, the columns, their names, the lag length and the chain length at the top of the
-script. It estimates both models with the variables in the order given and in the reverse order,
+the file, the columns, their names, the date column, the lag length and the chain length at the
+top of the script. Column numbers count every column of the file. The script drops rows missing
+at either end of the sample, and stops on a missing value inside it, on unevenly spaced dates
+when a date column is given, and on a constant series. It estimates both models with the
+variables in the order given and in the reverse order,
 reports how much each correlation changes, and plots the correlation that changes most under the
 Cholesky model. With the default settings, which use the four series of ex06 and chains of 1,000
 draws, it runs in about 30 seconds.

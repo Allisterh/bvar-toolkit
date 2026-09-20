@@ -5,10 +5,11 @@
 % and the prior set on the structural-form coefficients. Part 1 evaluates the
 % closed-form marginal likelihood under the three priors of the paper's Table 2
 % and over the grid of its Figure 1, and checks the results against the capture in
-% tests/golden. Part 2 draws from the posterior under each prior and scans the lag
-% length. Part 3 repeats the paper's recursive forecasting exercise, whose code is
-% not in the package. Everything printed goes to build_log.txt and the figures are
-% written next to this file.
+% tests/golden. The figure it writes uses a logarithmic grid instead, which spans
+% the three priors. Part 2 draws from the posterior under each prior and scans the
+% lag length. Part 3 repeats the paper's recursive forecasting exercise, whose code
+% is not in the package. Everything printed goes to build_log.txt and the figures
+% are written next to this file.
 %
 % Usage, from anywhere:  run tutorials/shrinkage/build.m
 
@@ -72,7 +73,8 @@ fprintf('kappa2 / kappa3: %.1f; kappa2 / symmetric kappa: %.1f; kappa3 / symmetr
     k_asym(1)/k_asym(2), k_asym(1)/k_sym(1), k_asym(2)/k_sym(1));
 
     % the grid of the paper's Figure 1 (main_BVAR_ACP.m line 58); under a flat
-    % prior the surface is the joint posterior density, up to a constant
+    % prior on (kappa2, kappa3) the surface is proportional to their joint
+    % posterior density, and the summaries below are grid approximations
 [K2, K3] = meshgrid(0.25:.01:.65, .002:.0002:.02);
 lml = zeros(size(K2));
 for i = 1:numel(K2)
@@ -80,35 +82,43 @@ for i = 1:numel(K2)
 end
 mlg = exp(lml - max(lml(:)));
 [mx, im] = max(lml(:));
-fprintf('grid of %d x %d: maximum %.3f at (%.2f, %.4f)\n', size(K2,1), size(K2,2), mx, K2(im), K3(im));
+fprintf('grid of %d x %d over kappa2 in [%.2f, %.2f] and kappa3 in [%.3f, %.3f]: maximum %.3f at (%.2f, %.4f)\n', ...
+    size(K2,1), size(K2,2), min(K2(:)), max(K2(:)), min(K3(:)), max(K3(:)), mx, K2(im), K3(im));
 w = mlg / sum(mlg(:));
 g2 = K2(1,:);  g3 = K3(:,1)';  m2 = sum(w, 1);  m3 = sum(w, 2)';
 q = @(g, m, a) g(find(cumsum(m) >= a, 1));
-fprintf('posterior on the grid: kappa2 mean %.3f, 90%% interval [%.2f, %.2f]; kappa3 mean %.4f, 90%% interval [%.4f, %.4f]\n', ...
+fprintf('grid approximations on that support: kappa2 mean %.3f, 90%% interval [%.2f, %.2f]; kappa3 mean %.4f, 90%% interval [%.4f, %.4f]\n', ...
     g2*m2', q(g2, m2, .05), q(g2, m2, .95), g3*m3', q(g3, m3, .05), q(g3, m3, .95));
-fprintf('posterior mass at the edges of the grid: kappa2 %.2g, kappa3 %.2g\n', m2(1) + m2(end), m3(1) + m3(end));
+fprintf('mass at the edges of the grid: kappa2 %.2g, kappa3 %.2g\n', m2(1) + m2(end), m3(1) + m3(end));
 
-fig = figure('Color', 'w', 'Position', [100 100 900 380]);
-tiledlayout(1, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
-nexttile; hold on; box off
-plot([0 .6], [0 .6], 'k--');
-contour(K2, K3, mlg, 0.1:0.1:0.9, 'LineWidth', 1);
-h1 = plot(k_sym(1), k_sym(2), 'ko', 'MarkerFaceColor', 'k', 'MarkerSize', 6);
-h2 = plot(k_subj(1), k_subj(2), 'ks', 'MarkerFaceColor', 'k', 'MarkerSize', 7);
-h3 = plot(k_asym(1), k_asym(2), 'kp', 'MarkerFaceColor', 'w', 'MarkerSize', 11);
-xlim([0 .6]); ylim([0 .6]); axis square
-xlabel('$\kappa_2$ (own lags)', 'Interpreter', 'latex');
-ylabel('$\kappa_3$ (other lags)', 'Interpreter', 'latex');
-legend([h1 h2 h3], {'symmetric prior', 'subjective prior', 'asymmetric prior'}, ...
-    'Location', 'northwest', 'Box', 'off');
-title('Full range')
-nexttile; hold on; box off
-contour(K2, K3, mlg, 0.1:0.1:0.9, 'LineWidth', 1);
-plot(k_asym(1), k_asym(2), 'kp', 'MarkerFaceColor', 'w', 'MarkerSize', 11);
-xlim([.25 .65]); ylim([.002 .02]);
-xlabel('$\kappa_2$ (own lags)', 'Interpreter', 'latex');
-ylabel('$\kappa_3$ (other lags)', 'Interpreter', 'latex');
-title('Detail')
+    % the figure spans all three priors, which a linear grid around the optimum
+    % leaves out, so it uses a logarithmic one
+f2 = logspace(log10(min([k_asym(1)/10, k_sym(1), k_subj(1)])/1.5), log10(k_asym(1)*4), 61);
+f3 = logspace(log10(min([k_asym(2)/10, k_subj(2)])/1.5), log10(max([k_asym(2)*10, k_sym(2)])*1.5), 61);
+[F2, F3] = meshgrid(f2, f3);
+lf = zeros(size(F2));
+for i = 1:numel(F2)
+    lf(i) = bvar.ml.acp(p, Y, Z, bvar.priors.acp_stru(n, p, [F2(i), F3(i), 1, 100], sig2));
+end
+fig = figure('Color', 'w', 'Position', [100 100 640 520]);
+hold on; box off
+contour(F2, F3, exp(lf - max(lf(:))), 0.1:0.1:0.9, 'LineWidth', 1);
+set(gca, 'XScale', 'log', 'YScale', 'log', 'FontSize', 10);
+dlo = max(f2(1), f3(1));  dhi = min(f2(end), f3(end));
+plot([dlo dhi], [dlo dhi], 'k--');
+text(dhi, dhi, ' \kappa_2 = \kappa_3', 'VerticalAlignment', 'top', 'FontSize', 10);
+kmark = [k_asym(1:2); k_sym(1:2); k_subj(1:2)];
+mk = {'kp', 'ko', 'ks'};  fc = {'w', 'k', 'k'};  ms = [12 6 7];
+lab = {'asymmetric', 'symmetric', 'subjective'};
+off = [1.9 1.15 1.15];                         % the asymmetric label clears its contours
+for j = 1:3
+    plot(kmark(j,1), kmark(j,2), mk{j}, 'MarkerFaceColor', fc{j}, 'MarkerSize', ms(j));
+    text(kmark(j,1)*off(j), kmark(j,2), lab{j}, 'FontSize', 10);
+end
+xlim([f2(1) f2(end)]); ylim([f3(1) f3(end)]);
+xlabel('$\kappa_2$ (own lags), smaller is tighter', 'Interpreter', 'latex');
+ylabel('$\kappa_3$ (other lags), smaller is tighter', 'Interpreter', 'latex');
+title('Marginal likelihood relative to its maximum')
 colormap(parula)
 exportgraphics(fig, fullfile(tdir, 'fig_contour.png'), 'Resolution', 150);
 close(fig)
@@ -181,6 +191,9 @@ fprintf('asymmetric minus symmetric, by lag length: %s\n', sprintf('%.1f ', lag(
 %  Part 3. Recursive forecasts, 1985Q1 to the end of the sample
 %  ------------------------------------------------------------------
 fprintf('\n=== Part 3: recursive forecasts ===\n');
+fprintf(['pseudo-out-of-sample: the exercise truncates this one vintage at each origin, so the\n' ...
+    'early samples hold the revised values, and each forecast conditions on the hyperparameters\n' ...
+    'that maximize the marginal likelihood at that origin\n']);
 hs = [1 4];  H = max(hs);
 origins = find(qd == datetime(1984, 10, 1)):size(data,1)-1;    % 1984Q4 to 2018Q3
 nor = numel(origins);  nsim_f = 10000;
@@ -241,8 +254,9 @@ for v = 1:n
     end
 end
 bn = ["symmetric" "subjective"];
-fprintf('\nTable 3 (percentage gains of the asymmetric prior; significant = two-sided DM test at 5%%)\n');
-fprintf('| Benchmark | h | median RMSFE gain | RMSFE gains / significant / significant losses | median ALPL gain | ALPL gains / significant / significant losses |\n');
+fprintf('\nTable 3 (gains of the asymmetric prior: RMSFE in percent, ALPL as 100 x the\n');
+fprintf('difference in average log predictive likelihood; significant = two-sided DM test at 5%%)\n');
+fprintf('| Benchmark | h | median RMSFE gain | RMSFE gains / significant / significant losses | median 100 x ALPL difference | ALPL gains / significant / significant losses |\n');
 fprintf('|---|---|---|---|---|---|\n');
 for b = 1:2
     for ih = 1:2
@@ -251,7 +265,8 @@ for b = 1:2
             median(gA(:,ih,b)), nnz(gA(:,ih,b) > 0), nnz(zA(:,ih,b) > 1.96), nnz(zA(:,ih,b) < -1.96));
     end
 end
-fprintf('\nTable 4 (percentage gains of the asymmetric prior by variable; stars: two-sided DM test at 10/5/1%%)\n');
+fprintf('\nTable 4 (gains of the asymmetric prior by variable: RMSFE in percent, ALPL as 100 x the\n');
+fprintf('difference; stars: two-sided DM test at 10/5/1%%)\n');
 fprintf('| Variable | RMSFE h=1, vs symmetric | RMSFE h=4, vs symmetric | ALPL h=1, vs symmetric | ALPL h=4, vs symmetric | RMSFE h=1, vs subjective | RMSFE h=4, vs subjective | ALPL h=1, vs subjective | ALPL h=4, vs subjective |\n');
 fprintf('|---|---|---|---|---|---|---|---|---|\n');
 for v = 1:n

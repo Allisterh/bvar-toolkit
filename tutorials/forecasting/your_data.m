@@ -65,7 +65,7 @@ else
         n, no, origins(1), origins(end), nsim, burnin);
 end
 
-mname = ["homoskedastic" "VAR-CSV" "VAR-SV"];
+mname = ["homoskedastic" "VAR-CSV" "VAR-OISV"];
 nm = numel(mname);
 point = nan(no, n, numel(hs), nm);
 ljnt = nan(no, numel(hs), nm);
@@ -160,18 +160,51 @@ title(sprintf('Density forecasts against the %s VAR, %d step ahead', mname(1), h
 
 %% ---- the report ----
 if ~isempty(outdir)
-    [im, ih] = ndgrid(1:nm, 1:numel(hs));
-    scores = table(mname(im(:))', reshape(hs(ih), [], 1), ...
-        reshape([nan(1,numel(hs)); gain(2:end,:)]', [], 1), ...
-        reshape([nan(1,numel(hs)); lsg(2:end,:)]', [], 1), ...
-        'VariableNames', {'model','horizon','rmsfe_gain_percent','log_score_gain'});
+        % built one row at a time: a flattened matrix and a flattened label grid
+        % ran in different directions here once, and every row but the last
+        % carried another cell's number
+    mcol = strings(nm*numel(hs), 1);
+    hcol = zeros(nm*numel(hs), 1);
+    gcol = nan(nm*numel(hs), 1);
+    lcol = nan(nm*numel(hs), 1);
+    r = 0;
+    for m = 1:nm
+        for ihh = 1:numel(hs)
+            r = r + 1;
+            mcol(r) = mname(m);  hcol(r) = hs(ihh);
+            gcol(r) = gain(m,ihh);  lcol(r) = lsg(m,ihh);
+        end
+    end
+    scores = table(mcol, hcol, gcol, lcol, 'VariableNames', ...
+        {'model', 'horizon', 'rmsfe_gain_percent', 'log_score_gain'});
+    for r = 1:height(scores)
+        m = find(mname == scores.model(r));
+        ihh = find(hs == scores.horizon(r));
+        assert(isequaln(scores.rmsfe_gain_percent(r), gain(m,ihh)) && ...
+            isequaln(scores.log_score_gain(r), lsg(m,ihh)), ...
+            'row %d of the exported scores does not hold the number that was printed', r);
+    end
+
+        % the forecasts, with the quarter each was made in and the quarter it is
+        % for, so that a reader regrouping them cannot confuse the two
     [iov, ivv, ihv] = ndgrid(1:no, 1:n, 1:numel(hs));
+    tgt = origins(iov(:))' + reshape(hs(ihv), [], 1);
+    if isdatetime(dates)
+        odt = odate(iov(:));
+        tdt = NaT(numel(tgt), 1);
+        inrange = tgt <= nobs;
+        tdt(inrange) = dates(tgt(inrange));
+    else
+        odt = reshape(origins(iov(:)), [], 1);
+        tdt = tgt;
+    end
     fc = table();
     for m = 1:nm
         pm = point(:,:,:,m);
-        fc = [fc; table(repmat(mname(m), numel(iov), 1), iov(:), cols(ivv(:))', ...
+        fc = [fc; table(repmat(mname(m), numel(iov), 1), odt, tdt, cols(ivv(:))', ...
             reshape(hs(ihv), [], 1), pm(:), reshape(actual, [], 1), ...
-            'VariableNames', {'model','origin','variable','horizon','forecast','actual'})]; %#ok<AGROW>
+            'VariableNames', {'model','origin_date','target_date','variable', ...
+            'horizon','forecast','actual'})]; %#ok<AGROW>
     end
     meta = struct('file', file, 'columns', cols, 'p', p, 'n0', n0, 'n', n, ...
         'origins', no, 'first_origin', origins(1), 'nsim', nsim, 'burnin', burnin, ...

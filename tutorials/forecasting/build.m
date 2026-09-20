@@ -15,8 +15,13 @@
 % through bvar.forecast.predictive, which measures the simulation noise in the
 % other two.
 %
-% Everything printed goes to build_log.txt and the figures are written next to
-% this file.
+% The evaluation is split by the quarter a forecast is FOR, not by the quarter it
+% was made in: a four-quarter-ahead forecast made in 2019Q4 is a forecast of
+% 2020Q4 and belongs with the pandemic. The two groupings answer different
+% questions and the four origins of 2019 are exactly where they differ.
+%
+% Everything printed goes to build_log.txt, the per-origin scores to
+% scores_by_origin.mat, and the figures are written next to this file.
 %
 % Usage, from anywhere:  run tutorials/forecasting/build.m
 
@@ -35,7 +40,8 @@ p = 4;  n0 = 8;  H = 4;  hs = [1 4];
 nsim = 5000;  burnin = 1000;
 first_forecast = datetime(1990,1,1);
 seed0 = 20260921;
-mname = ["homoskedastic" "VAR-CSV" "VAR-SV"];
+mname = ["homoskedastic" "VAR-CSV" "VAR-OISV"];
+NLc = newline;
 nm = numel(mname);
 
 %% ---- data, the panel of tutorial 3 ----
@@ -124,58 +130,70 @@ for io = 1:no
 end
 
 %% ---- the scores ----
-fprintf('\n=== Accuracy relative to the homoskedastic VAR ===\n');
+fprintf('%s=== Accuracy relative to the homoskedastic VAR ===%s', NLc, NLc);
 odate = dates(origins);
-covid = odate >= datetime(2020,1,1);
-blocks = {true(no,1), ~covid, covid};
-bname = ["whole sample" "through 2019" "2020 onwards"];
+tdate = NaT(no, 2);                      % the quarter each forecast is FOR
+for ih = 1:2
+    tt = origins(:) + hs(ih);
+    okt = tt <= nobs;
+    tdate(okt, ih) = dates(tt(okt));
+end
+covid = datetime(2020,1,1);
+bname = ["all" "targets through 2019" "targets 2020 onwards"];
 
-for ib = 1:numel(blocks)
-    sel = blocks{ib};
-    fprintf('\n%s (%d origins)\n', bname(ib), nnz(sel));
-    fprintf('%-16s %8s %26s %26s\n', '', 'horizon', 'RMSFE, percent gain', ...
-        'log score, gain per quarter');
-    for im = 2:nm
-        for ih = 1:2
+fprintf(['forecasts are grouped by the quarter they are FOR, so a four-quarter-ahead%s' ...
+    'forecast made in 2019Q4 counts as a forecast of 2020Q4%s'], NLc, NLc);
+fprintf('%s%-16s %7s %22s %14s %14s%s', NLc, '', 'horizon', 'group', ...
+    'RMSFE gain', 'log score gain', NLc);
+for im = 2:nm
+    for ih = 1:2
+        for ib = 1:3
+            switch ib
+                case 1, sel = true(no,1);
+                case 2, sel = tdate(:,ih) < covid;
+                case 3, sel = tdate(:,ih) >= covid;
+            end
             ok = sel & ~isnan(actual(:,1,ih));
+            if ~any(ok), continue; end
             e0 = squeeze(point(ok,:,ih,1)) - actual(ok,:,ih);
             em = squeeze(point(ok,:,ih,im)) - actual(ok,:,ih);
-            gain = 100*(1 - sqrt(mean(em.^2,1))./sqrt(mean(e0.^2,1)));
-            dj = ljnt(ok,ih,im) - ljnt(ok,ih,1);
-            fprintf('%-16s %8d %12.1f (median) %26.3f\n', mname(im), hs(ih), ...
-                median(gain), mean(dj));
+            g = median(100*(1 - sqrt(mean(em.^2,1))./sqrt(mean(e0.^2,1))));
+            dj = mean(ljnt(ok,ih,im) - ljnt(ok,ih,1));
+            lbl = '';
+            if ib == 1, lbl = char(mname(im)); end
+            fprintf('%-16s %7d %22s %10.1f%% %14.3f   (%d forecasts)%s', lbl, hs(ih), ...
+                bname(ib), g, dj, nnz(ok), NLc);
         end
     end
 end
+fprintf(['%sthe RMSFE column is the median gain across the five variables and the log%s' ...
+    'score column the mean gain in the joint log predictive likelihood, per quarter%s'], ...
+    NLc, NLc, NLc);
 
-fprintf('\nDiebold-Mariano tests against the homoskedastic VAR, joint log score\n');
-fprintf('%-16s %8s %12s %10s\n', '', 'horizon', 'mean gain', 'DM');
-for im = 2:nm
-    for ih = 1:2
-        ok = ~isnan(actual(:,1,ih));
-        dj = ljnt(ok,ih,im) - ljnt(ok,ih,1);
-        fprintf('%-16s %8d %12.3f %10.2f\n', mname(im), hs(ih), mean(dj), dm_stat(dj, hs(ih)));
-    end
-end
-fprintf('a statistic beyond 1.96 rejects equal accuracy at the 5%% level\n');
-
-fprintf('\nsimulation noise: the homoskedastic model scored by simulation and exactly\n');
+fprintf('%ssimulation noise: the homoskedastic model scored by simulation and exactly%s', NLc, NLc);
 for ih = 1:2
     ok = ~isnan(actual(:,1,ih));
     d = lpl(ok,:,ih,1) - lpl_exact(ok,:,ih);
-    fprintf('  h = %d: mean difference %.4f, largest %.4f, over %d origins and %d variables\n', ...
-        hs(ih), mean(d(:)), max(abs(d(:))), nnz(ok), n);
+    fprintf('  h = %d: mean difference %.4f, largest %.4f, over %d forecasts and %d variables%s', ...
+        hs(ih), mean(d(:)), max(abs(d(:))), nnz(ok), n, NLc);
 end
 
-fprintf('\ninefficiency factors at the last origin, %d draws\n', nsim);
-fprintf('  VAR-CSV  phi %.0f, sigh2 %.0f, Sig(1,1) %.0f\n', IFc);
-fprintf('  VAR-SV   phi_1 %.0f, sig2_1 %.0f, h_T1 %.0f\n', IFs);
+fprintf('%sinefficiency factors at the last origin, %d draws%s', NLc, nsim, NLc);
+fprintf('  VAR-CSV   phi %.0f, sigh2 %.0f, Sig(1,1) %.0f%s', IFc, NLc);
+fprintf('  VAR-OISV  phi_1 %.0f, sig2_1 %.0f, h_T1 %.0f%s', IFs, NLc);
 
-fprintf('\npredictive standard deviation of GDP growth at h = 1, median over origins\n');
+fprintf('%spredictive standard deviation of GDP growth at h = 1, median over origins%s', NLc, NLc);
 for im = 1:nm
-    fprintf('  %-16s through 2019 %6.2f, 2020 onwards %6.2f\n', mname(im), ...
-        median(psd(~covid,5,1,im), 'omitnan'), median(psd(covid,5,1,im), 'omitnan'));
+    fprintf('  %-16s targets through 2019 %6.2f, targets 2020 onwards %6.2f%s', mname(im), ...
+        median(psd(tdate(:,1) < covid, 5, 1, im), 'omitnan'), ...
+        median(psd(tdate(:,1) >= covid, 5, 1, im), 'omitnan'), NLc);
 end
+
+    % everything the page quotes, per origin, so a question about the split or a
+    % single quarter does not need another run
+save(fullfile(tdir, 'scores_by_origin.mat'), 'odate', 'tdate', 'point', 'lpl', ...
+    'ljnt', 'psd', 'actual', 'lpl_exact', 'mname', 'hs', 'vars', 'nsim', 'burnin');
+fprintf('%sper-origin scores saved to scores_by_origin.mat%s', NLc, NLc);
 
 %% ---- figures ----
 figure('Position', [100 100 760 320]);
@@ -238,13 +256,4 @@ for ih = 1:2
     ljnt(io,ih,im) = bvar.util.logsumexp(lj(:,h)) - log(nd);
     psd(io,:,ih,im) = sqrt(mean(sd(:,:,h).^2, 1) + var(yh(:,:,h), 0, 1));
 end
-end
-
-function z = dm_stat(d, h)
-% Diebold-Mariano statistic for the loss differential d, with a Newey-West
-% long-run variance using h-1 lags
-T = numel(d);  u = d - mean(d);
-lrv = (u'*u)/T;
-for l = 1:h-1, lrv = lrv + 2*(1 - l/h)*(u(1+l:end)'*u(1:end-l))/T; end
-z = mean(d)/sqrt(lrv/T);
 end

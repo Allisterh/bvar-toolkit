@@ -15,14 +15,12 @@
 % through bvar.forecast.predictive, which measures the simulation noise in the
 % other two.
 %
-% Density forecasts are also checked for calibration: how often the outturn fell
-% inside the interval a model claimed, and how wide that interval was. An interval
-% that is narrow and covers is worth more than one that is narrow.
+% Density forecasts are also checked for calibration: how often the realized
+% value fell inside the interval a model claimed, and how wide that interval
+% was. An interval that is narrow and covers is worth more than one that is
+% narrow.
 %
-% The evaluation is grouped by the quarter a forecast is for rather than by the
-% quarter in which it was made: a four-quarter-ahead forecast made in 2019Q4 is a
-% forecast of 2020Q4 and belongs with the pandemic. The two groupings answer
-% different questions, and the four origins of 2019 are where they differ.
+% Forecasts are grouped by the quarter they are for.
 %
 % The per-origin scores go to scores_by_origin.mat and the figures are written
 % next to this file. Everything printed goes to a log in tempdir.
@@ -57,7 +55,8 @@ data = tbl{:, vars};
 dates = tbl.Date;
 [nobs, n] = size(data);
 k = 1 + n*p;
-origins = find(dates >= first_forecast, 1) - 1 : nobs - 1;   % each has an h=1 outturn
+    % every origin has a realized value one quarter ahead
+origins = find(dates >= first_forecast, 1) - 1 : nobs - 1;
 no = numel(origins);
 fprintf('\n%d variables, %d quarters (%s to %s)\n', n, nobs, ...
     datestr(dates(1),'yyyyQQ'), datestr(dates(end),'yyyyQQ'));
@@ -71,7 +70,7 @@ ljnt = nan(no, 2, nm);            % joint log predictive likelihood
 psd = nan(no, n, 2, nm);          % predictive standard deviation
 actual = nan(no, n, 2);
 lpl_exact = nan(no, n, 2);        % the homoskedastic model scored without simulation
-pit = nan(no, n, 2, nm);          % the predictive cdf at the outturn
+pit = nan(no, n, 2, nm);          % the predictive cdf at the realized value
 w80 = nan(no, n, 2, nm);          % width of the 80 per cent interval
 w95 = nan(no, n, 2, nm);          % and of the 95 per cent one
 
@@ -200,7 +199,8 @@ end
 fprintf(['  the score column is the mean gain in that variable''s own log predictive%s' ...
     '  likelihood, so the five do not add up to the joint gain%s'], NLc, NLc);
 
-fprintf('%scalibration: how often the outturn fell inside the interval, and how wide%s', NLc, NLc);
+fprintf(['%scalibration: how often the realized value fell inside the ' ...
+    'interval, and how wide%s'], NLc, NLc);
 show = [5 2];                            % GDP growth and PCE inflation
 for ih = 1:2
     ok = ~isnan(actual(:,1,ih));
@@ -308,8 +308,8 @@ end
 function [point, lpl, ljnt, psd, pit, w80, w95] = store(point, lpl, ljnt, psd, ...
     pit, w80, w95, io, im, yh, ld, lj, sd, hs, nobs, t, yobs)
 % Average the draws into the point forecast, the log predictive likelihoods, the
-% predictive standard deviation, the predictive cdf at the outturn and the widths
-% of two intervals, at the two horizons that are evaluated.
+% predictive standard deviation, the predictive cdf at the realized value and
+% the widths of two intervals, at the two horizons that are evaluated.
 %
 % The predictive distribution is the mixture over draws of N(yh, sd^2). Its cdf is
 % the average of the component cdfs, which is exact and costs one line. Its

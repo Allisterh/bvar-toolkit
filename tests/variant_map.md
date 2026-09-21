@@ -56,7 +56,7 @@ of ex05, whose printed numbers it leaves unchanged; `test_var_csv` pins its draw
 copy of that sampler), and `bvar.forecast.simulate` (2026-09-20; the h-step
 forecast of a reduced-form VAR whose error covariance varies over time, one simulated path per
 draw as the branches of `bvar.forecast.iterate` do, with the log predictive likelihood of the
-outturn at each horizon. It exists because those branches fix their horizons and expect their
+realized value at each horizon. It exists because those branches fix their horizons and expect their
 own paper's draw structure. `test_forecast_simulate` checks each specification against the
 analytic Gaussian density when the volatility is switched off, and that the conditional means
 average over simulated paths to the deterministic iteration `bvar.forecast.predictive` returns),

@@ -84,11 +84,12 @@ where $`B_0`$ is lower triangular with ones on the diagonal, and each $`h_{it}`$
 process with its own mean, persistence and variance. The $`n`$ volatilities let the variances and
 the correlations move separately.
 
-VAR-FSV takes the innovations to load on $`r`$ latent factors, $`\boldsymbol{\varepsilon}_t =
-L\mathbf{f}_t + \mathbf{u}_t`$, where $`\mathbf{u}_t \sim N(\mathbf{0}, D_t)`$ and
-$`\mathbf{f}_t \sim N(\mathbf{0}, G_t)`$ are independent, $`L`$ is $`n\times r`$ and lower
-triangular with ones on the diagonal, and $`G_t`$ collects $`r`$ further volatilities. The
-covariance $`\Sigma_t = LG_tL' + D_t`$ is driven by $`n + r`$ volatility processes.
+VAR-FSV takes the innovations to load on $`r`$ latent factors,
+$`\boldsymbol{\varepsilon}_t = L\mathbf{f}_t + \mathbf{u}_t`$, where
+$`\mathbf{u}_t \sim N(\mathbf{0}, D_t)`$ and $`\mathbf{f}_t \sim N(\mathbf{0}, G_t)`$ are
+independent, $`L`$ is $`n\times r`$ and lower triangular with ones on the diagonal, and $`G_t`$
+collects $`r`$ further volatilities. The covariance $`\Sigma_t = LG_tL' + D_t`$ is driven by
+$`n + r`$ volatility processes.
 
 VAR-SVO extends VAR-SV with the outlier component of Stock and Watson (2016), which Carriero,
 Clark, Marcellino and Mertens (2024) use for the pandemic observations. A scale $`o_t`$ multiplies

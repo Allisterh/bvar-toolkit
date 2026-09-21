@@ -1,23 +1,24 @@
 %% bench_density - two ways to score a multi-step density, on the same draws
 %
 % Given a posterior draw of a VAR with common stochastic volatility, the log
-% predictive likelihood of an outturn h quarters ahead can be estimated two ways.
+% predictive likelihood of a realized value h quarters ahead can be estimated
+% two ways.
 %
 %   CONDITIONAL GAUSSIAN, which bvar.forecast.simulate uses: simulate only the
-%   volatility path, then evaluate the outturn against the exact Gaussian that
-%   the path implies, with mean the VAR iterated forward and variance the sum of
-%   Psi_i*Sigma_{T+h-i}*Psi_i' over i = 0 to h-1.
+%   volatility path, then evaluate the realized value against the exact Gaussian
+%   that the path implies, with mean the VAR iterated forward and variance the
+%   sum of Psi_i*Sigma_{T+h-i}*Psi_i' over i = 0 to h-1.
 %
 %   PATH BASED, written out below as path_score: simulate the data as well, and
-%   evaluate the outturn against the one-step covariance at the state the
+%   evaluate the realized value against the one-step covariance at the state the
 %   simulated path happens to reach.
 %
 % Both are unbiased estimators of the predictive DENSITY, and neither is an
 % unbiased estimator of its logarithm: by Jensen's inequality the log of an
 % unbiased density estimate sits below the log density on average, the more so
 % the noisier the estimate. The two are compared here on the same posterior
-% draws, at an ordinary outturn and at an extreme one, over several simulation
-% sizes and seeds, which measures that gap rather than asserting it.
+% draws, at an ordinary realized value and at an extreme one, over several
+% simulation sizes and seeds, which measures that gap rather than asserting it.
 %
 % This script is not part of the tutorial's results and is not run by the test
 % suite. It takes about a minute.
@@ -50,7 +51,7 @@ for ic = 1:numel(cases)
     yobs = data(t+1:t+H, :);
     cfg = struct('ylag', ylag, 'H', H, 'yobs', yobs);
     fprintf('\n=== %s, origin %s ===\n', cname(ic), datestr(dates(t), 'yyyyQQ'));
-    fprintf('outturn of GDP growth: ');
+    fprintf('realized GDP growth: ');
     fprintf('%.1f ', yobs(:,5));
     fprintf('\n');
 
@@ -93,13 +94,14 @@ end
 fprintf(['\nspread is the range over %d seeds, the posterior draws held fixed, so it is\n' ...
     'simulation noise alone. At h = 1 the two estimators coincide, since no data path\n' ...
     'has been simulated yet. Beyond that the path-based estimator drifts down and its\n' ...
-    'spread widens, and both effects are worst where the outturn is extreme.\n'], numel(seeds));
+    'spread widens, and both effects are worst where the realized value is ' ...
+    'extreme.\n'], numel(seeds));
 
 %% -------------------------------------------------------------------------
 function lj = path_score(dr, cfg)
 % The estimator this tutorial does not use: simulate the data as well as the
-% volatility, and score the outturn against the one-step covariance at the state
-% the simulated path reaches.
+% volatility, and score the realized value against the one-step covariance at
+% the state the simulated path reaches.
 n = size(dr.A, 2);
 p = (size(dr.A,1) - 1)/n;
 H = cfg.H;

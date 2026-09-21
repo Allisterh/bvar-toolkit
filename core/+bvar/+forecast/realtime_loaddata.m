@@ -17,7 +17,7 @@
 %               vintage, monthly observations averaged to quarters;
 %               4 = non-revised, monthly observations averaged to quarters
 % data_t      - (t-2) x n estimation panel as seen in vintage t
-% data_tpk    - 5 x n actual outturns from the LAST vintage, rows t-1:t+3
+% data_tpk    - 5 x n realized values from the LAST vintage, rows t-1:t+3
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian Vector Autoregressions. In: P. Fuleky (Eds),

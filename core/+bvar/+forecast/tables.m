@@ -2,11 +2,12 @@
 % log predictive likelihood (ALPL) table construction. Three named actions:
 %
 %   row = bvar.forecast.tables('accum_row', tmpyhat, obs)
-%     One accumulation row for one vintage and one horizon: the observed
-%     outturn, the posterior mean point forecasts, and the log predictive
+%     One accumulation row for one vintage and one horizon: the realized
+%     value, the posterior mean point forecasts, and the log predictive
 %     likelihoods averaged over draws by log-sum-exp. tmpyhat is the nsim x
 %     (2n+1) per-draw matrix from bvar.forecast.iterate ([point forecasts,
-%     per-variable log prelikes, joint log prelike]); obs is the 1 x n outturn.
+%     per-variable log prelikes, joint log prelike]); obs is the 1 x n vector of
+%     realized values.
 %     The storage GUARDS (springer: store yhat1 only when t<=T-1; MAHP: yhat4
 %     only when t<=T-4) are loop control and stay with the CALLER.
 %     TRAP: on MATLAB versions that retain the complex attribute tmpyhat can

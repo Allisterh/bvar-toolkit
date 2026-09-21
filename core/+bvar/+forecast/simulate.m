@@ -1,6 +1,6 @@
 % bvar.forecast.simulate - h-step predictive distribution of a reduced-form VAR
 % with time-varying error covariance, from ONE posterior draw, with the log
-% predictive likelihood of the outturn at each horizon.
+% predictive likelihood of the realized value at each horizon.
 %
 %   [yhat, lden, ljoint, sdev] = bvar.forecast.simulate(spec, draw, cfg)
 %
@@ -17,8 +17,8 @@
 %            'csv'   : Sig (n x n), h_T, phi, sigh2 (scalars)
 %            'oisv'  : impact (n x n, B0), h_T, phi, sig2 (1 x n each)
 %   cfg  : ylag (n x p, most recent column first), H, and yobs (H x n, the
-%          outturn) when the scores are wanted; rows of yobs that are missing or
-%          not finite are skipped
+%          realized values) when the scores are wanted; rows of yobs that are
+%          missing or not finite are skipped
 %   yhat   : H x n conditional mean, which does not depend on the volatility
 %   lden   : H x n log predictive likelihood of each variable given the
 %            simulated volatility path, NaN where yobs has no row

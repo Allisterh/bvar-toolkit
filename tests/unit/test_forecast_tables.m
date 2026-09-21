@@ -55,7 +55,7 @@ function check_mahp(tmpdir) %#ok<INUSD>
 % RMSFE_1/RMSFE_4 + aveprelike tables over all n variables and the joint
 n = 5; T0 = 6; T = 16; nsim = 9;
 rng(20260901, 'twister');
-Y = randn(T+1, n);      % outturns; rows t+1..t+4 are read
+Y = randn(T+1, n);      % realized values; rows t+1..t+4 are read
 C1 = cell(T, 1); C4 = cell(T, 1);
 for t = T0:T-1
     C1{t} = randn(nsim, 2*n+1) - 1;

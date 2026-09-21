@@ -1,9 +1,9 @@
 %% forecast_now - forecast the quarters after the end of the sample
 %
-% The evaluation in build.m and your_data.m stops before the last observation, so
-% that every forecast has an outturn to be scored against. This script does the
-% other thing: it estimates through the final observation and reports the
-% forecasts of the quarters that have not happened yet.
+% The evaluation in build.m and your_data.m stops before the last observation,
+% so that every forecast has a realized value to be scored against. This script
+% does the other thing: it estimates through the final observation and reports
+% the forecasts of the quarters that have not happened yet.
 %
 % For each model it prints the predictive mean, the 68 and 90 per cent intervals
 % and the probability of an event the settings name - by default that quarterly
@@ -52,7 +52,7 @@ if strlength(datecol) > 0, dates = raw{lo:hi, datecol}; end
 k = 1 + n*p;
 Y0 = data(1:n0,:);  Y = data(n0+1:end,:);
 ylag = data(end:-1:end-p+1, :)';
-cfg = struct('ylag', ylag, 'H', H);       % no outturn: nothing to score
+cfg = struct('ylag', ylag, 'H', H);       % no realized value: nothing to score
 ievent = find(cols == event.variable);
 ifan = find(cols == fanvar);
 assert(~isempty(ievent) && ~isempty(ifan), 'the event or fan variable is not among cols');

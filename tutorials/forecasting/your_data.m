@@ -216,7 +216,7 @@ end
 %% -------------------------------------------------------------------------
 function [point, ljnt] = keepscores(point, ljnt, io, im, yh, lj, hs, nobs, t)
 % Average the draws into the point forecast and the log predictive likelihood at
-% the horizons that have an outturn.
+% the horizons that have a realized value.
 nd = size(yh, 1);
 for ih = 1:numel(hs)
     h = hs(ih);

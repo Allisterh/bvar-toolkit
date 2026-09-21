@@ -14,8 +14,8 @@
 %          variables)]. 'mahp_sv' gives h=1 then h=4; 'springer_*' gives h=0
 %          (nowcast) then h=1. A row whose evaluation guard is off this vintage
 %          (see Horizons) comes back as zeros(1,2*n+1), and its simulation draws
-%          are still consumed. Subsetting is the CALLER's job: pass outturns
-%          already subsetted, or select columns in bvar.forecast.tables.
+%          are still consumed. Subsetting is the CALLER's job: pass realized
+%          values already subsetted, or select columns in bvar.forecast.tables.
 %
 % TRAP (complex-typed rows): the expression sum(diag(log(CSig))) passes through
 % a complex intermediate when CSig has negative off-diagonal entries. On R2025b
@@ -26,9 +26,9 @@
 %
 % Horizons: each branch runs its step loop in full (mahp_sv: tt = 1:4, evaluated
 % at tt = 1 and 4; springer_*: tt = 1:2, evaluated at h=0 and h=1). The first
-% evaluated step is unguarded; each later step tt is evaluated only when
-% t <= T - tt, which in the springer branches skips the h=1 evaluation at t = T-1
-% even though the outturn exists. Scheme and quirk are preserved deliberately.
+% evaluated step is unguarded; each later step tt is evaluated only when t <= T
+% - tt, which in the springer branches skips the h=1 evaluation at t = T-1 even
+% though the realized value exists. Scheme and quirk are preserved deliberately.
 %
 % Missing latest observation: when cfg.is_last_miss is true the branch advances
 % the state one extra simulation step before the tt loop, so that h=0 evaluates
@@ -39,7 +39,7 @@
 % 'mahp_sv'  Structural BVAR with per-variable random-walk SV.
 %    draw: alp (k_alp x 1), beta (k_beta x 1), h_T (n x 1), Sigh (n x 1)
 %    cfg:  Yt (estimation sample; the last p rows feed the lag stack), Y (full
-%          outturn matrix; rows t+1 and t+4 are read), p, t, T
+%          realized value matrix; rows t+1 and t+4 are read), p, t, T
 %
 % 'springer_gauss'  Homoskedastic Gaussian errors.
 %    draw: A (k x n coefficient matrix; a caller holding beta = vec(A) passes
@@ -49,7 +49,7 @@
 %          sparse/full propagation downstream; dSig (1 x n), the diagonal of Sig
 %          as a row, Sig_hat' in the diagonal case and diag(Sig)' otherwise
 %    cfg:  shortYt, data_tpk (>= 2 rows; pre-subsetted when the model covers a
-%          subset of the outturn columns), is_last_miss, p, t, T
+%          subset of the columns of realized values), is_last_miss, p, t, T
 %
 % 'springer_csv'  Gaussian errors with common stochastic volatility (CSV).
 %    draw: A, CSig (dense chol(Sig,'lower')), Sig, h (Tt x 1 path; only h(end)

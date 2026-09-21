@@ -14,6 +14,15 @@ specification of Chan, Koop and Yu (2024) gives the same estimates under both or
 Monte Carlo error. The ordering matters much more for density forecasts than for point
 forecasts.
 
+## Try It Now
+
+Two commands, from the root of the repository:
+
+| Command | What it produces | Time |
+|---|---|---|
+| `run tutorials/variable_ordering/your_data.m` | the comparison on the four series of ex06 with short chains | about 30 seconds |
+| `run tutorials/variable_ordering/build.m` | every number and figure on this page | about 23 minutes |
+
 ![20-variable VAR](fig_20var_paths.png)
 
 *Figure 1: Posterior mean of the variance of the federal funds rate equation (top panel) and the
@@ -36,20 +45,19 @@ specification as the Cholesky stochastic volatility model. The main advantage of
 form is computational: conditional on the other parameters, the free elements of $`\mathbf{L}`$
 are Gaussian and can be drawn exactly.
 
-The Cholesky stochastic volatility model is not invariant to the order of the variables. As
-noted by Carriero, Clark and Marcellino (2019), the order dependence comes from the triangular
-form combined with the prior. In applications one typically assumes an identical prior on the
+The Cholesky stochastic volatility model is not invariant to the order of the variables. As noted
+by Carriero, Clark and Marcellino (2019), the order dependence comes from the triangular form
+combined with the prior. In applications one typically assumes an identical prior on the
 parameters in each equation: the log-volatilities share the same state equation and the free
 elements of $`\mathbf{L}`$ have the same prior. Under the triangular form, this prior induces an
 unreasonable prior on $`\boldsymbol{\Sigma}_t`$ that depends on the order of the variables. The
 variance of the first variable is $`\mathrm{e}^{h_{1t}}`$, whereas the variance of the $`i`$th
 variable also depends on the log-volatilities of the $`i-1`$ variables ordered before it, so it is
 stochastically larger as $`i`$ increases. For example, under independent standard normal priors on
-the free elements of $`\mathbf{L}`$ and $`\mathbf{D}_t = \mathbf{I}_n`$, the prior mean of the $`i`$th
-variance is $`2^{i-1}`$ (Chan, Koop and Yu, 2024). Reordering the variables therefore changes the
-prior on $`\boldsymbol{\Sigma}_t`$, and the posterior estimates and forecasts change with it.
-Since the implied prior variances grow exponentially with $`i`$, the problem becomes more serious
-in larger VARs.
+the free elements of $`\mathbf{L}`$ and $`\mathbf{D}_t = \mathbf{I}_n`$, the prior mean of the
+$`i`$th variance is $`2^{i-1}`$ (Chan, Koop and Yu, 2024). The posterior estimates and forecasts
+therefore depend on the order as well. Since the implied prior variances grow exponentially with
+$`i`$, the problem becomes more serious in larger VARs.
 
 Chan, Koop and Yu (2024) propose an order-invariant specification:
 
@@ -59,13 +67,11 @@ where $`\mathbf{B}_0`$ is an unrestricted nonsingular matrix and each log-volati
 stationary AR(1) process with zero mean. They show that the stochastic volatility identifies
 $`\mathbf{B}_0`$ up to permutations and sign changes of its rows, and prove that the model is
 invariant to the order of the variables. With a prior on $`\mathbf{B}_0`$ centered at the identity
-matrix and with common variances across rows, the prior is order invariant as well. They also
-develop an MCMC algorithm for estimation and forecasting. Without the triangular restriction,
-the conditional distribution of each row of $`\mathbf{B}_0`$ is no longer Gaussian, but the rows
-can still be drawn one at a time using the algorithm of Waggoner and Zha (2003), as extended by
-Villani (2009) to priors with nonzero means, which preserves the equation-by-equation structure
-of the sampler. In a forecasting exercise with 20 variables, the order-invariant model produces
-the best forecasts.
+matrix and with the same variance for every element, the prior is order invariant as well. They
+also develop an MCMC algorithm for estimation and forecasting. Without the triangular restriction,
+the conditional distribution of each row of $`\mathbf{B}_0`$ is non-Gaussian, and the rows are
+drawn one at a time using the algorithm of Waggoner and Zha (2003), as extended by Villani (2009)
+to priors with nonzero means, which preserves the equation-by-equation structure of the sampler.
 
 Arias, Rubio-Ramírez and Shin (2023) document the implications of the ordering for forecasts
 from the time-varying parameter VAR with Cholesky stochastic volatility. They find that the
@@ -80,12 +86,13 @@ between two orders reflects the ordering when it exceeds the Monte Carlo error o
 ## Results for a Four-Variable VAR
 
 We estimate both models using four monthly FRED-MD series (McCracken and Ng, 2016): industrial
-production (IP), the unemployment rate, PCE inflation and the federal funds rate. The sample
-runs from 1959:03 to 2019:12, and the VAR has 13 lags. Each model is estimated with the
-variables in the published order and in the reverse order. Each model is also estimated a second
-time in the published order with a different seed, which shows how much the estimates change
-from Monte Carlo error alone. All results are based on 30,000 posterior draws after a burn-in
-period of 5,000 draws, the settings of the replication package.
+production (IP), the unemployment rate, PCE inflation and the federal funds rate. The sample runs
+from 1959:03 to 2019:12, the first 24 months serve as initial conditions, and the VAR has 13 lags.
+Each model is estimated with the variables in the published order and in the reverse order. Each
+model is also estimated a second time in the published order with a different seed, which shows
+how much the estimates change from Monte Carlo error alone. The four-variable results are based on
+30,000 posterior draws after a burn-in period of 5,000 draws, the settings of the full-sample
+estimation in the replication package.
 
 Table 1 reports how much the estimated paths change, on average over 1961:03–2019:12, when the
 order of the variables is reversed and when only the seed is changed. The variances are
@@ -109,11 +116,10 @@ Variances are in percent of their level and correlations in correlation points.*
 | corr(unemployment, fed funds) | 0.086 | 0.000 | 0.001 | 0.001 |
 | corr(PCE inflation, fed funds) | 0.022 | 0.000 | 0.000 | 0.001 |
 
-We note three features of Table 1. First, reversing the order changes four of the six
-correlations of the Cholesky model by 0.07 to 0.11, whereas changing the seed changes them by
-0.001 or less. Second, the variances of the Cholesky model change by only 1% to 8%. Third,
-reversing the order changes the paths of the order-invariant model by about as much as changing
-the seed, as expected since the model is the same under both orders.
+We note three features of Table 1. First, reversing the order changes four of the six correlations
+of the Cholesky model by 0.07 to 0.11, whereas changing the seed changes them by 0.001 or less.
+Second, the variances of the Cholesky model change by only 1% to 8%. Third, reversing the order
+changes the paths of the order-invariant model by about as much as changing the seed.
 
 Figure 2 reports two of these paths. The bottom panel shows that the two orders of the Cholesky
 model imply different histories of the correlation between IP and unemployment, and neither
@@ -130,14 +136,14 @@ $`\boldsymbol{\Sigma}_t`$ (bottom panel), four-variable VAR. The lines are as in
 ## Results for a 20-Variable VAR
 
 The replication package contains the posterior means of $`\boldsymbol{\Sigma}_t`$ from the
-20-variable VAR in Chan, Koop and Yu (2024), for both models under both orders. The four
-variables above are ordered first, and the remaining 16 follow the order in Carriero, Clark and
-Marcellino (2019). Table 2 summarizes the differences between the two orders over all 20
-variances and 190 correlations.
+20-variable VAR in Chan, Koop and Yu (2024), for both models under both orders. The four variables
+above, which Chan, Koop and Yu (2024) call the core variables, are ordered first, and the
+remaining 16 follow the order in Carriero, Clark and Marcellino (2019). Table 2 summarizes the
+differences between the two orders over all 20 variances and 190 correlations.
 
-*Table 2: Differences between the paths under the published and reverse orders, 20-variable VAR.
-Variances are posterior means, in percent of their level; correlations are computed from the
-posterior mean of $`\boldsymbol{\Sigma}_t`$, in correlation points.*
+*Table 2: Average absolute differences between the paths under the published and reverse orders,
+20-variable VAR. Variances are posterior means, in percent of their level; correlations are
+computed from the posterior mean of $`\boldsymbol{\Sigma}_t`$, in correlation points.*
 
 | | Cholesky | Order-invariant |
 |---|---|---|
@@ -157,16 +163,14 @@ determined by the ordering: about 0.82 in the published order and 0.19 in the re
 Under the order-invariant model it varies over time, and the two orders agree up to Monte Carlo
 error.
 
-For the four core variables, the correlations of the Cholesky model change by about as much as
-in the four-variable VAR, for example 0.119 for IP and unemployment compared with 0.111. The
-difference between the two VARs lies in the variances and in the correlations with the other 16
-variables.
+For the four core variables, the correlations of the Cholesky model change by amounts similar to
+or smaller than those in the four-variable VAR, for example 0.119 for IP and unemployment compared
+with 0.111, and 0.039 for IP and PCE inflation compared with 0.067. The difference between the two
+VARs lies in the variances and in the correlations with the other 16 variables.
 
-Figure 3 ranks all 190 correlations by their change under the Cholesky model. The changes under
-the order-invariant model are Monte Carlo error and remain below 0.03. For the Cholesky model,
-131 of the 190 correlations and 18 of the 20 variances change by more than the largest change
-under the order-invariant model. The replication package contains one run per order, so the
-Monte Carlo error of the order-invariant model serves as the benchmark.
+For the Cholesky model, 131 of the 190 correlations (Figure 3) and 18 of the 20 variances change
+by more than the largest change under the order-invariant model. The replication package contains
+one run per order, so the Monte Carlo error of the order-invariant model serves as the benchmark.
 
 ![Changes in all 190 correlations](fig_20var_gaps.png)
 
@@ -177,11 +181,12 @@ black dots are the changes under the order-invariant model.*
 
 ## Forecast Performance
 
-The replication package also contains the recursive forecasts in Chan, Koop and Yu (2024),
-evaluated from 1970:03 to the end of the sample. From these forecasts we recompute the root mean
-squared forecast errors (RMSFEs) and average log predictive likelihoods (ALPLs) of the four core
-variables. Lower RMSFEs and higher ALPLs indicate better point and density forecasts,
-respectively. Table 3 reports the ALPLs one month ahead, and Table 4 reports all results.
+The replication package also contains the recursive forecasts of the 20-variable VAR in Chan, Koop
+and Yu (2024), evaluated from 1970:03 to the end of the sample. From these forecasts we recompute
+the root mean squared forecast errors (RMSFEs) and average log predictive likelihoods (ALPLs) of
+the four core variables. Lower RMSFEs and higher ALPLs indicate better point and density
+forecasts, respectively. Table 3 reports the ALPLs one month ahead, and Table 4 reports all
+results.
 
 *Table 3: ALPLs one month ahead. The symbols \*, \*\* and \*\*\* denote significance at the 10%,
 5% and 1% levels in a two-sided Diebold-Mariano test against the Cholesky model in the published
@@ -221,47 +226,36 @@ Diebold-Mariano test against the Cholesky model in the published order.
 
 </details>
 
-Table 4 shows that point forecasts are insensitive to the ordering, in line with Arias,
-Rubio-Ramírez and Shin (2023). The RMSFEs of the two orders of the Cholesky model differ by at
-most 2.1% across variables and horizons, and those of the two orders of the order-invariant
-model by at most 0.4%. In contrast, density forecasts are sensitive to the ordering. One month
-ahead, reversing the order lowers the ALPL of the Cholesky model for all four variables, by 0.12
-to 0.55 (Table 3). The ALPLs of the two orders of the order-invariant model agree to within
-0.011, except for the federal funds rate six and twelve months ahead, where they differ by 0.08
-and 0.20. Since the model is the same under both orders, these differences are Monte Carlo
-error.
+Table 4 shows that the ordering has little effect on point forecasts, which depend mainly on the
+VAR coefficients, in line with Arias, Rubio-Ramírez and Shin (2023). The RMSFEs of the two orders
+of the Cholesky model differ by at most 2.1% across variables and horizons, and those of the two
+orders of the order-invariant model by at most 0.4%. In contrast, density forecasts are sensitive
+to the ordering. One month ahead, reversing the order lowers the ALPL of the Cholesky model for
+all four variables, by 0.12 to 0.55 (Table 3). The ALPLs of the two orders of the order-invariant
+model agree to within 0.011, except for the federal funds rate six and twelve months ahead, where
+they differ by 0.08 and 0.20. These differences are Monte Carlo error.
 
 The order-invariant model produces the best density forecasts of IP, unemployment and PCE
-inflation at all horizons, and of the federal funds rate one month ahead. There are two
-exceptions. First, for the federal funds rate six and twelve months ahead, the Cholesky model in
-the reverse order performs best. Second, for IP twelve months ahead, the RMSFE of the
-order-invariant model is 3% higher than that of the Cholesky model in the published order, and
-the difference is statistically significant. Chan, Koop and Yu (2024) and Arias, Rubio-Ramírez
-and Shin (2023) reach the same conclusion for the Cholesky model: the best ordering differs
-across variables, and no single ordering forecasts all variables best.
-
-## Implications for Empirical Work
-
-We draw three implications from these results. First, the effect of the ordering is larger in a
-larger VAR. The variances of the Cholesky model change by 1% to 8% in the four-variable VAR, and
-by 16% at the median and up to 107% in the 20-variable VAR. Second, under the Cholesky model the
-ordering affects the estimated volatilities and correlations and the density forecasts built
-from them. Its point forecasts, which depend mainly on the VAR coefficients, change by at most
-2.1%. Third, the best ordering differs across variables. Under the Cholesky model, the published
-order gives better density forecasts of IP, unemployment and PCE inflation, and the reverse
-order better density forecasts of the federal funds rate six and twelve months ahead.
+inflation at all horizons, and of the federal funds rate one month ahead. The exception is the
+federal funds rate six and twelve months ahead, where the Cholesky model in the reverse order
+performs best. For point forecasts of IP twelve months ahead, the RMSFE of the order-invariant
+model is 3% higher than that of the Cholesky model in the published order, and the difference is
+statistically significant. Under the Cholesky model, the published order gives better density
+forecasts of IP, unemployment and PCE inflation, and the reverse order better density forecasts of
+the federal funds rate six and twelve months ahead. Chan, Koop and Yu (2024) and Arias,
+Rubio-Ramírez and Shin (2023) reach the same conclusion: the best ordering differs across
+variables.
 
 ## Applying the Order-Invariant Model to Other Data
 
-The script [`your_data.m`](your_data.m) in this folder runs the comparison on any data set. Set
-the file, the columns, their names, the date column, the lag length and the chain length at the
-top of the script. Column numbers count every column of the file. The script drops rows missing
-at either end of the sample, and stops on a missing value inside it, on unevenly spaced dates
-when a date column is given, and on a constant series. It estimates both models with the
-variables in the order given and in the reverse order,
-reports how much each correlation changes, and plots the correlation that changes most under the
-Cholesky model. With the default settings, which use the four series of ex06 and chains of 1,000
-draws, it runs in about 30 seconds.
+The script [`your_data.m`](your_data.m) in this folder runs the comparison on any dataset. Set the
+file, the columns, their names, the date column, the lag length and the chain length at the top of
+the script. Column numbers count every column of the file. The script drops rows missing at either
+end of the sample, and stops on a missing value inside it, on unevenly spaced dates when a date
+column is given, and on a constant series. It estimates both models with the variables in the
+order given and in the reverse order, reports how much each correlation changes, and plots the
+correlation that changes most under the Cholesky model. With the default settings, which use the
+four series of ex06 and chains of 1,000 draws, it runs in about 30 seconds.
 
 Both models are estimated by the function `bvar.models.var_sv`:
 
@@ -271,31 +265,32 @@ res = bvar.models.var_sv(Y0, Y, p, 'model', 'OI', 'nsim', 30000, 'burnin', 5000,
 
 The matrix `Y` is $`T \times n`$, with each variable transformed to be stationary and no missing
 values, and `Y0` contains at least $`\max(p, 4)`$ earlier observations that serve as initial
-conditions. Setting `'model'` to `'CS'` gives the Cholesky model. The prior is that of Chan,
-Koop and Yu (2024), and the output contains the posterior means of $`\boldsymbol{\Sigma}_t`$, the
-VAR coefficients, the log-volatilities and the impact matrix. We recommend the chain length of
-the replication package, 30,000 draws after a burn-in period of 5,000 draws, and a second run
-with a different seed to see how much the estimates change from Monte Carlo error alone.
+conditions. Setting `'model'` to `'CS'` gives the Cholesky model. The prior is that of Chan, Koop
+and Yu (2024), and the output contains the posterior means of $`\boldsymbol{\Sigma}_t`$, the VAR
+coefficients, the log-volatilities and $`\mathbf{B}_0`$, or $`\mathbf{L}`$ under the Cholesky
+model. We recommend the chain length of the replication package, 30,000 draws after a burn-in
+period of 5,000 draws, and a second run with a different seed to see how much the estimates change
+from Monte Carlo error alone.
 
 The sampler draws $`\mathbf{B}_0`$ row by row with the algorithm of Waggoner and Zha (2003) and
 Villani (2009), using `bvar.structural.b0_row_sampler`, the VAR coefficients using
 `bvar.samplers.eq_var_oi`, each log-volatility path using `bvar.sv.ksc_ar1_mean` and its
 parameters using `bvar.sv.sv0_params`. The shrinkage hyperparameters of the Minnesota-type
-horseshoe prior are drawn using `bvar.samplers.horseshoe_kappa_psi`. To reproduce the
-20-variable estimation in Chan, Koop and Yu (2024), call
+horseshoe prior on the VAR coefficients are drawn using `bvar.samplers.horseshoe_kappa_psi`. To
+reproduce the 20-variable estimation in Chan, Koop and Yu (2024), call
 `run_all('OI', flip, 30000, 5000, seed)` in `replications/chan_koop_yu2024_jbes_oisv/`, where
 `flip = 1` reverses the order.
 
 ## Implementations in R and Python
 
 The book repository
-[bayesian-macroeconometrics](https://github.com/joshuaccchan/bayesian-macroeconometrics)
-contains both covariance specifications in MATLAB, R and Python, each with an independent
-Minnesota prior on the VAR coefficients. The script `chapter13/pred_VAR_SV` implements the
-Cholesky model with random-walk log-volatilities, and `chapter13/pred_VAR_OISV` the
-order-invariant model. The script `chapter13/compare_VAR_SV` compares the two with a
-homoskedastic VAR in recursive one-step-ahead forecasts of PCE inflation. These programs are
-separate from ex06 and estimate the same two covariance specifications.
+[bayesian-macroeconometrics](https://github.com/joshuaccchan/bayesian-macroeconometrics) contains
+both covariance specifications in MATLAB, R and Python, each with an independent Minnesota prior
+on the VAR coefficients. The script `chapter13/pred_VAR_SV` implements the Cholesky model with
+random-walk log-volatilities, and `chapter13/pred_VAR_OISV` the order-invariant model. The script
+`chapter13/compare_VAR_SV` compares the two with a homoskedastic VAR in recursive one-step-ahead
+forecasts of PCE inflation. These programs are separate from ex06, whose Cholesky model has
+stationary AR(1) log-volatilities with estimated means.
 
 ## Reproducing the Results
 
@@ -314,13 +309,12 @@ To reproduce all results on this page, run the build script from the root of the
 run tutorials/variable_ordering/build.m
 ```
 
-The script `build.m` estimates the models in ex06 with 30,000 posterior draws after a burn-in
-period of 5,000 draws. Three runs of the computation take 18.6, 19.0 and 30.9 minutes, using
-MATLAB R2025b on a computer with an Intel Core Ultra 7 255U processor and 32 GB of RAM. The
-script then reads the 20-variable results in the replication package, recomputes the forecast
-comparison from the stored forecasts and checks it against the capture in `tests/golden`. The
-script prints every result in this tutorial, or the numbers they are computed from, and saves
-the figures in the same folder as this page.
+The script `build.m` estimates the models in ex06, reads the 20-variable results in the
+replication package, recomputes the forecast comparison from the stored forecasts and checks it
+against the capture in `tests/golden`. It prints every result in this tutorial, or the numbers
+they are computed from, and saves the figures in the same folder as this page. The build takes
+22.5 minutes using MATLAB R2025b on a computer with an Intel Core Ultra 7 255U processor and 32 GB
+of RAM.
 
 ## References
 

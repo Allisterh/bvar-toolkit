@@ -4,18 +4,19 @@
 [`bvar.priors.acp_opt_kappa`](../../core/+bvar/+priors/acp_opt_kappa.m) and
 [`bvar.ml.acp`](../../core/+bvar/+ml/acp.m). Method: [Chan (2022)](../../CITING.md#chan-2022).*
 
-In this tutorial we choose the shrinkage hyperparameters of a large Bayesian VAR by maximizing
-its marginal likelihood. The natural conjugate prior makes this easy, because its marginal
-likelihood is available in closed form, but it forces the same shrinkage on the coefficients of
-a variable's own lags and of other variables' lags. The asymmetric conjugate prior of Chan (2022)
-allows the two to differ and keeps the closed form. In a VAR of 21 US macroeconomic and financial
-variables from 1959 to 2018, the application of the working-paper version of Chan (2022), the
-marginal likelihood selects an own-lag hyperparameter of 0.41 and an other-lag hyperparameter of
-0.0092, so the coefficients on other variables' lags are shrunk much more strongly (Figure 1).
-Imposing the same shrinkage on both lowers the maximized log marginal likelihood by 235. In
-recursive forecasts from 1985 to 2018, the asymmetric prior improves the one-quarter-ahead point
-forecasts of 20 of the 21 variables relative to the best symmetric prior, and it gives the best
-joint density forecasts of all 21 variables among the three priors we compare.
+In this tutorial we choose the shrinkage hyperparameters of a large Bayesian VAR by maximizing its
+marginal likelihood. The natural conjugate prior makes this easy, because its marginal likelihood
+is available in closed form, but it forces the same shrinkage on the coefficients of a variable's
+own lags and of other variables' lags. The asymmetric conjugate prior of Chan (2022) allows the
+two to differ and keeps the closed form. In the application of the working-paper version of Chan
+(2022), a VAR of 21 US macroeconomic and financial variables from 1959 to 2018, the marginal
+likelihood selects an own-lag hyperparameter of 0.41 and an other-lag hyperparameter of 0.0092, so
+the coefficients on other variables' lags are shrunk much more strongly (Figure 1). Imposing the
+same shrinkage on both lowers the maximized log marginal likelihood by 235. In recursive forecasts
+from 1985 to 2018, the asymmetric prior improves the one-quarter-ahead point forecasts of 20 of
+the 21 variables relative to the best symmetric prior, and it gives better one-quarter-ahead joint
+density forecasts of all 21 variables than both the symmetric prior and a subjective prior with
+fixed hyperparameters.
 
 ## Try It Now
 
@@ -27,27 +28,24 @@ Two commands, from the root of the repository:
 | `run tutorials/shrinkage/build.m` | every number and figure on this page, including the forecast comparison | about 13 minutes |
 
 With the settings as they ship, `your_data.m` reports an own-lag hyperparameter of 0.406 and an
-other-lag hyperparameter of 0.0092, which is the quickest check that the installation works.
-Its settings block is where you point it at your own file. This workflow needs MATLAB with the
-Statistics and Machine Learning Toolbox; the other toolboxes `setup.m` reports on belong to other
-parts of the repository.
+other-lag hyperparameter of 0.0092, which is the quickest check that the installation works. This
+workflow needs MATLAB with the Statistics and Machine Learning Toolbox; the other toolboxes
+`setup.m` reports on belong to other parts of the repository.
 
 ![Marginal likelihood over the two hyperparameters](fig_contour.png)
 
 *Figure 1: Marginal likelihood of the 21-variable VAR under the asymmetric conjugate prior, as a
 function of the own-lag hyperparameter $`\kappa_2`$ and the other-lag hyperparameter $`\kappa_3`$,
-on logarithmic axes, normalized so that its maximum equals one. Smaller values shrink harder.
-Under a flat prior on $`(\kappa_2, \kappa_3)`$ the surface is proportional to their joint posterior
-density. The contours are at 0.1, 0.2, ..., 0.9; the star marks the maximum, the circle the best
+on logarithmic axes, normalized so that its maximum equals one. Smaller values mean stronger
+shrinkage. The contours are at 0.1, 0.2, ..., 0.9; the star marks the maximum, the circle the best
 symmetric prior and the square the subjective prior, and the dashed line is the restriction
 $`\kappa_2 = \kappa_3`$.*
 
 ## The Shrinkage Problem
 
 In the 21-variable VAR of this tutorial, with four lags, each equation has four coefficients on
-its own lags and eighty on the lags of other variables. A single shrinkage hyperparameter has to
-serve both groups at once. Two hyperparameters allow the four own-lag coefficients to be shrunk
-gently while the eighty cross-variable coefficients are shrunk hard.
+its own lags and eighty on the lags of other variables. Two hyperparameters allow the four own-lag
+coefficients and the eighty cross-variable coefficients to be shrunk by different amounts.
 
 Consider a VAR with $`n`$ variables and $`p`$ lags. Minnesota-type priors shrink its coefficients
 toward a random walk for nonstationary variables and toward zero otherwise, and more strongly at
@@ -56,13 +54,11 @@ equation $`i`$ is $`\sigma_i^2`$ times
 
 $$\frac{\kappa_2}{\ell^2 s_i^2} \quad \text{if } r = i \text{ (own lag)}, \qquad \frac{\kappa_3}{\ell^2 s_r^2} \quad \text{if } r \neq i \text{ (other lag)},$$
 
-where $`\sigma_i^2`$ is the error variance of equation $`i`$ and $`s_r^2`$ is the residual variance of
-a univariate autoregression for variable $`r`$. The entry for the intercepts is $`\kappa_1 = 100`$,
-so they are hardly shrunk. The hyperparameters $`\kappa_2`$ and $`\kappa_3`$ control the overall
-shrinkage of the coefficients on own lags and on other variables' lags. Recent work emphasizes
-that they should be estimated from the data rather than fixed in advance, because their values
-can have an important effect on forecasts and inference (Carriero, Clark and Marcellino, 2015;
-Giannone, Lenza and Primiceri, 2015).
+where $`\sigma_i^2`$ is the error variance of equation $`i`$ and $`s_r^2`$ is the residual
+variance of a univariate autoregression for variable $`r`$. For the intercepts the factor is
+$`\kappa_1 = 100`$, so they are hardly shrunk. Recent work emphasizes that $`\kappa_2`$ and
+$`\kappa_3`$ should be estimated from the data, because their values can have an important effect
+on forecasts and inference (Giannone, Lenza and Primiceri, 2015).
 
 The natural conjugate prior assumes that the prior covariance matrix of the VAR coefficients has
 the Kronecker structure $`\boldsymbol{\Sigma}\otimes\mathbf{V}`$. This structure gives a
@@ -81,21 +77,19 @@ independent posterior draws can be obtained directly, without Markov chain Monte
 implied prior on the reduced-form error covariance matrix is the same inverse-Wishart prior as
 under the natural conjugate prior.
 
-Because the marginal likelihood is available in closed form, $`\kappa_2`$ and $`\kappa_3`$ can be
-chosen by maximizing it, an empirical Bayes approach, in a matter of seconds. Everything below
-conditions on the maximized values: the posterior draws and the forecasts treat them as known,
-and their uncertainty is left out. Alternatively, under a flat prior on $`(\kappa_2, \kappa_3)`$,
-the marginal likelihood as a function of the two hyperparameters is proportional to their joint
-posterior density. Chan (2022) writes the two
-hyperparameters as $`\kappa_1`$ and $`\kappa_2`$, and `bvar.priors.acp_opt_kappa` returns them as
-`kappa(1)` and `kappa(2)`.
+Choosing $`\kappa_2`$ and $`\kappa_3`$ by maximizing the marginal likelihood is an empirical Bayes
+approach. Everything below conditions on the maximized values: the posterior draws and the
+forecasts treat them as known, and their uncertainty is left out. Alternatively, under a flat
+prior on $`(\kappa_2, \kappa_3)`$, the marginal likelihood as a function of the two
+hyperparameters is proportional to their joint posterior density. Chan (2022) writes the two
+hyperparameters as $`\kappa_1`$ and $`\kappa_2`$.
 
 ## Results for a 21-Variable VAR
 
-We use the dataset of the working-paper version of Chan (2022), Chan (2019): 21 quarterly US
+We use the dataset of Chan (2019), the working-paper version of Chan (2022): 21 quarterly US
 series from the FRED-QD database (McCracken and Ng, 2021), listed below. Most are annualized
 growth rates; the unemployment rate, capacity utilization, the two interest rates and the credit
-spread are in levels. Because all series are stationary, every prior mean is zero. After the
+spread are in levels. All series are treated as stationary, so every prior mean is zero. After the
 transformations the data run from 1959:Q3 to 2018:Q4. The VAR has four lags, and the first eight
 quarters serve as initial conditions, so the estimation sample runs from 1961:Q3 to 2018:Q4.
 
@@ -146,33 +140,29 @@ prior.*
 
 When the two hyperparameters may differ, the optimal $`\kappa_2`$ is ten times the symmetric
 optimum and the optimal $`\kappa_3`$ is about a quarter of it, so the data favor shrinking the
-coefficients on other variables' lags much more strongly than those on own lags. The asymmetric
-prior raises the maximized log marginal likelihood by 235.2 over the symmetric prior and by 170.8
-over the subjective prior. Figure 1 shows the marginal likelihood on a logarithmic grid that
-spans all three priors. The intervals that follow are grid approximations on the grid of
-Chan (2019), $`\kappa_2`$ from 0.25 to 0.65 and $`\kappa_3`$ from 0.002 to 0.02: under a flat prior,
-90% of the mass of $`\kappa_2`$ lies between 0.32 and 0.56 and that of $`\kappa_3`$ between 0.0074
-and 0.0114, with 0.3% of the $`\kappa_2`$ mass and 6e-11 of the $`\kappa_3`$ mass at the edges of
-that support. Both benchmark priors lie outside it, and Figure 1 places them well below the
-contours. The published version of Chan (2022) applies the prior to
-a 15-variable VAR over 1985–2019, where relaxing the restriction $`\kappa_2 = \kappa_3`$ raises the
-log marginal likelihood by 8.3.
+coefficients on other variables' lags much more strongly than those on own lags. The intervals
+that follow are grid approximations on the grid of Chan (2019), $`\kappa_2`$ from 0.25 to 0.65 and
+$`\kappa_3`$ from 0.002 to 0.02: under a flat prior, 90% of the mass of $`\kappa_2`$ lies between
+0.32 and 0.56 and that of $`\kappa_3`$ between 0.0074 and 0.0114, with 0.3% of the $`\kappa_2`$
+mass and $`6 \times 10^{-11}`$ of the $`\kappa_3`$ mass at the edges of that support. Both
+benchmark priors lie outside it, and in Figure 1 they lie well outside the lowest contour. The
+published version of Chan (2022) applies the prior to a 15-variable VAR over 1985–2019, where
+relaxing the restriction $`\kappa_2 = \kappa_3`$ raises the log marginal likelihood by 8.3.
 
 ## What the Choice Changes
 
-The choice changes the posterior means of the VAR coefficients substantially. Measured in the
-units in which the prior is set, that is, multiplied by $`s_r/s_i`$, the coefficients on other
-variables' lags are on average 34% smaller in absolute value under the asymmetric prior than
-under the symmetric prior, and the coefficients on own lags are 31% larger. The subjective prior
-shrinks the coefficients on other variables' lags even more strongly, to about a third of their
-size under the symmetric prior.
+Measured in the units in which the prior is set, that is, multiplied by $`s_r/s_i`$, the posterior
+means of the coefficients on other variables' lags are on average 34% smaller in absolute value
+under the asymmetric prior than under the symmetric prior, and the coefficients on own lags are
+31% larger. The subjective prior shrinks the coefficients on other variables' lags even more
+strongly, to about a third of their size under the symmetric prior.
 
-The closed-form marginal likelihood also selects the lag length. Table 2 chooses $`\kappa_2`$ and
-$`\kappa_3`$ again for each lag length from one to eight, holding the estimation sample fixed.
-Under the asymmetric prior the marginal likelihood increases with the lag length up to eight
-lags, the longest the initial conditions allow; under the symmetric prior it changes little
-beyond three lags. The asymmetric prior is preferred to the symmetric prior at every lag length,
-by 220 to 249.
+The closed-form marginal likelihood also selects the lag length. For Table 2, we choose
+$`\kappa_2`$ and $`\kappa_3`$ again for each lag length from one to eight. Under the asymmetric
+prior the marginal likelihood increases with the lag length up to eight lags, the longest the
+initial conditions allow; under the symmetric prior it changes little beyond three lags. The
+asymmetric prior is preferred to the symmetric prior at every lag length, by 220 to 249 in log
+marginal likelihood.
 
 *Table 2: Optimal hyperparameters and log marginal likelihood of the 21-variable VAR by lag
 length. The estimation sample is 1961:Q3–2018:Q4 for every lag length.*
@@ -190,18 +180,16 @@ length. The estimation sample is 1961:Q3–2018:Q4 for every lag length.*
 
 Finally, we repeat the recursive forecasting exercise of Chan (2019). It is pseudo-out-of-sample:
 it truncates the single 2018:Q4 vintage at each origin, so the early samples hold the values as
-revised by the end of the sample. For each quarter from 1984:Q4 to 2018:Q3, we estimate the VAR
-on the data up to that quarter, choose the hyperparameters of the symmetric and asymmetric priors
-by maximizing the marginal likelihood, and obtain 10,000 independent posterior draws under each
-prior. We then forecast all 21
-variables one and four quarters ahead, for targets from 1985:Q1 to 2018:Q4. Across the 136
-estimation samples, the optimal $`\kappa_2`$ stays between 0.405 and 0.487 and the optimal
-$`\kappa_3`$ between 0.0086 and 0.0135. We evaluate the point forecasts by the root mean squared
-forecast error (RMSFE) and the density forecasts by the average log predictive likelihood
-(ALPL). Following Carriero, Clark and Marcellino (2015) and Chan (2019), we report the gain of
-the asymmetric prior over a benchmark as $`100\times(1 - \text{RMSFE}/\text{RMSFE}_B)`$ for point
-forecasts and as $`100\times(\text{ALPL} - \text{ALPL}_B)`$ for density forecasts. The first is a
-percentage; the second is a difference of average log scores multiplied by 100.
+revised by the end of the sample. For each quarter from 1984:Q4 to 2018:Q3, we estimate the VAR on
+the data up to that quarter, choose the hyperparameters of the symmetric and asymmetric priors by
+maximizing the marginal likelihood, and obtain 10,000 independent posterior draws under each
+prior. We then forecast all 21 variables one and four quarters ahead, for targets from 1985:Q1 to
+2018:Q4. Across the 136 estimation samples, the optimal $`\kappa_2`$ stays between 0.405 and 0.487
+and the optimal $`\kappa_3`$ between 0.0086 and 0.0135. We evaluate the point forecasts by the
+root mean squared forecast error (RMSFE) and the density forecasts by the average log predictive
+likelihood (ALPL). Following Carriero, Clark and Marcellino (2015) and Chan (2019), we report the
+gain of the asymmetric prior over a benchmark as $`100\times(1 - \text{RMSFE}/\text{RMSFE}_B)`$
+for point forecasts and as $`100\times(\text{ALPL} - \text{ALPL}_B)`$ for density forecasts.
 
 *Table 3: Gains of the asymmetric prior over the two benchmark priors across the 21 variables,
 1985:Q1–2018:Q4. RMSFE gains are percentages and the ALPL column is 100 times a difference of
@@ -216,23 +204,23 @@ Diebold-Mariano test at the 5% level.*
 | Subjective | 4 | -0.36 | 10 | 0 / 2 | 1.11 | 12 | 1 / 0 |
 
 Table 3 summarizes the results, and Figure 2 shows them variable by variable. Against the
-symmetric prior, the asymmetric prior improves the one-quarter-ahead point forecasts of 20 of
-the 21 variables, with a median RMSFE gain of 3.6%; eight of the gains are significant at the 5%
-level and none of the losses is. The largest gains are for the 3-month Treasury bill rate (17%)
-and capacity utilization (12%). Four quarters ahead the gains are smaller, with a median of 0.5%.
+symmetric prior, the asymmetric prior improves the one-quarter-ahead point forecasts of 20 of the
+21 variables, with a median RMSFE gain of 3.6%; eight of the gains are significant at the 5% level
+and none of the losses is. The largest gains are for the 3-month Treasury bill rate (17%) and
+capacity utilization (12%). Four quarters ahead the gains are smaller, with a median of 0.5%.
 Against the subjective prior, the asymmetric prior gives better one-quarter-ahead density
-forecasts for 15 variables, 11 of them significantly, and a median ALPL difference of 3.55 in
-those units. Four
+forecasts for 15 variables, 11 of them significantly, and a median ALPL gain of 3.55. Four
 quarters ahead its point forecasts are slightly less accurate than those of the subjective prior,
-with a median RMSFE gain of -0.4% and significant losses for two variables. These results are close to those of Chan (2019), who reports median
-RMSFE gains against the symmetric prior of 3.41% one quarter ahead and 0.72% four quarters ahead,
-and against the subjective prior of 2% and -0.23%.
+with a median RMSFE gain of -0.4% and significant losses for two variables. These results are
+close to those of Chan (2019), who reports median RMSFE gains against the symmetric prior of 3.41%
+one quarter ahead and 0.72% four quarters ahead, and against the subjective prior of 2% and
+-0.23%.
 
 ![Forecast gains by variable](fig_forecasts.png)
 
 *Figure 2: Gains of the asymmetric prior in RMSFE (top) and ALPL (bottom) against the symmetric
 prior (left) and the subjective prior (right), one quarter ahead (blue) and four quarters ahead
-(red), 1985:Q1–2018:Q4. Positive values favor the asymmetric prior.*
+(orange), 1985:Q1–2018:Q4. Positive values favor the asymmetric prior.*
 
 <details> <summary>Table 4: Gains of the asymmetric prior by variable</summary>
 
@@ -269,28 +257,28 @@ levels in a two-sided Diebold-Mariano test against the benchmark.
 The closed-form marginal likelihood also gives the joint one-step-ahead predictive likelihood of
 all 21 variables exactly, as
 $`\log p(\mathbf{y}_{t+1}\mid\mathbf{y}_{1:t}) = \log p(\mathbf{y}_{1:t+1}) - \log p(\mathbf{y}_{1:t})`$
-with the prior held fixed. Summed over the 136 quarters, it is -5112.4 under the symmetric prior,
--5062.9 under the subjective prior and -4974.1 under the asymmetric prior. The Diebold-Mariano
-statistics of the asymmetric prior against the two benchmarks are 7.1 and 6.3.
+with the prior held fixed. Summed over the 136 quarters, the joint log predictive likelihood is
+-5112.4 under the symmetric prior, -5062.9 under the subjective prior and -4974.1 under the
+asymmetric prior. The Diebold-Mariano statistics of the asymmetric prior against the two
+benchmarks are 7.1 and 6.3.
 
 ## Applying the Method to Your Data
 
-The script [`your_data.m`](your_data.m) applies the same analysis to any dataset. Set the file,
-the columns, their names, the date column, which variables are nonstationary, the lag lengths and
-the number of initial conditions, the forecast horizon and where the report goes in its settings
-block. Columns may be given by number, counting every column of the file, or by name. The script
-drops rows missing at either end of the sample, and stops on a missing value inside it, on
-unevenly spaced dates when a date column is given, and on a constant series. It then chooses
-$`\kappa_2`$ and $`\kappa_3`$ under the three priors, repeats the choice for each lag length,
-plots the marginal likelihood around the optimum on a logarithmic grid, forecasts `H` periods
-past the end of the sample under each prior, and writes the whole comparison to a csv and a mat
-file. With its default settings, which use the dataset of this tutorial, it reproduces Tables 1
-and 2 in about 15 seconds.
+The script [`your_data.m`](your_data.m) applies the same analysis to any dataset. Its settings
+block sets the file, the columns, their names, the date column, which variables are nonstationary,
+the lag lengths, the number of initial conditions, the forecast horizon and where the report goes.
+Columns may be given by number, counting every column of the file, or by name. The script drops
+rows missing at either end of the sample, and stops on a missing value inside it, on unevenly
+spaced dates when a date column is given, and on a constant series. It then chooses $`\kappa_2`$
+and $`\kappa_3`$ under the symmetric and asymmetric priors, evaluates the subjective prior,
+repeats the choice for each lag length, plots the marginal likelihood around the optimum on a
+logarithmic grid, and forecasts `H` periods past the end of the sample under each prior. With its
+default settings, which use the dataset of this tutorial, it reproduces Tables 1 and 2.
 
-The `nonstationary` setting lists the variables whose first own lag has prior mean one. It
-centers the prior and leaves the data alone: a stationary interest rate can enter untransformed
-without belonging on that list, and every series must be transformed to stationarity before the
-script sees it. The choice itself takes two calls:
+The `nonstationary` setting lists the variables whose first own lag has prior mean one. It centers
+the prior and does not transform the data: a stationary interest rate can enter untransformed
+without belonging on that list. After the lag matrix is built, the choice takes one call per
+prior:
 
 ```matlab
 [~, Z] = bvar.util.build_lags([Y0(end-p+1:end,:); Y], p);
@@ -301,8 +289,8 @@ script sees it. The choice itself takes two calls:
 Here `Y0` holds the initial conditions and `kappa(1)` and `kappa(2)` are $`\kappa_2`$ and
 $`\kappa_3`$. The symmetric search runs `fminbnd` on $`(0,1)`$ and the asymmetric one `fminsearch`
 over the logarithms of the two hyperparameters, which covers all positive values; `your_data.m`
-repeats the asymmetric search from the symmetric optimum and reports how far apart the two
-maxima are. Independent posterior draws at the chosen values take three more:
+repeats the asymmetric search from the symmetric optimum and reports how far apart the two maxima
+are. Independent posterior draws at the chosen values take three calls:
 
 ```matlab
 prior = bvar.priors.acp_stru(n, p, kappa, bvar.priors.resid_var_ar4(Y0, Y), nonstationary);
@@ -315,11 +303,10 @@ the intercept first, and `Sigma(d,:,:)` is the error covariance matrix of draw `
 application of Chan (2022) sets the prior on the reduced-form coefficients instead; replacing
 `'stru'` with `'redu'` and `acp_stru` with `acp_redu` selects that version.
 
-Those draws are what the forecasts are built from. Given the coefficients and the error
-covariance matrix, the $`h`$-step forecast of a VAR is Gaussian: the mean iterates the VAR
-forward, and the variance is $`\sum_{j=0}^{h-1}\Psi_j \Sigma \Psi_j'`$, with $`\Psi_j`$ the
-moving-average matrices (Chan, forthcoming, Section 12.2.3). One call returns that mean and
-standard deviation for every draw, variable and horizon:
+Given the coefficients and the error covariance matrix, the $`h`$-step forecast of a VAR is
+Gaussian: the mean iterates the VAR forward, and the variance is
+$`\sum_{j=0}^{h-1}\Psi_j \Sigma \Psi_j'`$, with $`\Psi_j`$ the moving-average matrices. One call
+returns that mean and standard deviation for every draw, variable and horizon:
 
 ```matlab
 [mu, sd] = bvar.forecast.predictive(A, Sigma, ylag, H);
@@ -334,24 +321,23 @@ standard deviation and 68% band for each variable and each horizon up to `H`, un
 priors.
 
 The script then writes what it computed to `outdir`, which defaults to `tempdir` so that a run
-leaves the repository unchanged. `shrinkage_report_models.csv` holds one row per prior and per
-lag length, `shrinkage_report_forecasts.csv` one row per prior, variable and horizon, and
+leaves the repository unchanged. `shrinkage_report_models.csv` holds one row per prior and per lag
+length, `shrinkage_report_forecasts.csv` one row per prior, variable and horizon, and
 `shrinkage_report.mat` holds both tables together with the settings behind them: the file, the
-columns, the sample, the seed, the chain length and the chosen hyperparameters. Setting
-`outdir = ''` turns the export off.
+columns, the sample, the seed, the number of posterior draws and the chosen hyperparameters.
+Setting `outdir = ''` turns the export off.
 
 ## Implementations in R and Python
 
 The book repository
 [bayesian-macroeconometrics](https://github.com/joshuaccchan/bayesian-macroeconometrics)
 implements the asymmetric conjugate prior in MATLAB, R and Python. The function
-`chapter12/ml_VAR_ACP` computes its marginal likelihood, and the script
-`chapter12/VAR_ACP_kappa` evaluates it over a grid of $`(\kappa_2, \kappa_3)`$ for a four-variable
-VAR with seven lags. In that application the marginal likelihood is maximized at
-$`\kappa_2 \approx 0.35`$ and $`\kappa_3 \approx 0.015`$, and imposing $`\kappa_2 = \kappa_3`$ lowers the
-log marginal likelihood by about 19 (Chan, forthcoming, Section 12.3.3).
-[`RELATED.md`](../../RELATED.md) lists the R and Python counterparts of the other models in this
-repository.
+`chapter12/ml_VAR_ACP` computes its marginal likelihood, and the script `chapter12/VAR_ACP_kappa`
+evaluates it over a grid of $`(\kappa_2, \kappa_3)`$ for a four-variable VAR with seven lags. In
+that application the marginal likelihood is maximized at $`\kappa_2 \approx 0.35`$ and
+$`\kappa_3 \approx 0.015`$, and imposing $`\kappa_2 = \kappa_3`$ lowers the log marginal
+likelihood by about 19 (Chan, forthcoming, Section 12.3.3). [`RELATED.md`](../../RELATED.md) lists
+the R and Python counterparts of the other models in this repository.
 
 ## Reproducing the Results
 
@@ -362,14 +348,14 @@ run tutorials/shrinkage/build.m
 ```
 
 The script `build.m` reads the data of the replication package of Chan (2019) in
-`replications/chan2019wp_acp`, checks the three priors against the capture in `tests/golden` and
-against Table 2 of the paper, and evaluates the marginal likelihood over the grid of its
-Figure 1, which gives the intervals quoted above, and over the wider logarithmic grid of Figure 1
-here. It then draws from the posterior, scans the lag length and runs the forecasting exercise,
-whose code is not part of the package. The computation takes 12.7 minutes using MATLAB
-R2025b on a computer with an Intel Core Ultra 7 255U processor and 32 GB of RAM. The script
-prints every result in this tutorial, or the numbers they are computed from, and saves the
-figures in the same folder as this page.
+`replications/chan2019wp_acp`, checks the symmetric and asymmetric optima against the capture in
+`tests/golden` and all three priors against Table 2 of the paper, and evaluates the marginal
+likelihood over the grid of its Figure 1, which gives the intervals quoted above, and over the
+wider logarithmic grid of Figure 1 here. It then draws from the posterior, scans the lag length
+and runs the forecasting exercise, whose code is not part of the package. The computation takes
+12.7 minutes using MATLAB R2025b on a computer with an Intel Core Ultra 7 255U processor and 32 GB
+of RAM. The script prints every result in this tutorial, or the numbers they are computed from,
+and saves the figures in the same folder as this page.
 
 ## References
 

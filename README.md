@@ -38,9 +38,10 @@ with a script that runs the same analysis on your own data.
   recursive forecasts from 1990, a common volatility factor and a volatility process per
   equation both improve on a homoskedastic VAR in point and density forecasts, with gains in
   calm quarters as well as in the pandemic.
-- [How Do I Impose Sign Restrictions on a Large VAR?](tutorials/sign_restrictions/) With the
-  algorithm of Chan, Matthes and Yu (2026), which identifies eight shocks in a 35-variable VAR
-  where the conventional accept-reject algorithm is not computationally feasible.
+- [Can I Use Many Sign Restrictions in My Large VAR?](tutorials/sign_restrictions/) Yes, with
+  the algorithm of Chan, Matthes and Yu (2026), which imposes 98 sign and 7 ranking restrictions
+  on eight shocks in a 35-variable VAR, where the conventional accept-reject algorithm is not
+  computationally feasible.
 
 The thirteen scripts in [`examples/`](examples/) each run in under a minute and are best read in
 order: the building blocks (ex01–ex02, the precision sampler and stochastic volatility), VAR

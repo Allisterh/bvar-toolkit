@@ -1,4 +1,4 @@
-%% your_data - identify your own structural shocks by sign and ranking restrictions
+%% your_data - impose your own sign and ranking restrictions on a VAR
 %
 % Set the file, the columns, the lag length and the restrictions below, then run
 % the script. It estimates a VAR under the asymmetric conjugate prior of Chan
@@ -19,8 +19,8 @@
 % which separates every pair of shocks either by their signs or by a ranking
 % restriction. The script checks it before it draws.
 %
-% The defaults identify three shocks in a five-variable VAR and take a few
-% seconds. The tutorial itself identifies eight shocks in 35 variables.
+% The defaults restrict three shocks in a five-variable VAR and take a few
+% seconds. The tutorial itself restricts eight shocks in 35 variables.
 %
 % Give cols as column names, read with readtable. The selected columns must have
 % no missing values inside the sample; rows missing at either end are dropped.

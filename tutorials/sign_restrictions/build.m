@@ -1,14 +1,14 @@
 %% build - regenerate the figures and numbers of tutorials/sign_restrictions/README.md
 %
 % The 35-variable application of Chan, Matthes and Yu (2026): eight structural
-% shocks identified by sign restrictions on the impact responses and by two
+% shocks set-identified by sign restrictions on the impact responses and by two
 % ranking restrictions, on US quarterly data from 1983Q1 to 2019Q4. The model is
 % a homoskedastic VAR with five lags under the asymmetric conjugate prior of
 % Chan (2022), whose two shrinkage hyperparameters are chosen by maximizing the
 % marginal likelihood, evaluated with the ridge of 1e-6 that this package adds
 % to the posterior precision at n = 35.
 %
-% Identification is the exercise. A candidate rotation is admissible when every
+% A candidate rotation is admissible when every
 % shock has at least one column of the rotated Cholesky factor that satisfies
 % its restrictions, and bvar.structural.sign_assign then draws one assignment
 % from those available. The accept-reject rule of Rubio-Ramirez, Waggoner and

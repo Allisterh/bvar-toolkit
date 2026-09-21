@@ -24,20 +24,23 @@ the data of its replication package or of the book, and can be read without MATL
 with a script that runs the same analysis on your own data.
 
 - [Does the Order of the Variables Change My VAR Results?](tutorials/variable_ordering/) Under
-  the Cholesky model of stochastic volatility it does: in the 20-variable VAR of Chan, Koop and
-  Yu (2024), reversing the order moves the estimated correlation between the PCE inflation and
-  PPI finished goods equations from about 0.82 to about 0.19. The order-invariant model gives
-  the same estimates in both orders.
+  the Cholesky model of stochastic volatility it does: reversing the order of a 20-variable VAR
+  moves one estimated correlation from about 0.82 to about 0.19, while the order-invariant model
+  gives the same estimates in both orders.
 - [How Should I Choose the Shrinkage Hyperparameters of My BVAR?](tutorials/shrinkage/) By
-  maximizing the marginal likelihood, which the asymmetric conjugate prior of Chan (2022) keeps
-  in closed form while shrinking a variable's own lags and other variables' lags by different
-  amounts. In a 21-variable VAR, the chosen prior improves the one-quarter-ahead point forecasts
-  of 20 of the 21 variables relative to the best symmetric prior.
+  maximizing the marginal likelihood under the asymmetric conjugate prior of Chan (2022), which
+  in a 21-variable VAR improves the one-quarter-ahead point forecasts of 20 of the 21 variables
+  relative to the best symmetric prior.
 - [Which Stochastic Volatility Specification Should My VAR Use?](tutorials/sv_specification/)
-  The marginal likelihoods of Chan (2023) rank them. In a four-variable quarterly VAR of the
-  book's FRED-MD panel, factor stochastic volatility with one factor fits best, ahead of the
-  Cholesky specification by 14 and the common volatility by 58, and the shrinkage prior accounts
-  for half of the distance between the last two.
+  The marginal likelihoods of Chan (2023) rank five of them; in a five-variable quarterly VAR,
+  the Cholesky specification with an outlier component fits best.
+- [Does Modeling the Volatility Improve My Forecasts?](tutorials/forecasting/) Over 140
+  recursive forecasts from 1990, a common volatility factor and a volatility process per
+  equation both improve on a homoskedastic VAR in point and density forecasts, with gains in
+  calm quarters as well as in the pandemic.
+- [How Do I Impose Sign Restrictions on a Large VAR?](tutorials/sign_restrictions/) With the
+  algorithm of Chan, Matthes and Yu (2026), which identifies eight shocks in a 35-variable VAR
+  where the conventional accept-reject algorithm is not computationally feasible.
 
 The thirteen scripts in [`examples/`](examples/) each run in under a minute and are best read in
 order: the building blocks (ex01–ex02, the precision sampler and stochastic volatility), VAR

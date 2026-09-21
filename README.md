@@ -84,8 +84,11 @@ with the library functions.
 
 "Legacy only" means the package has no driver yet. The SVAR-sign package will not get one,
 because its main programs depend on third-party code and produce figures, so only its algorithm
-was extracted. [`tests/golden_runs/manifest.md`](tests/golden_runs/manifest.md) names the few
-legacy scripts that do not run as shipped. What to cite for each method, with BibTeX, is in
+was extracted. The precision sampler of `chan_jeliazkov2009_statespace` is the function
+`ssm.simulate_states` in [statespace-toolkit](https://github.com/joshuaccchan/statespace-toolkit),
+the companion library for Bayesian state space models, whose unit tests check it against that
+package's `UC.m`. [`tests/golden_runs/manifest.md`](tests/golden_runs/manifest.md) names the
+few legacy scripts that do not run as shipped. What to cite for each method, with BibTeX, is in
 [`CITING.md`](CITING.md).
 
 ## Build on the Code

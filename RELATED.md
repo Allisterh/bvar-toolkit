@@ -3,7 +3,8 @@
 Many of the models in this repository can also be estimated in R and Python, with the code of
 the book *Bayesian Macroeconometrics: Methods and Applications* (Chapman & Hall/CRC,
 forthcoming). Four of the models of [Chan (2020a)](CITING.md#chan-2020a) are also in the R
-package `bvars`.
+package `bvars`, and the precision sampler of Chan and Jeliazkov (2009) is a MATLAB function in
+statespace-toolkit.
 
 ## The Book's R and Python Code
 
@@ -49,6 +50,15 @@ BVAR-t-CSV. The moving average errors of models 4 and 6 to 8 are not in the desc
 package also computes density forecasts and forecast error variance decompositions, and it
 shares its objects and workflow with `bsvars`, `bsvarSIGNs` and `bpvars`; see
 [bsvars.org/bvars](https://bsvars.org/bvars/).
+
+## The MATLAB Library statespace-toolkit
+
+[statespace-toolkit](https://github.com/joshuaccchan/statespace-toolkit), the companion library
+for Bayesian state space models, has the precision sampler of
+`replications/chan_jeliazkov2009_statespace` as the function `ssm.simulate_states`. Its ex01
+applies the function to a local level model and checks the draws against a Kalman smoother.
+The replication packages it archives include unobserved components models with stochastic
+volatility, among them those of Chan (2013) and Chan (2018).
 
 [r09]: https://github.com/joshuaccchan/bayesian-macroeconometrics/tree/main/code/R/chapter09
 [p09]: https://github.com/joshuaccchan/bayesian-macroeconometrics/tree/main/code/python/chapter09

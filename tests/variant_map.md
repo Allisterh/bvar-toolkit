@@ -59,9 +59,18 @@ draw as the branches of `bvar.forecast.iterate` do, with the log predictive like
 outturn at each horizon. It exists because those branches fix their horizons and expect their
 own paper's draw structure. `test_forecast_simulate` checks each specification against the
 analytic Gaussian density when the volatility is switched off, and that the conditional means
-average over simulated paths to the deterministic iteration `bvar.forecast.predictive` returns).
-None of these is retrofitted into a legacy body: they exist for new code, and the
-legacy spellings they generalize stay as they are.
+average over simulated paths to the deterministic iteration `bvar.forecast.predictive` returns),
+`bvar.forecast.mixquantile` (2026-09-20; quantiles of a predictive distribution that is a mixture
+of one normal per draw, by bisection on its cdf, which the forecasting tutorial's intervals and
+event probabilities need; `test_forecast_mixquantile` checks that the result inverts the mixture
+cdf to 1e-9 and reduces to the normal quantile when the components agree), and
+`bvar.structural.check_separable` (2026-09-20; whether a set of sign and ranking restrictions
+separates every pair of shocks, which is the condition `sign_assign` needs and cannot check for
+itself, running as it does once per candidate rotation. Called with the sign restrictions alone it
+reports which pairs the ranking restrictions are carrying. `test_check_separable` pins it on the
+35-variable restriction set of the SVAR-sign package, where 5 of the 28 pairs are separated only
+by the rankings). None of these is retrofitted into a legacy body: they exist for new code, and
+the legacy spellings they generalize stay as they are.
 
 Edits made during extraction, in full: provenance header prepended; function renamed where
 the table says so (surform, surform2, init_approx1N, realtime_loaddata, heatmap_fx). Bodies

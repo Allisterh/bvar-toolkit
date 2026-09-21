@@ -25,7 +25,7 @@ lists implementations of the same models in R and Python.
 | Comparing time-varying parameter VARs by marginal likelihood and DIC | `replications/chan_eisenstat2018_jae_mltvpsv` | [Chan and Eisenstat (2018)](#chan-and-eisenstat-2018) |
 | Forecasting with large BVARs across priors and volatility models | `replications/chan2020_springer_largebvar`, `bvar.forecast.iterate`, `tables`, `realtime_loaddata`, `bvar.priors.niw`, `bvar.sv.nu_studentt` | [Chan (2020b)](#chan-2020b) |
 | Sign restrictions | `bvar.structural.qr_sign`, `sign_restrict`, `irf_redu`, `reduced_form`; ex11, ex12 | [Rubio-Ramírez, Waggoner and Zha (2010)](#rubio-ramírez-waggoner-and-zha-2010) |
-| Sign and ranking restrictions in large structural VARs | `replications/chan_matthes_yu2026_qe_svarsign`, `bvar.structural.sign_assign`; ex11, ex12 | [Chan, Matthes and Yu (2026)](#chan-matthes-and-yu-2026) |
+| Sign and ranking restrictions in large structural VARs | `replications/chan_matthes_yu2026_qe_svarsign`, `bvar.structural.sign_assign`; ex11, ex12, tutorials/sign_restrictions | [Chan, Matthes and Yu (2026)](#chan-matthes-and-yu-2026) |
 | Sign restrictions over several horizons | ex12 | [Uhlig (2005)](#uhlig-2005) |
 | Sensitivity of forecasts to prior hyperparameters | `replications/cjz2018_ad_var` | [Chan, Jacobi and Zhu (2019)](#chan-jacobi-and-zhu-2019) |
 | Hyperparameter selection by automatic differentiation | `replications/cjz2019_ad_opthyper`, `bvar.priors.niw(..., 'opthyper_ncp')` | [Chan, Jacobi and Zhu (2020)](#chan-jacobi-and-zhu-2020) |

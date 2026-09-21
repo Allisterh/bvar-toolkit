@@ -4,6 +4,7 @@
 %   [ml_opt,kappa_opt] = bvar.priors.acp_opt_kappa(Y0, Y, Z, p, k0, type)
 %   [ml_opt,kappa_opt] = bvar.priors.acp_opt_kappa(Y0, Y, Z, p, k0, type, idx_ns)
 %   [...]              = bvar.priors.acp_opt_kappa(..., 'symmetric', true)
+%   [...]              = bvar.priors.acp_opt_kappa(..., 'ridge', 1e-6)
 %
 %   Y0, Y  : presample rows and the T x n estimation sample
 %   Z      : T x (n p + 1) lag matrix, intercept first (bvar.util.build_lags)
@@ -11,17 +12,16 @@
 %   k0     : starting values [kappa1, kappa2]; ignored when 'symmetric' is true
 %   type   : 'redu' or 'stru', selecting bvar.priors.acp_redu or acp_stru
 %   idx_ns : indices of nonstationary variables, whose first own lag gets prior
-%            mean one (default none); this centers the prior and says nothing
-%            about how the data are transformed
-%   'symmetric' : default false, which optimizes log kappa1 and log kappa2 with
-%               fminsearch, so the arguments stay positive without a constrained
-%               solver; true imposes kappa1 = kappa2 and uses fminbnd on (0,1)
+%            mean one (default none); no data transformation is implied
+%   'symmetric' : default false; true imposes kappa1 = kappa2 and searches
+%            (0,1) with fminbnd
+%   'ridge' : passed to bvar.ml.acp at every evaluation; default 0. The
+%            SVAR-sign package's copy of that likelihood adds 1e-6 to the
+%            diagonal of the posterior precision, so reproducing that package's
+%            hyperparameters needs 'ridge', 1e-6, which moves the optimum
 %   ml_opt    : the maximized log marginal likelihood, bvar.ml.acp at kappa_opt
 %   kappa_opt : the full 4-vector [kappa1, kappa2, 1, 100] - kappa3 and kappa4
 %               are held at those values, as in the paper's application
-%
-% Because bvar.ml.acp is available in closed form, this is a two-parameter
-% optimization over a smooth objective, with no repeated estimation of the VAR.
 %
 % See:
 % Chan, J.C.C. (2022). Asymmetric Conjugate Priors for Large Bayesian VARs,
@@ -32,9 +32,11 @@ if nargin < 7 || isempty(idx_ns)
     idx_ns = [];
 end
 symmetric = false;
+ridge = 0;
 for iv = 1:2:numel(varargin)
     switch lower(varargin{iv})
         case 'symmetric', symmetric = varargin{iv+1};
+        case 'ridge',     ridge = varargin{iv+1};
         otherwise, error('bvar:priors:acp_opt_kappa:badOption', ...
                 'unknown option ''%s''', varargin{iv});
     end
@@ -48,18 +50,18 @@ sig2 = bvar.priors.resid_var_ar4(Y0,Y);
 
 if symmetric
     if strcmp(type,'stru')
-        f = @(k1) -bvar.ml.acp(p,Y,Z,bvar.priors.acp_stru(n,p,[k1,k1,kappa3,kappa4],sig2,idx_ns));
+        f = @(k1) -bvar.ml.acp(p,Y,Z,bvar.priors.acp_stru(n,p,[k1,k1,kappa3,kappa4],sig2,idx_ns),'ridge',ridge);
     else
-        f = @(k1) -bvar.ml.acp(p,Y,Z,bvar.priors.acp_redu(n,p,[k1,k1,kappa3,kappa4],sig2,idx_ns));
+        f = @(k1) -bvar.ml.acp(p,Y,Z,bvar.priors.acp_redu(n,p,[k1,k1,kappa3,kappa4],sig2,idx_ns),'ridge',ridge);
     end
     [kappa1,nml] = fminbnd(f,0,1);
     ml_opt = -nml;
     kappa_opt = [kappa1,kappa1,kappa3,kappa4];
 else
     if strcmp(type,'stru')
-        f = @(k) -bvar.ml.acp(p,Y,Z,bvar.priors.acp_stru(n,p,[exp(k(1)),exp(k(2)),kappa3,kappa4],sig2,idx_ns));
+        f = @(k) -bvar.ml.acp(p,Y,Z,bvar.priors.acp_stru(n,p,[exp(k(1)),exp(k(2)),kappa3,kappa4],sig2,idx_ns),'ridge',ridge);
     else
-        f = @(k) -bvar.ml.acp(p,Y,Z,bvar.priors.acp_redu(n,p,[exp(k(1)),exp(k(2)),kappa3,kappa4],sig2,idx_ns));
+        f = @(k) -bvar.ml.acp(p,Y,Z,bvar.priors.acp_redu(n,p,[exp(k(1)),exp(k(2)),kappa3,kappa4],sig2,idx_ns),'ridge',ridge);
     end
     [k_opt,nml] = fminsearch(f,log(k0));
     ml_opt = -nml;

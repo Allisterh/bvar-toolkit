@@ -1,77 +1,48 @@
-% bvar.structural.sign_assign - accept a candidate impact matrix if EVERY shock
-% has at least one column that satisfies its restrictions, then draw one such
-% assignment at random. Sign restrictions and ranking restrictions are handled
-% together, the first being the special case of the second with a zero weight.
-% This is the fast alternative to bvar.structural.sign_restrict.
+% bvar.structural.sign_assign - accept a candidate impact matrix when every
+% shock has at least one column satisfying its restrictions, then draw one such
+% assignment at random. Sign and ranking restrictions are tested together.
 %
 %   [ok,L] = bvar.structural.sign_assign(L, S, Rineq, k)
 %
-%   L     : n x n candidate impact matrix, chol(Sigtilde,'lower')*Q for a random
-%           rotation Q (see bvar.structural.qr_sign)
+%   L     : n x n candidate impact matrix, chol(Sigtilde,'lower')*Q for a
+%           rotation Q from bvar.structural.qr_sign
 %   S     : n x m sign restrictions, one column per shock; +1 and -1 restrict the
 %           sign of that response on impact, NaN leaves it free
-%   Rineq : m x n x k RANKING restrictions (the paper's term; the legacy code
-%           calls them row inequalities), k per shock, each a linear combination
-%           of impact responses required to be <= 0 for that shock's column.
-%           Pass an m x n matrix when k = 1
+%   Rineq : m x n x k ranking restrictions, k per shock, each a linear
+%           combination of impact responses required to be <= 0 for that shock's
+%           column; an m x n matrix when k = 1. The test is <= 0, so a row of
+%           zeros imposes nothing and zeros(m,n) means sign restrictions only.
+%           sign_restrict tests the same quantity strictly, where a zero row
+%           rejects every candidate, so pass an empty Ridx there instead
 %   k     : number of ranking restrictions per shock
-%   ok    : true if an admissible assignment exists
+%   ok    : true when an admissible assignment exists
+%   L     : on acceptance, column i is the shock-i column, with signs flipped
+%           where that is what made the restrictions hold and the remaining n-m
+%           columns randomly permuted and re-signed; unchanged when ok is false
 %
-%   The ranking test here is Rineq*L(:,j) <= 0, so a ROW OF ZEROS is satisfied
-%   and imposes nothing. That makes zeros(m,n) the natural way to say "sign
-%   restrictions only". bvar.structural.sign_restrict tests the same quantity
-%   STRICTLY, < 0, where a zero row instead rejects every candidate and yields an
-%   empty identified set with no error. The two are not interchangeable on this
-%   point: with no ranking restrictions, pass zeros(m,n) here and an EMPTY Ridx
-%   there.
-%   L     : on acceptance, the columns reordered so that column i is the shock-i
-%           column, with signs flipped where that is what made the restrictions
-%           hold, and the remaining n-m columns randomly permuted and re-signed;
-%           unchanged when ok is false
+% bvar.structural.sign_restrict requires column i to satisfy shock i, the
+% accept-reject scheme of Rubio-Ramirez, Waggoner and Zha (2010). The labelling
+% of the columns of Q is arbitrary, so this function accepts whenever every
+% shock has an admissible column, and accepts far more often as a result.
+% Proposition 1 of Chan, Matthes and Yu (2026) shows the target distribution is
+% unchanged. Both functions stay; see the never-merge list in
+% tests/variant_map.md.
 %
-% WHY IT IS FASTER. bvar.structural.sign_restrict requires column i to satisfy
-% shock i and rejects the draw at the first shock that does not, which is the
-% accept-reject algorithm of Rubio-Ramirez, Waggoner and Zha (2010). But the
-% labelling of the columns of Q is arbitrary: a rotation whose third column
-% satisfies the monetary restrictions is just as admissible as one where the
-% first column satisfies them, and accept-reject discards the former. This
-% function builds the m x n table of which columns admit which shocks, accepts
-% whenever every shock has at least one, and draws an assignment uniformly from
-% those available.
+% THE CONDITION. Each shock draws its column with no check that another shock
+% has taken it, which is safe only when no column can admit two shocks. That is
+% Assumption 2 of the paper, which bvar.structural.check_separable tests; call
+% it once before the rejection loop. Restrictions violating it are out of scope:
+% this function errors rather than mis-assigns, and the paper's second
+% algorithm, which enumerates the admissible set, is not implemented here.
 %
-% Proposition 1 of the paper establishes that the accepted R* equals L*Q* for a
-% Q* that is still uniform on the orthogonal group, so the target distribution
-% is unchanged; the proof turns on the Haar measure being invariant to right
-% multiplication by a permutation and a sign matrix. The reported gain at n = 15
-% with 1000 admissible draws is about 3.6 billion candidate rotations and six
-% days for the rejection scheme against about 31,000 and sixteen seconds here.
+% THE CALLER must accept or reject the pair (A,Sigma) and Q jointly, since
+% resampling Q against a fixed posterior draw targets a different distribution
+% (Arias, Rubio-Ramirez, Shin and Waggoner, 2024), and must take one draw per
+% accepted pair, since two assignments from the same (Sigma,Q) differ only by a
+% permutation and sign flips.
 %
-% TWO THINGS THE CALLER MUST GET RIGHT, both from the paper. Accept or reject
-% the pair (A,Sigma) and Q JOINTLY, as the loop in the replication driver does;
-% resampling Q against a fixed posterior draw until it passes targets a
-% different distribution (Arias, Rubio-Ramirez, Shin and Waggoner, 2024). And
-% take ONE draw per accepted pair, not several: two assignments from the same
-% (Sigma,Q) differ only by a permutation and sign flips, so they are dependent.
-%
-% Both functions are correct: sign_restrict is the scheme the earlier papers use
-% and the one their replication code reproduces, so it stays. See the
-% never-merge list in tests/variant_map.md.
-%
-% rng consumption on ACCEPTANCE, in order: one unidrnd per shock (m draws,
-% choosing among that shock's admissible columns), then randperm(n-m) and
-% rand(n-m,1) for the unrestricted columns. A rejected candidate consumes
-% nothing, so the stream position depends on how many draws were accepted.
-%
-% THE CONDITION. Each shock draws its column independently, with no check that a
-% column is already taken. What makes that safe is a requirement on the
-% restrictions: any two shocks must be separable by their impact responses
-% alone, having two common variables on which they agree in sign on one and
-% disagree on the other. Every column then admits at most one shock. The paper
-% states this as Assumption 1 for sign restrictions and, in the same terms, as
-% Assumption 2 once ranking restrictions are included. Restrictions violating it
-% are out of scope: the function errors rather than mis-assigns, and the paper's
-% second algorithm, which enumerates the admissible set instead, is not
-% implemented here.
+% On acceptance the rng consumption is one unidrnd per shock, then randperm(n-m)
+% and rand(n-m,1); a rejected candidate consumes nothing.
 %
 % See:
 % Rubio-Ramirez, J.F., Waggoner, D.F. and Zha, T. (2010). Structural Vector

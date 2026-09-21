@@ -22,6 +22,9 @@
 % silently; is_accept stays 0 when it does, so check it rather than the path.
 %
 % See:
+% Chan, J.C.C. (2017). The stochastic volatility in mean model with time-varying
+% parameters: an application to inflation modeling, Journal of Business and
+% Economic Statistics, 35(1), 17-28, for the accept-reject step this adapts.
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error
 % covariance structure, Journal of Business and Economic Statistics, 38(1), 68-79.
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large

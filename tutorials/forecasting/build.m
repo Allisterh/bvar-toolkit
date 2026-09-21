@@ -15,19 +15,23 @@
 % through bvar.forecast.predictive, which measures the simulation noise in the
 % other two.
 %
-% The evaluation is split by the quarter a forecast is FOR, not by the quarter it
-% was made in: a four-quarter-ahead forecast made in 2019Q4 is a forecast of
-% 2020Q4 and belongs with the pandemic. The two groupings answer different
-% questions and the four origins of 2019 are exactly where they differ.
+% Density forecasts are also checked for calibration: how often the outturn fell
+% inside the interval a model claimed, and how wide that interval was. An interval
+% that is narrow and covers is worth more than one that is narrow.
 %
-% Everything printed goes to build_log.txt, the per-origin scores to
-% scores_by_origin.mat, and the figures are written next to this file.
+% The evaluation is grouped by the quarter a forecast is for rather than by the
+% quarter in which it was made: a four-quarter-ahead forecast made in 2019Q4 is a
+% forecast of 2020Q4 and belongs with the pandemic. The two groupings answer
+% different questions, and the four origins of 2019 are where they differ.
+%
+% The per-origin scores go to scores_by_origin.mat and the figures are written
+% next to this file. Everything printed goes to a log in tempdir.
 %
 % Usage, from anywhere:  run tutorials/forecasting/build.m
 
 tdir = fileparts(mfilename('fullpath'));
 repo = fileparts(fileparts(tdir));
-logf = fullfile(tdir, 'build_log.txt');
+logf = fullfile(tempdir, 'bvar_forecasting_build_log.txt');
 if exist(logf, 'file'), delete(logf); end
 diary(logf);
 fprintf('tutorials/forecasting/build.m, %s, MATLAB %s\n', ...
@@ -67,6 +71,9 @@ ljnt = nan(no, 2, nm);            % joint log predictive likelihood
 psd = nan(no, n, 2, nm);          % predictive standard deviation
 actual = nan(no, n, 2);
 lpl_exact = nan(no, n, 2);        % the homoskedastic model scored without simulation
+pit = nan(no, n, 2, nm);          % the predictive cdf at the outturn
+w80 = nan(no, n, 2, nm);          % width of the 80 per cent interval
+w95 = nan(no, n, 2, nm);          % and of the 95 per cent one
 
 for io = 1:no
     t = origins(io);
@@ -97,7 +104,7 @@ for io = 1:no
         Ad(d,:) = A(:)';  Sd(d,:,:) = Sig;
     end
     [yh, ld, lj, sd] = run_draws('gauss', Ad, Sd, [], cfg, n, k, H);
-    [point, lpl, ljnt, psd] = store(point, lpl, ljnt, psd, io, 1, yh, ld, lj, sd, hs, nobs, t);
+    [point, lpl, ljnt, psd, pit, w80, w95] = store(point, lpl, ljnt, psd, pit, w80, w95, io, 1, yh, ld, lj, sd, hs, nobs, t, squeeze(actual(io,:,:)));
 
         % the same model scored exactly, with no simulation
     [mu, sdx] = bvar.forecast.predictive(Ad, Sd, ylag, H);
@@ -112,13 +119,13 @@ for io = 1:no
     c = bvar.models.var_csv(Y0, Y, p, 'nsim', nsim, 'burnin', burnin, ...
         'seed', seed0 + io, 'draws', true);
     [yh, ld, lj, sd] = run_draws('csv', c.draws.A, c.draws.Sig, c.draws, cfg, n, k, H);
-    [point, lpl, ljnt, psd] = store(point, lpl, ljnt, psd, io, 2, yh, ld, lj, sd, hs, nobs, t);
+    [point, lpl, ljnt, psd, pit, w80, w95] = store(point, lpl, ljnt, psd, pit, w80, w95, io, 2, yh, ld, lj, sd, hs, nobs, t, squeeze(actual(io,:,:)));
 
         % ---- model 3: VAR-SV, order invariant ----
     s = bvar.models.var_sv(Y0, Y, p, 'model', 'OI', 'nsim', nsim, 'burnin', burnin, ...
         'seed', seed0 + io, 'draws', true);
     [yh, ld, lj, sd] = run_draws('oisv', s.draws.A, s.draws.impact, s.draws, cfg, n, k, H);
-    [point, lpl, ljnt, psd] = store(point, lpl, ljnt, psd, io, 3, yh, ld, lj, sd, hs, nobs, t);
+    [point, lpl, ljnt, psd, pit, w80, w95] = store(point, lpl, ljnt, psd, pit, w80, w95, io, 3, yh, ld, lj, sd, hs, nobs, t, squeeze(actual(io,:,:)));
 
     if mod(io, 20) == 0
         fprintf('  %d of %d origins, %.1f minutes\n', io, no, toc(t_all)/60);
@@ -170,6 +177,49 @@ fprintf(['%sthe RMSFE column is the median gain across the five variables and th
     'score column the mean gain in the joint log predictive likelihood, per quarter%s'], ...
     NLc, NLc, NLc);
 
+fprintf('%sby variable, against the homoskedastic VAR%s', NLc, NLc);
+for ih = 1:2
+    ok = ~isnan(actual(:,1,ih));
+    fprintf('%s  h = %d, %d forecasts%s', NLc, hs(ih), nnz(ok), NLc);
+    fprintf('  %-22s', 'variable');
+    for im = 2:nm
+        fprintf(' %15s %15s', mname(im) + " RMSFE", mname(im) + " score");
+    end
+    fprintf('%s', NLc);
+    for i = 1:n
+        fprintf('  %-22.22s', vlabel(i));
+        for im = 2:nm
+            e0 = point(ok,i,ih,1) - actual(ok,i,ih);
+            em = point(ok,i,ih,im) - actual(ok,i,ih);
+            fprintf(' %14.1f%% %15.3f', 100*(1 - sqrt(mean(em.^2))/sqrt(mean(e0.^2))), ...
+                mean(lpl(ok,i,ih,im) - lpl(ok,i,ih,1)));
+        end
+        fprintf('%s', NLc);
+    end
+end
+fprintf(['  the score column is the mean gain in that variable''s own log predictive%s' ...
+    '  likelihood, so the five do not add up to the joint gain%s'], NLc, NLc);
+
+fprintf('%scalibration: how often the outturn fell inside the interval, and how wide%s', NLc, NLc);
+show = [5 2];                            % GDP growth and PCE inflation
+for ih = 1:2
+    ok = ~isnan(actual(:,1,ih));
+    fprintf('%s  h = %d, %d forecasts%s', NLc, hs(ih), nnz(ok), NLc);
+    fprintf('  %-16s %-16s %11s %11s %11s %11s%s', 'variable', 'model', ...
+        'cover 80%', 'width 80%', 'cover 95%', 'width 95%', NLc);
+    for i = show
+        for im = 1:nm
+            u = pit(ok,i,ih,im);
+            fprintf('  %-16.16s %-16s %10.0f%% %11.2f %10.0f%% %11.2f%s', ...
+                vlabel(i), mname(im), 100*mean(u > .100 & u < .900), ...
+                mean(w80(ok,i,ih,im)), 100*mean(u > .025 & u < .975), ...
+                mean(w95(ok,i,ih,im)), NLc);
+        end
+    end
+end
+fprintf(['  a well calibrated 80%% interval covers 80%% of the time; among those that%s' ...
+    '  do, the narrower one is the more useful%s'], NLc, NLc);
+
 fprintf('%ssimulation noise: the homoskedastic model scored by simulation and exactly%s', NLc, NLc);
 for ih = 1:2
     ok = ~isnan(actual(:,1,ih));
@@ -192,20 +242,31 @@ end
     % everything the page quotes, per origin, so a question about the split or a
     % single quarter does not need another run
 save(fullfile(tdir, 'scores_by_origin.mat'), 'odate', 'tdate', 'point', 'lpl', ...
-    'ljnt', 'psd', 'actual', 'lpl_exact', 'mname', 'hs', 'vars', 'nsim', 'burnin');
+    'ljnt', 'psd', 'actual', 'lpl_exact', 'pit', 'w80', 'w95', 'mname', 'hs', ...
+    'vars', 'vlabel', 'nsim', 'burnin');
 fprintf('%sper-origin scores saved to scores_by_origin.mat%s', NLc, NLc);
 
 %% ---- figures ----
-figure('Position', [100 100 760 320]);
-hold on
-for im = 2:nm
-    ok = ~isnan(ljnt(:,1,im));
-    plot(odate(ok), cumsum(ljnt(ok,1,im) - ljnt(ok,1,1)), 'LineWidth', 1.2);
+figure('Position', [100 100 820 520]);
+ptitle = ["all targets" "targets through 2019"];
+for ib = 1:2
+    for ih = 1:2
+        subplot(2, 2, (ib-1)*2 + ih);
+        hold on
+        for im = 2:nm
+            ok = ~isnan(ljnt(:,ih,im));
+            if ib == 2, ok = ok & tdate(:,ih) < covid; end
+            plot(odate(ok), cumsum(ljnt(ok,ih,im) - ljnt(ok,ih,1)), 'LineWidth', 1.1);
+        end
+        yline(0, 'k:'); hold off; box off
+        title(sprintf('h = %d, %s', hs(ih), ptitle(ib)));
+        if ib == 1 && ih == 1
+            legend(mname(2:nm), 'Location', 'northwest', 'Box', 'off');
+            ylabel('cumulative log score difference');
+        end
+        if ib == 2 && ih == 1, ylabel('cumulative log score difference'); end
+    end
 end
-yline(0, 'k:'); hold off; box off
-legend(mname(2:nm), 'Location', 'northwest', 'Box', 'off');
-ylabel('cumulative log score difference');
-title('Density forecasts against the homoskedastic VAR, one quarter ahead');
 exportgraphics(gcf, fullfile(tdir, 'fig_cumscore.png'), 'Resolution', 150);
 
 figure('Position', [100 100 760 320]);
@@ -244,9 +305,19 @@ for d = 1:nd
 end
 end
 
-function [point, lpl, ljnt, psd] = store(point, lpl, ljnt, psd, io, im, yh, ld, lj, sd, hs, nobs, t)
-% Average the draws into the point forecast, the log predictive likelihoods and
-% the predictive standard deviation, at the two horizons that are evaluated.
+function [point, lpl, ljnt, psd, pit, w80, w95] = store(point, lpl, ljnt, psd, ...
+    pit, w80, w95, io, im, yh, ld, lj, sd, hs, nobs, t, yobs)
+% Average the draws into the point forecast, the log predictive likelihoods, the
+% predictive standard deviation, the predictive cdf at the outturn and the widths
+% of two intervals, at the two horizons that are evaluated.
+%
+% The predictive distribution is the mixture over draws of N(yh, sd^2). Its cdf is
+% the average of the component cdfs, which is exact and costs one line. Its
+% quantiles would need a root find per interval end, 17,000 of them over this
+% exercise, so the widths come from the mixture sampled once per draw, which is
+% accurate enough for a width and thousands of times cheaper. The forecasts of
+% forecast_now.m, where there are a few dozen quantiles rather than thousands, use
+% bvar.forecast.mixquantile and no sampling.
 nd = size(yh, 1);
 for ih = 1:2
     h = hs(ih);
@@ -255,5 +326,10 @@ for ih = 1:2
     lpl(io,:,ih,im) = bvar.util.logsumexp(ld(:,:,h)) - log(nd);
     ljnt(io,ih,im) = bvar.util.logsumexp(lj(:,h)) - log(nd);
     psd(io,:,ih,im) = sqrt(mean(sd(:,:,h).^2, 1) + var(yh(:,:,h), 0, 1));
+    pit(io,:,ih,im) = mean(normcdf((yobs(:,ih)' - yh(:,:,h))./sd(:,:,h)), 1);
+    ys = yh(:,:,h) + sd(:,:,h).*randn(nd, size(yh,2));
+    q = quantile(ys, [.100 .900 .025 .975], 1);
+    w80(io,:,ih,im) = q(2,:) - q(1,:);
+    w95(io,:,ih,im) = q(4,:) - q(3,:);
 end
 end

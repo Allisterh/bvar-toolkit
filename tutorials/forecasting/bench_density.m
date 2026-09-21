@@ -17,7 +17,7 @@
 % unbiased density estimate sits below the log density on average, the more so
 % the noisier the estimate. The two are compared here on the same posterior
 % draws, at an ordinary outturn and at an extreme one, over several simulation
-% sizes and seeds, so the size of that gap can be seen rather than asserted.
+% sizes and seeds, which measures that gap rather than asserting it.
 %
 % This script is not part of the tutorial's results and is not run by the test
 % suite. It takes about a minute.

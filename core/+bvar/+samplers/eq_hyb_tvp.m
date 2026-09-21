@@ -1,20 +1,8 @@
 % bvar.samplers.eq_hyb_tvp - the hybrid TVP-VAR block for ONE equation: draws the
 % pair of binary indicators gam_i = (gam^beta_i, gam^alpha_i) marginally of the
-% states, then draws the state path theta_i given them. This is the step that
-% makes the model "hybrid" - each equation has its own pair of indicators for whether
-% its VAR coefficients and its impact-matrix elements are time-varying (gam = 1) or
-% constant (gam = 0), so a 20-variable VAR need not pay for time variation in
-% every equation.
-%
-% The four configurations are compared on their marginal likelihoods, integrating
-% the states out analytically. Each is a precision-sampler computation: build the
-% first-difference matrix H for the relevant block, form K = H'H + Z'diag(e^-h)Z
-% with Z the SUR expansion of the scaled regressors, and read the log density off
-% the Cholesky factor. gam = (0,0) needs no factorization - the equation is a
-% constant-coefficient regression - and its likelihood is the c1 + c2 baseline.
-% When there is no impact block (m = 0, i.e. equation 1), the two configurations
-% that would give alpha time variation are assigned a likelihood far below the
-% others so they are never drawn.
+% states, then draws the state path theta_i given them. The two indicators set
+% time variation on (1) or off (0) separately for the equation's VAR
+% coefficients and its impact-matrix elements.
 %
 %   [gami,thetai,Ui,tilde_thetai,lp_gami] = bvar.samplers.eq_hyb_tvp(Xi, ...
 %       thetai0, Sigthetai, Yi, hi, p0i, k, is_gamfixed, gami)
@@ -29,17 +17,17 @@
 %               m = ki - k is the number of alpha columns
 %   is_gamfixed : true holds gami at the passed value and skips the comparison
 %   lp_gami   : 4 x 1 log posterior ordinates of the four configurations, in the
-%               order (0,0), (0,1), (1,0), (1,1) - the caller accumulates these
-%               into the Savage-Dickey density ratio that produces the paper's
-%               log Bayes factors
+%               order (0,0), (0,1), (1,0), (1,1)
 %   Ui        : T x 1 equation residual net of the state path, the input to the
 %               volatility block
 %
-% rng consumption, in order: one rand for the gam draw (only when
-% is_gamfixed is false), then randn(T*ki,1) for gam = (1,1), randn(T*k,1) for
-% (1,0), randn(T*m,1) for (0,1), and nothing at all for (0,0) - the state is then
-% deterministic at its constant value. The count therefore depends on the drawn
-% configuration, which is why the equivalence test runs whole chains rather than
+% When m = 0 (equation 1) the two configurations with time-varying alpha are
+% assigned a likelihood far below the others and are never drawn.
+%
+% rng consumption, in order: one rand for the gam draw (only when is_gamfixed is
+% false), then randn(T*ki,1) for gam = (1,1), randn(T*k,1) for (1,0),
+% randn(T*m,1) for (0,1), and nothing at all for (0,0). The count depends on the
+% drawn configuration, so equivalence tests must compare whole chains instead of
 % single blocks.
 %
 % See:

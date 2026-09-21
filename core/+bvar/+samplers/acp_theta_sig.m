@@ -1,30 +1,26 @@
 % bvar.samplers.acp_theta_sig - draw the structural VAR parameters under the
-% asymmetric conjugate prior, equation by equation and INDEPENDENTLY across
-% draws: the prior is conjugate, so each equation's posterior is
-% normal-inverse-gamma in closed form and nsim draws come out in one call
-% without a Markov chain.
+% asymmetric conjugate prior, one equation at a time. Each equation's posterior
+% is normal-inverse-gamma in closed form.
 %
 %   [Alp,Beta,Sig] = bvar.samplers.acp_theta_sig(Y0, Y, p, prior, nsim)
 %
 %   Y0, Y : initial conditions and the estimation sample; the lag matrix is
-%           built here from Y0 and Y, so no design matrix is passed in
+%           built here from them, so no design matrix is passed in
 %   p     : lag length
+%   nsim  : number of draws; they are independent, so no burn-in or thinning
+%           is needed
 %   prior : the struct from bvar.priors.acp_redu or acp_stru (fields beta0,
 %           Vbeta, alp0, Valp, nu, S)
-%   nsim  : number of independent draws
 %   Alp   : nsim x n(n-1)/2 free elements of the unit-lower-triangular A
 %   Beta  : nsim x (n^2 p + n) coefficients, equation by equation
 %   Sig   : nsim x n structural innovation variances
 %
-% Equation ii regresses y_ii on the lags and on the CONTEMPORANEOUS values of
-% the preceding equations, Xi = [Z, -Y(:,1:ii-1)], which is what makes A unit
-% lower triangular and the whole system a set of independent regressions. Use
-% bvar.structural.reduced_form to map the draws back to the reduced form.
+% Use bvar.structural.reduced_form to map the draws back to the reduced form.
 %
 % rng consumption per equation ii, in order: gamrnd(...,nsim,1) then
-% randn(nsim,ki) with ki = n p + ii. The whole block for one equation is drawn
-% at once, so the stream position after the call depends on nsim as well as on
-% n and p.
+% randn(nsim,ki) with ki = n p + ii. One equation's whole block is drawn at
+% once, so the stream position after the call depends on nsim as well as on n
+% and p.
 %
 % See:
 % Chan, J.C.C. (2022). Asymmetric Conjugate Priors for Large Bayesian VARs,

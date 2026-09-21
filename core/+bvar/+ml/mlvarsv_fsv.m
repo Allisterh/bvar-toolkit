@@ -1,19 +1,18 @@
 % bvar.ml.mlvarsv_fsv - log marginal likelihood of the VAR-FSV model (factor SV)
-% by adaptive importance sampling. The VAR coefficients alp and the r latent
-% factors are integrated out analytically (the factors through the marginal
-% covariance Sy = (I kron L) Omega (I kron L') + Sig); the free loadings l, the
-% n+r log-volatility paths, (mu,phi) and kappa are drawn from importance
-% densities fitted to the posterior draws, and the M log weights are averaged in
-% 50 batches, which also gives the numerical standard error. flag_marg = 2
-% additionally integrates out the log-volatility variances; flag_marg = 1 keeps
-% them as drawn parameters.
+% by adaptive importance sampling, with the VAR coefficients and the r latent
+% factors integrated out analytically and the remaining parameters drawn from
+% importance densities fitted to the posterior draws.
 %
 %   [lml,lmlstd,out] = bvar.ml.mlvarsv_fsv(X,Y,Y0,M,Hyper,flag_marg,store_h,...
 %       store_hpara,store_l,store_kappa,is_kappafixed,is_kappasym,'gram','full')
 %
-%   flag_marg   - 1 or 2; any other value raises an error. VAR-FSV is the
-%                 only model in this family that implements 1; run_ml passes 2
-%                 by default
+%   M           - number of importance draws, rounded up here to a multiple of
+%                 50; lml is the mean of the 50 batch log marginal likelihoods
+%                 and lmlstd their standard error
+%   flag_marg   - 1 or 2; any other value raises an error. 2 also integrates out
+%                 the log-volatility variances and is what run_ml passes by
+%                 default; VAR-FSV is the only model in this family that
+%                 implements 1
 %   Hyper: alp0, Valp, c0, nuh, Sh, mu0, Vmu, phi0, Vphi, l0, Vl. Valp is
 %          recomputed inside from each kappa draw before any read, so whichever
 %          version the caller passes is irrelevant.
@@ -21,17 +20,11 @@
 %   store_hpara - nsim x 3(n+r), columns [mu' phi' sig2']
 %   store_l     - nsim x kl free loadings
 %   store_kappa - nsim x 2
-%   'gram'      - how the weighted Gram matrix bigX'*inv(Sy)*bigX in the
-%                 precision of the VAR coefficients is formed: 'full' (default,
-%                 as the published code) solves with the Tn x Tn matrix Sy;
-%                 'blocks' sums kron(P_t, x_t'*x_t) over t, where P_t is the
-%                 inverse of the n x n block L*G_t*L' + D_t of Sy. The two agree
-%                 to rounding and draw the same random numbers, and 'blocks' is
-%                 faster when n is large
+%   'gram'      - how the weighted Gram matrix in the precision of the VAR
+%                 coefficients is formed: 'full' (default, as the published
+%                 code) or 'blocks'. The two agree to rounding and consume the
+%                 same random draws; 'blocks' is faster when n is large
 %   out: store_w, bigml (the 50 batch values), and the fitted IS parameters
-%
-% Core used: bvar.priors.minn (n0pre = 4), bvar.util.tnormrnd,
-% bvar.util.surform2, bvar.util.ldet, bvar.ml.isden_arss.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large

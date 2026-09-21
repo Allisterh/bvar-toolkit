@@ -1,8 +1,7 @@
 % bvar.models.var_csv - posterior sampler for a VAR with common stochastic
-% volatility, y_t' = x_t'A + u_t' with u_t ~ N(0, exp(h_t)*Sig) and h_t an AR(1)
-% of mean zero, so Sig carries the scale of the errors. The specification is that
-% of Carriero, Clark and Marcellino (2016) as implemented in Chan (2023), under
-% the natural conjugate prior of that package.
+% volatility, y_t' = x_t'A + u_t' with u_t ~ N(0, exp(h_t)*Sig), h_t a zero-mean
+% AR(1) and a natural conjugate prior on (A,Sig). The specification is that of
+% Carriero, Clark and Marcellino (2016) as implemented in Chan (2023).
 %
 %   res = bvar.models.var_csv(Y0, Y, p)
 %   res = bvar.models.var_csv(Y0, Y, p, 'nsim', 2000, 'burnin', 500, 'seed', 1)
@@ -12,11 +11,12 @@
 %   p  : lag length
 %
 %   'kappa'  : [shrinkage, intercept variance], default [.2^2 100]
-%   'nsim'   : draws kept, default 10000
-%   'burnin' : draws discarded first, default 1000
+%   'nsim'   : draws kept, default 10000;  'burnin' : draws discarded first,
+%              default 1000
 %   'seed'   : if given, rng(seed,'twister') is set before the first draw
 %   'c_reject' : envelope constant of the accept-reject step in bvar.sv.csv_armh,
-%              default 3. It changes the cost of the h draw, not the target
+%              default 3; it changes the cost of the h draw and leaves the
+%              target unchanged
 %   'draws'  : true also returns res.draws with one row per draw: A (nsim x k*n,
 %              each row A(:)'), Sig (nsim x n^2, each row Sig(:)'), h (nsim x T),
 %              phi and sigh2; default false
@@ -24,19 +24,15 @@
 %   res.A_mean     : k x n posterior mean of the VAR coefficients, intercept
 %                    first, k = 1 + n*p
 %   res.Sig_mean   : n x n posterior mean of the scale matrix Sig
-%   res.h_mean     : T x 1 posterior mean of the log-volatility, so the error
-%                    covariance at t has posterior mean around exp(h_t)*Sig
+%   res.h_mean     : T x 1 posterior mean of the log-volatility
 %   res.phi_mean, res.sigh2_mean : posterior means of the AR(1) parameters
 %   res.accept_rate : share of sweeps whose Metropolis step accepted, past the
-%                    first 20, which take the proposal regardless so that h moves
-%                    away from its starting path
+%                    first 20, which take the proposal regardless
 %   plus the settings: nsim, burnin, seed, p, c_reject
 %
 % One factor multiplies the whole covariance matrix, so the order of the columns
-% of Y does not affect the volatility model.
-%
-% test_var_csv pins the draws, bitwise, to the inline sampler that ex05 used
-% before this function existed.
+% of Y does not affect the volatility model. test_var_csv pins the draws,
+% bitwise, to the inline sampler of ex05.
 %
 % See:
 % Carriero, A., Clark, T.E. and Marcellino, M. (2016). Common Drifting Volatility

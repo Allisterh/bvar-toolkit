@@ -1,14 +1,9 @@
 % bvar.structural.b0_row_sampler - one full row-wise pass of the posterior draw
-% of the impact matrix B0 in the order-invariant SVAR-SV model. For each row
-% ii = 1:n it forms the row's conditional Gaussian precision Kbi from the
-% residuals U weighted by exp(-h(:,ii)), rotates onto an orthonormal basis
-% aligned with the orthogonal complement of the other rows (null-space
-% construction), draws the first rotation coordinate from the bimodal
-% two-component approximation bvar.util.anormrnd and the remaining n-1
-% coordinates as zetaj_hat + randn/sqrt(T), maps back, and fixes the sign of
-% the ii-th element to be positive. The row-by-row construction is that of
-% Waggoner and Zha (2003), with the extension to a nonzero prior mean and the
-% two-component approximation to the absolute-normal density of Villani (2009).
+% of the impact matrix B0 in the order-invariant SVAR-SV model, rows ii = 1:n in
+% order, each row returned with a positive ii-th element. The row-by-row
+% construction is that of Waggoner and Zha (2003), with the extension to a
+% nonzero prior mean and the two-component approximation to the absolute-normal
+% density of Villani (2009), drawn in bvar.util.anormrnd.
 %
 %   B0 = bvar.structural.b0_row_sampler(U, h, B0, B00, VB0)
 %

@@ -1,103 +1,70 @@
-% bvar.forecast.iterate - one iterated-forecast + predictive-likelihood step for
-% ONE posterior draw. The entry point dispatches to internal NAMED branches,
-% one per error/volatility specification; call it once per kept draw.
+% bvar.forecast.iterate - one iterated-forecast and predictive-likelihood step
+% for ONE posterior draw, dispatched to an internal NAMED branch per
+% error/volatility specification. Call it once per kept draw: each call
+% simulates one path and evaluates the predictive density analytically given it.
 %
 %   fc = bvar.forecast.iterate(branch, draw, cfg)
 %
-% branch - which specification to run (see the branch list below)
-% draw   - struct of per-draw posterior quantities; the fields each branch
-%          reads are listed with that branch
-% cfg    - struct of vintage-level constants (fixed across draws)
-% fc     - 2 x (2n+1) matrix, one row per horizon the branch evaluates, each
-%          row [EYtp1 (1 x n point forecast), lden (1 x n per-variable log
-%          predictive likelihoods), lden_joint (joint log predictive
-%          likelihood over ALL n modeled variables)]:
-%            'mahp_sv'    : fc(1,:) -> h=1, fc(2,:) -> h=4
-%            'springer_*' : fc(1,:) -> h=0 (nowcast), fc(2,:) -> h=1
-%          A row whose evaluation guard is off this vintage (see "Horizons"
-%          below) comes back as zeros(1,2*n+1); the simulation draws for that
-%          step are still consumed.
+% branch - which specification to run (see BRANCHES below)
+% draw   - per-draw posterior quantities; the fields read are listed per branch
+% cfg    - vintage-level constants, fixed across draws
+% fc     - 2 x (2n+1), one row per evaluated horizon: [EYtp1 (1 x n point
+%          forecast), lden (1 x n per-variable log predictive likelihoods),
+%          lden_joint (joint log predictive likelihood over ALL n modeled
+%          variables)]. 'mahp_sv' gives h=1 then h=4; 'springer_*' gives h=0
+%          (nowcast) then h=1. A row whose evaluation guard is off this vintage
+%          (see Horizons) comes back as zeros(1,2*n+1), and its simulation draws
+%          are still consumed. Subsetting is the CALLER's job: pass outturns
+%          already subsetted, or select columns in bvar.forecast.tables.
 %
-% TRAP (complex-typed rows): the expression sum(diag(log(CSig))) goes through
-% a complex intermediate when CSig has negative off-diagonal entries. On
-% R2025b diag() demotes the zero-imaginary diagonal back to real, so real-data
-% rows stay real (verified empirically); on MATLAB versions that retain the
-% complex attribute the rows can come back complex-typed with zero imaginary
-% part, and a downstream max() then compares by magnitude. The expression is
-% preserved deliberately - do NOT "fix" it to log(diag(CSig)).
+% TRAP (complex-typed rows): the expression sum(diag(log(CSig))) passes through
+% a complex intermediate when CSig has negative off-diagonal entries. On R2025b
+% diag() demotes the zero-imaginary diagonal back to real; on versions that
+% retain the complex attribute the rows come back complex-typed with zero
+% imaginary part, and a downstream max() then compares by magnitude. The
+% expression is preserved deliberately - do NOT "fix" it to log(diag(CSig)).
 %
-% Horizons: every branch simulates the step loop in full (mahp_sv: tt = 1:4,
-% evaluating at tt = 1 and 4; springer_*: tt = 1:2, evaluating at tt = 1 and
-% 2, i.e. nowcast h=0 and one-quarter-ahead h=1). The first evaluated step is
-% unguarded; each later step tt is evaluated only when t <= T - tt. In the
-% springer branches that guard skips the h=1 evaluation at t = T-1 even though
-% the outturn exists; the quirk is preserved deliberately.
+% Horizons: each branch runs its step loop in full (mahp_sv: tt = 1:4, evaluated
+% at tt = 1 and 4; springer_*: tt = 1:2, evaluated at h=0 and h=1). The first
+% evaluated step is unguarded; each later step tt is evaluated only when
+% t <= T - tt, which in the springer branches skips the h=1 evaluation at t = T-1
+% even though the outturn exists. Scheme and quirk are preserved deliberately.
 %
-% Inner-simulation count: all branches below use ONE simulated path per
-% posterior draw - the predictive density is evaluated analytically
-% conditional on the simulated volatility/lag path, and the outer MCMC loop
-% provides the mixture. Families with genuine inner simulation loops (e.g. the
-% OISV cluster forecasts) are NOT covered here and will add branches with an
-% explicit count when canonicalized.
+% Missing latest observation: when cfg.is_last_miss is true the branch advances
+% the state one extra simulation step before the tt loop, so that h=0 evaluates
+% against the quarter after the last OBSERVED one; that step consumes rng draws.
 %
-% Variable subsets: lden always covers the n variables OF THE MODEL and
-% lden_joint all n jointly. Subsetting is the CALLER's job: pass outturns
-% already subsetted (a 4-variable model passes data_tpk(:,var_small), so it
-% evaluates against the 4 outturn columns), and/or select columns downstream
-% in the accumulation / table stage (bvar.forecast.tables).
-%
-% Missing-latest-observation convention (real-time vintages): when
-% cfg.is_last_miss is true the branch first advances the state one extra
-% simulation step (drawing volatility and Y) before the tt loop, so that "h=0"
-% evaluates against the quarter after the last OBSERVED one. That extra step
-% consumes rng draws.
-%
-% ---------------------------------------------------------------------------
 % BRANCHES: what each one models, and the draw/cfg fields it reads.
 %
-% 'mahp_sv'   Structural BVAR with per-variable random-walk SV: transforms
-%             (alp, beta, h_T, Sigh) to reduced form, innovates all n
-%             log-volatilities each step.
-%             draw: alp (k_alp x 1), beta (k_beta x 1), h_T (n x 1), Sigh (n x 1)
-%             cfg:  Yt (estimation sample, last p rows feed the lag stack),
-%                   Y (full outturn matrix; rows t+1 and t+4 are read),
-%                   p, t, T
+% 'mahp_sv'  Structural BVAR with per-variable random-walk SV.
+%    draw: alp (k_alp x 1), beta (k_beta x 1), h_T (n x 1), Sigh (n x 1)
+%    cfg:  Yt (estimation sample; the last p rows feed the lag stack), Y (full
+%          outturn matrix; rows t+1 and t+4 are read), p, t, T
 %
 % 'springer_gauss'  Homoskedastic Gaussian errors.
-%             draw: A (k x n coefficient matrix; a caller holding
-%                     beta = vec(A) passes reshape(beta,k,n))
-%                   CSig - the error factor, IN THE STORAGE CLASS THE MODEL
-%                     USES: sparse(1:n,1:n,sqrt(Sig_hat)) when Sig is
-%                     diagonal, dense chol(Sig,'lower') otherwise. The class
-%                     changes sparse/full propagation downstream, so pass the
-%                     one the model actually uses
-%                   dSig (1 x n) - the diagonal of Sig as a row: Sig_hat' in
-%                     the diagonal case, diag(Sig)' otherwise. Held constant
-%                     across the step loop
-%             cfg:  shortYt, data_tpk (>= 2 rows; pre-subsetted when the model
-%                   covers a subset of the outturn columns),
-%                   is_last_miss, p, t, T
+%    draw: A (k x n coefficient matrix; a caller holding beta = vec(A) passes
+%          reshape(beta,k,n)); CSig, the error factor IN THE STORAGE CLASS THE
+%          MODEL USES - sparse(1:n,1:n,sqrt(Sig_hat)) when Sig is diagonal,
+%          dense chol(Sig,'lower') otherwise, since the class changes
+%          sparse/full propagation downstream; dSig (1 x n), the diagonal of Sig
+%          as a row, Sig_hat' in the diagonal case and diag(Sig)' otherwise
+%    cfg:  shortYt, data_tpk (>= 2 rows; pre-subsetted when the model covers a
+%          subset of the outturn columns), is_last_miss, p, t, T
 %
-% 'springer_csv'  Gaussian errors with common stochastic volatility (CSV):
-%             scalar AR(1) log-volatility htp1 innovated before each step,
-%             joint density carries -n/2*htp1 - .5*(u'u)/exp(htp1).
-%             draw: A, CSig (dense chol(Sig,'lower')), Sig, h (Tt x 1 path;
-%                   only h(end) is read), rho, sigh2
-%             cfg:  shortYt, data_tpk, is_last_miss, p, t, T
+% 'springer_csv'  Gaussian errors with common stochastic volatility (CSV).
+%    draw: A, CSig (dense chol(Sig,'lower')), Sig, h (Tt x 1 path; only h(end)
+%          is read), rho, sigh2
+%    cfg:  shortYt, data_tpk, is_last_miss, p, t, T
 %
-% 'springer_csv_t'  CSV + Student-t errors: simulation divides by
-%             sqrt(gamrnd(nu/2,2/nu)); densities are Student-t (ct/ct_joint).
-%             draw: A, CSig, Sig, h, rho, sigh2, nu
-%             cfg:  shortYt, data_tpk, is_last_miss, p, t, T
+% 'springer_csv_t'  CSV with Student-t errors.
+%    draw: A, CSig, Sig, h, rho, sigh2, nu
+%    cfg:  shortYt, data_tpk, is_last_miss, p, t, T
 %
-% 'springer_csv_t_ma'  CSV + t + MA(1) errors: initializes the MA state from
-%             E = Hpsi\(shortYt - Z*A), adds psi*etp1' to the conditional mean
-%             each step.
-%             draw: A, CSig, Sig, h, rho, sigh2, nu, psi, Hpsi (the sparse
-%                   Tt x Tt MA rotation held by the sampler)
-%             cfg:  shortYt, Z (the Tt x k estimation design), data_tpk,
-%                   is_last_miss, p, t, T
-% ---------------------------------------------------------------------------
+% 'springer_csv_t_ma'  CSV with Student-t and MA(1) errors.
+%    draw: A, CSig, Sig, h, rho, sigh2, nu, psi, Hpsi (the sparse Tt x Tt MA
+%          rotation held by the sampler)
+%    cfg:  shortYt, Z (the Tt x k estimation design), data_tpk, is_last_miss,
+%          p, t, T
 %
 % See:
 % Chan, J.C.C. (2021). Minnesota-Type Adaptive Hierarchical Priors for

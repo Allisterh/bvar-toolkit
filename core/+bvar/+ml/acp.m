@@ -6,27 +6,13 @@
 %
 %   Z     : T x (n p + 1) lag matrix, intercept first (bvar.util.build_lags)
 %   prior : the struct from bvar.priors.acp_redu or acp_stru
-%   ridge : added to the diagonal of the posterior precision; default 0
-%
-% The ridge moves the value, so it is a modelling choice. By default the
-% posterior precision is formed as iVi + Xi'*Xi; a positive ridge adds
-% ridge*speye(ki) to it, a jitter that keeps the Cholesky alive at n = 35. On
-% the ACP package's 15-variable dataset at its own kappa = (.04, .0016, 1, 100),
-% ridge = 0 and ridge = 1e-6 give log marginal likelihoods 1.99 apart, which is
-% large enough to affect a model comparison. Hold the setting fixed across the
-% models being compared, and report which one was used.
-%
-% This is the property that motivates the prior. Conjugacy makes each equation's
-% marginal likelihood a ratio of normal-inverse-gamma normalizing constants, so
-% the whole quantity is a sum over equations of terms in log|Vi|, the Cholesky
-% factor of the posterior precision, and gammaln - no simulation, no importance
-% sampling, no second pass over stored draws. Selecting the lag length or the
-% shrinkage hyperparameters by maximizing it is then a small optimization
-% problem; bvar.priors.acp_opt_kappa does exactly that.
-%
-% Contrast the other entries in this namespace, which exist because their models
-% have no such expression: the kron_bvar family needs Chib's method and the
-% mlvarsv family needs adaptive importance sampling, both requiring the chain.
+%   ridge : ridge*speye(ki) added to the posterior precision iVi + Xi'*Xi;
+%           default 0. A positive value keeps the Cholesky alive at n = 35 and
+%           moves the value: on the ACP package's 15-variable dataset at its own
+%           kappa = (.04, .0016, 1, 100), ridge = 0 and ridge = 1e-6 give log
+%           marginal likelihoods 1.99 apart, large enough to affect a model
+%           comparison. Hold the setting fixed across the models being compared,
+%           and report which one was used
 %
 % See:
 % Chan, J.C.C. (2022). Asymmetric Conjugate Priors for Large Bayesian VARs,

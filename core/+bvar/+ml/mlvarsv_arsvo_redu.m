@@ -1,9 +1,7 @@
 % bvar.ml.mlvarsv_arsvo_redu - log marginal likelihood of the VAR-SVO model
-% (Cholesky SV with an outlier component) by adaptive importance sampling. Same
-% construction as bvar.ml.mlvarsv_arsv_redu, plus the outlier scales o_t and the
-% outlier probability po: o_t is drawn from its smoothed empirical posterior
-% (o_hat, one categorical distribution per period over the 32 grid atoms) and po
-% from a fitted beta.
+% (Cholesky SV with an outlier component) by adaptive importance sampling. As
+% bvar.ml.mlvarsv_arsv_redu, with the outlier scales o_t drawn from the smoothed
+% empirical posterior o_hat and the outlier probability po from a fitted beta.
 %
 %   [lml,lmlstd,out] = bvar.ml.mlvarsv_arsvo_redu(X,Y,Y0,M,Hyper,flag_marg,...
 %       store_h,store_beta,store_hpara,store_kappa,store_o,store_po,o_grid,...
@@ -32,9 +30,6 @@
 % Under is_kappasym the kappa prior is scored with rows 2:3 of Hyper.c0 while
 % the sampler draws kappa1 from row 1, so rows 1 and 2 of c0 must be equal for
 % the weights to be right.
-%
-% Core used: bvar.priors.minn (n0pre = 4), bvar.priors.impact_B0,
-% bvar.util.tnormrnd, bvar.util.vec, bvar.util.ldet, bvar.ml.isden_arss.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large

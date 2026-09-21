@@ -1,28 +1,18 @@
-% bvar.samplers.gig_shrinkage - the kappa/psi generalized-inverse-Gaussian
-% hierarchical shrinkage block of Chan (2021, IJF): draws the global shrinkage
-% hyperparameters via gigrnd and, for the normal-gamma variants, the
-% coefficient-specific local scales psi_kappa1/psi_kappa2 (one gigrnd call
-% each, floored at psi_floor).
+% bvar.samplers.gig_shrinkage - one sweep of the kappa/psi hierarchical
+% shrinkage block of Chan (2021): the global shrinkage hyperparameters and, for
+% the normal-gamma variants, the local scales psi_kappa1/psi_kappa2.
 %
-% The function has three explicitly NAMED variants; the blocks are numerically
-% DIFFERENT across models - never unify them:
+% The three variants are numerically DIFFERENT; never unify them:
 %   'mng'  -> kappa(1:2) with the Minnesota C, then the psi block;
 %   'ng'   -> a single kappa, no Minnesota C and no factor 2 - the NG prior
 %             variance is kappa*psi;
-%   'minn' -> kappa draws only, no psi block: psi_kappa1/psi_kappa2 pass
-%             through untouched, callers may pass [], and nu_psi/psi_floor are
-%             not referenced.
-% Caller contract: the Psi reassembly, Psi(idx_kappa1) = psi_kappa1 and
-% Psi(idx_kappa2) = psi_kappa2, stays with the caller.
+%   'minn' -> kappa draws only, no psi block; psi_kappa1/psi_kappa2 are
+%             returned unchanged.
 % NEVER-MERGE: the NG forecasting sampler forecast_BVAR_NG.m is NOT reproduced
-% by 'ng' at any psi_floor - its conditionals carry an extra factor 2, pairing
-% with its doubled Valp/Vbeta; functionize it separately if the forecast
-% pipeline is ever consolidated.
+% by 'ng' at any psi_floor - its conditionals carry an extra factor 2.
 %
-% rng consumption (all draws through gigrnd, resolved from third_party/):
-%   'mng' : 2 + n*p + (n-1)*n*p gigrnd calls, in that order;
-%   'ng'  : 1 + n*p + (n-1)*n*p gigrnd calls;
-%   'minn': 2 gigrnd calls.
+% rng consumption, all draws through gigrnd (resolved from third_party/), in
+% order: 'mng' 2 + n*p + (n-1)*n*p calls; 'ng' 1 + n*p + (n-1)*n*p; 'minn' 2.
 %
 % Inputs:  variant     - 'mng' | 'ng' | 'minn'
 %          beta        - n*(n*p+1) x 1 current coefficient draw
@@ -36,10 +26,13 @@
 %          nu_psi      - normal-gamma shape ('mng'/'ng'; unused by 'minn')
 %          c01, c02    - gamma prior [shape, rate] pairs (c02 unused by 'ng')
 %          n, p        - VAR dimensions
-%          psi_floor   - psi lower bound against arithmetic underflow
-%                        ('mng'/'ng'; unused by 'minn'). The estimation
-%                        samplers use 1e-10, the MNG forecasting sampler 1e-16
-% Outputs: kappa, psi_kappa1, psi_kappa2 - updated state (psi pass through 'minn')
+%          psi_floor   - psi lower bound against arithmetic underflow ('mng'/'ng';
+%                        unused by 'minn'). No default; the estimation samplers
+%                        use 1e-10, the MNG forecasting sampler 1e-16
+% Outputs: kappa, psi_kappa1, psi_kappa2 - updated state (psi unchanged under 'minn')
+%
+% The Psi reassembly, Psi(idx_kappa1) = psi_kappa1 and Psi(idx_kappa2) =
+% psi_kappa2, stays with the caller.
 %
 % See:
 % Chan, J.C.C. (2021). Minnesota-Type Adaptive Hierarchical Priors for

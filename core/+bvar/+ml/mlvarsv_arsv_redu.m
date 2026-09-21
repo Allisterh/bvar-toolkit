@@ -1,11 +1,9 @@
 % bvar.ml.mlvarsv_arsv_redu - log marginal likelihood of the VAR-SV model
 % (reduced form, Cholesky SV) by adaptive importance sampling. The VAR
 % coefficients alp and the n log-volatility variances are integrated out
-% analytically; the impact-matrix elements beta, the n log-volatility paths and
-% (mu,phi,kappa) are drawn from importance densities fitted to the posterior
-% draws - h from bvar.ml.isden_arss, beta multivariate normal, mu normal, phi
-% truncated normal, kappa gamma - and the M log weights are averaged in 50
-% batches, which also gives the numerical standard error.
+% analytically; beta, the n log-volatility paths and (mu,phi,kappa) are drawn
+% from importance densities fitted to the posterior draws. M is rounded up to a
+% multiple of 50 and lmlstd comes from the 50 batch means.
 %
 %   [lml,lmlstd,out] = bvar.ml.mlvarsv_arsv_redu(X,Y,Y0,M,Hyper,flag_marg,...
 %       store_h,store_beta,store_hpara,store_kappa,is_kappafixed,is_kappasym,'gram','full')
@@ -18,12 +16,11 @@
 %   store_beta  - nsim x k_beta
 %   store_hpara - nsim x 3n, columns [mu' phi' sig2']
 %   store_kappa - nsim x 3, columns [kappa1 kappa2 kappa4]
-%   'gram'      - how the weighted Gram matrix Xtilde'*Xtilde in the precision
-%                 of the VAR coefficients is formed: 'full' (default, as the
-%                 published code) multiplies out the Tn x nk matrix Xtilde;
-%                 'blocks' sums its k x k blocks (bvar.util.kron_gram). The two
-%                 agree to rounding and draw the same random numbers, and
-%                 'blocks' is faster when n is large
+%   'gram'      - how the weighted Gram matrix Xtilde'*Xtilde is formed: 'full'
+%                 (default, as the published code) multiplies out the Tn x nk
+%                 matrix Xtilde; 'blocks' sums its k x k blocks
+%                 (bvar.util.kron_gram). The two agree to rounding and draw the
+%                 same random numbers; 'blocks' is faster when n is large
 %   out: store_w, bigml (the 50 batch values), and the fitted IS parameters
 %
 % Under is_kappasym the kappa prior is scored with rows 2:3 of Hyper.c0 while

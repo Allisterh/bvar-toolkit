@@ -7,28 +7,23 @@
 %
 %   pri: A0, VA0, nu0, S0, psi0, Vpsi, rho0, Vrho, nuh0, Sh0, nuub
 %   est: nsims, store_A, store_Sig (running sums), store_h, store_lam,
-%        store_theta ([psi rho sigh2 nu] columns), state.psihat (the
-%        estimation run's final psi-MH mode, which warm starts the psi
-%        proposal), state.psi + state.Sig (final chain draws; required under
-%        bugcompat)
-%   options (name-value): 'bugcompat' (default false); 'R' - importance-
-%        sampling draws (default 10000); 'nsims2' - reduced-run length
-%        (default 1000)
+%        store_theta ([psi rho sigh2 nu] columns), state.psihat (the estimation
+%        run's final psi-MH mode, which warm starts the psi proposal), state.psi
+%        and state.Sig (final chain draws; required under bugcompat)
+%   options (name-value): 'bugcompat' (default false), 'R' - importance-sampling
+%        draws (default 10000), 'nsims2' - reduced-run length (default 1000)
 %   out: llike, lpri, lpost, store_lpost ([den_rho den_psi] reduced-run
 %        columns), store_lpost1, A_mean, Sig_mean, theta_mean, bugcompat
 %
 % Two known legacy defects, both reproduced by 'bugcompat', true:
 % (1) the (A,Sig) ordinate loop never refreshes psi or rebuilds Hpsi, so all
-%     nsims terms condition on the leftover final draw; the intended pattern,
-%     which bvar.ml.kron_bvar_csv_ma follows, rebuilds Hpsi per draw.
+%     nsims terms condition on the leftover final draw;
 % (2) the reduced run's psi target passes the leftover final Sig where
-%     Sig_mean is intended - as the h step of this same reduced run already
-%     does via CSig.
+%     Sig_mean is intended.
 % The default path fixes both. Quirks kept in either mode (rho bound .999,
-% psigrid +/-.999, ngrid 299, the lam step's missing (1+psi^2) correction,
-% the reduced run's warm start) are sampler details rather than
-% evaluation-point inconsistencies. tests/variant_map.md has the audit, the
-% full quirk list and the effect on the published values.
+% psigrid +/-.999, ngrid 299, the lam step's missing (1+psi^2) correction, the
+% reduced run's warm start) are deliberate sampler details. tests/variant_map.md
+% has the audit, the full quirk list and the effect on the published values.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

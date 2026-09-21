@@ -1,6 +1,5 @@
 % bvar.sv.csv_armh - one accept-reject Metropolis-Hastings sweep for the common
-% stochastic volatility log-volatility path h, marginal of the mixture indicators:
-% Newton-Raphson mode-finding, a Gaussian proposal at the mode, then MH correction.
+% stochastic volatility log-volatility path h, marginal of the mixture indicators.
 %
 %   [h,is_accept] = bvar.sv.csv_armh(s2, rho, sigh2, h, n)
 %   [h,is_accept] = bvar.sv.csv_armh(..., is_ForcedAccept, ht_start)
@@ -13,13 +12,12 @@
 %   is_ForcedAccept : take the proposal regardless of the MH ratio; default false
 %   ht_start        : starting point of the mode search; default h
 %   is_accept       : 1 if the MH proposal was accepted
-%
-%   'c_reject'      c in the envelope target <= c * proposal; default 3. Larger c
-%                   costs more proposals per sweep and does not move the target
-%   'MaxIterMode', 'MaxIterAR'   caps on the two loops; defaults 500 and 1000
+%   'c_reject'      : c in the envelope target <= c * proposal; default 3, an
+%                     efficiency setting that leaves the target unchanged
+%   'MaxIterMode', 'MaxIterAR' : caps on the two loops; defaults 500 and 1000
 %
 % An independence sampler, so a bad starting h can leave the chain stuck there
-% silently; is_accept stays 0 when it does, so check it rather than the path.
+% silently; a rejected candidate returns h unchanged, so check is_accept.
 %
 % See:
 % Chan, J.C.C. (2017). The stochastic volatility in mean model with time-varying
@@ -44,7 +42,7 @@ if numel(varargin) >= 1 && ~(ischar(varargin{1}) || isstring(varargin{1}))
     end
 end
 c_reject = 3; maxit_mode = 500; maxit_ar = 1000;
-tol_mode = 1e-3;                        % NOT an option: see the header
+tol_mode = 1e-3;                        % fixed, not an option
 while iv <= numel(varargin)
     if iv == numel(varargin)
         error('bvar:sv:csv_armh:badOption', ...

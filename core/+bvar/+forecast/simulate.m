@@ -1,7 +1,6 @@
 % bvar.forecast.simulate - h-step predictive distribution of a reduced-form VAR
-% whose error covariance varies over time, from ONE posterior draw, with the log
-% predictive likelihood of the outturn at each horizon. The counterpart of
-% bvar.forecast.predictive, which covers the constant-covariance case.
+% with time-varying error covariance, from ONE posterior draw, with the log
+% predictive likelihood of the outturn at each horizon.
 %
 %   [yhat, lden, ljoint, sdev] = bvar.forecast.simulate(spec, draw, cfg)
 %
@@ -26,18 +25,12 @@
 %   ljoint : H x 1 the same jointly over all n variables
 %   sdev   : H x n predictive standard deviation given that path
 %
-% ONLY THE VOLATILITY IS SIMULATED. Given its path the h-step distribution is
-% still Gaussian, with the mean iterating the VAR and the variance the sum of
-% Psi_i*Sigma_{T+h-i}*Psi_i' over i = 0 to h-1, so the density is evaluated
-% exactly rather than from a simulated path of the data. Simulating the data too
-% and scoring one path per draw is also unbiased, but its variance grows with the
-% horizon and becomes useless in the tails: on quarterly US data that estimator
-% and this one agree to machine precision at h = 1 and differ by up to 300 log
-% points at h = 4 in the pandemic quarters. Averaging exp(lden) over draws
-% integrates over the parameters and the volatility together.
-%
-% With 'gauss' the result equals bvar.forecast.predictive for the same draw, to
-% machine precision, at every horizon.
+% ONLY THE VOLATILITY IS SIMULATED. The data path is integrated out
+% analytically, so lden and ljoint are exact given the simulated volatility
+% path. Averaging exp(lden) over draws integrates over the parameters and the
+% volatility together. With 'gauss' the result equals bvar.forecast.predictive,
+% which covers the constant-covariance case, for the same draw to machine
+% precision at every horizon.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing Stochastic Volatility Specifications for Large

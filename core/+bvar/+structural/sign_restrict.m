@@ -1,13 +1,12 @@
-% bvar.structural.sign_restrict - test one candidate rotation of the impact
-% matrix against a set of sign restrictions and row inequalities, flipping the
-% sign of any column that satisfies them in reverse. This is the accept-reject
-% step of Rubio-Ramirez, Waggoner and Zha (2010), applied to rotations that
-% bvar.structural.qr_sign draws uniformly from the orthogonal group.
+% bvar.structural.sign_restrict - test one candidate impact matrix against a set
+% of sign restrictions and row inequalities, flipping the sign of any column
+% that satisfies them in reverse. This is the accept-reject step of
+% Rubio-Ramirez, Waggoner and Zha (2010).
 %
 %   [ok,L] = bvar.structural.sign_restrict(L, S, Rineq, Ridx)
 %
-%   L     : n x n candidate impact matrix, chol(Sigtilde,'lower')*Q for a random
-%           rotation Q (see bvar.structural.qr_sign)
+%   L     : n x n candidate impact matrix, chol(Sigtilde,'lower')*Q for a
+%           rotation Q from bvar.structural.qr_sign
 %   S     : n x m sign restrictions, one column per shock. +1 and -1 restrict the
 %           sign of that response on impact; NaN leaves it free
 %   Rineq : nR x n rows, each a linear combination required to be NEGATIVE
@@ -23,12 +22,6 @@
 % no ranking restrictions, pass an empty Ridx and a 0 x n Rineq, NOT a zero row.
 % bvar.structural.sign_assign tests the same quantity as <= 0, where a zero row
 % is harmless, so the two differ on exactly this input.
-%
-% A sign restriction identifies a shock only up to sign, so a column that
-% violates S may satisfy it after negation, and the negated column is then the
-% economically meaningful one. The check exits at the first shock that satisfies
-% neither, which is why acceptance rates in the caller's rejection loop can be
-% very low without any single evaluation being expensive.
 %
 % See:
 % Rubio-Ramirez, J.F., Waggoner, D.F. and Zha, T. (2010). Structural Vector

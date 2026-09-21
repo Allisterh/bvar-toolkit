@@ -1,10 +1,7 @@
 % bvar.samplers.horseshoe_kappa_psi - one sweep of the Minnesota-type HORSESHOE
-% hierarchical shrinkage block: given the current coefficient vector theta
-% (stacked k*n, intercept first per equation), draw the local scales psi
-% (inverse-gamma), their auxiliaries z_psi, the global own-lag/other-lag scales
-% kappa(1:2) (inverse-gamma), and their auxiliaries z_kappa, in exactly that
-% order. kappa(3:4) pass through untouched (the OI model carries
-% kappa(3) = NaN, the CS model kappa(3) = 1; kappa(4) = 100 intercepts in both).
+% hierarchical shrinkage block for the coefficient vector theta (stacked k*n,
+% intercept first per equation). kappa(1:2) are the global own-lag and
+% other-lag scales; kappa(3:4) are returned unchanged.
 %
 %   [psi_kappa1,psi_kappa2,z_psi1,z_psi2,kappa,z_kappa] = ...
 %       bvar.samplers.horseshoe_kappa_psi(theta,idx_kappa1,idx_kappa2,C, ...
@@ -12,8 +9,7 @@
 %
 % Caller contract: the Psi reassembly, Psi(idx_kappa1) = psi_kappa1 and
 % Psi(idx_kappa2) = psi_kappa2, stays with the caller. It consumes no rng and
-% Psi is not read inside the block, so where the caller puts it in the sweep is
-% draw-neutral.
+% Psi is not read here, so its placement in the sweep is draw-neutral.
 %
 % rng consumption, in order: gamrnd n*p-vector (psi1), gamrnd (n-1)*n*p-vector
 % (psi2), gamrnd n*p-vector (z_psi1), gamrnd (n-1)*n*p-vector (z_psi2), two

@@ -3,7 +3,7 @@
 % covariance matrix, with the prior of Chan, Koop and Yu (2024).
 %
 %   res = bvar.models.var_sv(Y0, Y, p)
-%   res = bvar.models.var_sv(Y0, Y, p, 'model', 'CS', 'nsim', 1000, 'burnin', 200, 'seed', 1)
+%   res = bvar.models.var_sv(Y0, Y, p, 'model', 'CS', 'nsim', 1000, 'seed', 1)
 %
 %   Y0 : initial conditions, at least max(p,4) rows, same columns as Y
 %   Y  : T x n estimation sample, n >= 2, each series stationary, no NaN or Inf
@@ -16,31 +16,27 @@
 %   'burnin' : draws discarded first, default 5000
 %   'seed'   : if given, rng(seed,'twister') is set before the first draw;
 %              otherwise the current stream is used
-%   'draws'  : true also returns res.draws, the parameter draws, one row per
-%              draw: kappa (nsim x 2), A (nsim x k*n, each row A(:)'), impact
-%              (nsim x n^2), phi and sig2 (nsim x n), h_T (nsim x n, the
-%              log-volatilities at the end of the sample, which a forecast
-%              continues from) and, under 'CS', mu (nsim x n); default false.
-%              The rest of the log-volatility paths are not kept.
-%   'phi_proposal' : under 'OI', the candidate of the Metropolis-Hastings step for
-%              the log-volatility persistence phi, passed to bvar.sv.sv0_params:
-%              'truncated' (default) or 'untruncated', the step of the Chan, Koop
-%              and Yu (2024) package
+%   'draws'  : true also returns res.draws, one row per draw: kappa (nsim x 2),
+%              A (nsim x k*n, rows A(:)'), impact (nsim x n^2), phi, sig2 and
+%              h_T (nsim x n each, h_T at the end of the sample), mu (nsim x n)
+%              under 'CS'; default false. Full log-volatility paths are not kept
+%   'phi_proposal' : under 'OI', the Metropolis-Hastings candidate for phi,
+%              passed to bvar.sv.sv0_params: 'truncated' (default) or
+%              'untruncated', the step of the Chan, Koop and Yu (2024) package
 %
-%   res.Sig_mean     : T x n x n posterior mean of Sigma_t
-%   res.A_mean       : k x n posterior mean of the VAR coefficients, intercept
-%                      first, k = 1 + n*p
-%   res.h_mean       : T x n posterior mean of the log-volatilities
-%   res.impact_mean  : n x n posterior mean of B0 ('OI') or of the unit lower
-%                      triangular matrix ('CS')
-%   res.kappa_mean   : posterior means of the own- and cross-lag shrinkage
+%   res.Sig_mean    : T x n x n posterior mean of Sigma_t
+%   res.A_mean      : k x n posterior mean of the coefficients, intercept first
+%                     (k = 1 + n*p)
+%   res.h_mean      : T x n posterior mean of the log-volatilities
+%   res.impact_mean : n x n posterior mean of B0 ('OI') or of the unit lower
+%                     triangular matrix ('CS')
+%   res.kappa_mean  : posterior means of the own- and cross-lag shrinkage
 %   plus the settings: model, nsim, burnin, seed, p
 %
 % The prior constants and the chain initialization are those of the Chan, Koop
 % and Yu (2024) package (replications/chan_koop_yu2024_jbes_oisv/preset.m).
-% test_var_sv checks the constants against that file and pins the draws, bitwise,
-% to the inline sampler ex06 used previously, whose phi step is the package's
-% (under 'OI', 'phi_proposal' set to 'untruncated').
+% test_var_sv checks them against that file and pins the draws, bitwise, to the
+% inline sampler ex06 ('OI' with 'phi_proposal' set to 'untruncated').
 %
 % See:
 % Cogley, T. and Sargent, T.J. (2005). Drifts and Volatilities: Monetary

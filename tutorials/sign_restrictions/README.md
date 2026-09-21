@@ -199,9 +199,6 @@ and a monetary shock in the five-variable panel of [the volatility-specification
 tutorial](../sv_specification/) and take a few seconds: 100 admissible draws from 500 candidates,
 of which the rejection algorithm accepts 7.
 
-An identified set can also be empty. If no candidate is ever admissible the loop does not
-terminate, and the restrictions are then what to examine.
-
 ## Reproducing the Results
 
 To reproduce all results on this page, run the build script from the root of the repository:

@@ -5,19 +5,22 @@
 package and the estimators in [`core/+bvar/+ml`](../../core/+bvar/+ml). Method:
 [Chan (2023)](../../CITING.md#chan-2023a).*
 
-In this tutorial we compare five ways of modeling the error covariance matrix of a Bayesian VAR
-by their marginal likelihoods: constant volatility, one common volatility factor (VAR-CSV), one
-volatility process per equation (VAR-SV), a few volatility factors (VAR-FSV), and one volatility
-process per equation with an outlier component (VAR-SVO). Chan (2023) estimates these marginal
-likelihoods by integrating out the VAR coefficients analytically and the log-volatilities by
-adaptive importance sampling. In a five-variable quarterly VAR of the unemployment rate, PCE
-inflation, the federal funds rate, financial conditions and GDP growth from 1973 to 2024, the
-outlier component fits best at -1008.8, ahead of the Cholesky specification at -1018.7, factor
-stochastic volatility at -1022.0 and the common volatility at -1129.7. It marks three quarters as
-outliers with probability one or close to it: 2008Q4 and the two pandemic quarters. The
-homoskedastic VAR trails the field by 579. Three fifths of the distance between the Cholesky and
-the common specification comes from the prior: restricted to one shrinkage hyperparameter for own
-and other lags, VAR-SV falls by 65.7.
+In this tutorial we compare five specifications of the error covariance matrix of a Bayesian VAR
+by their marginal likelihoods: constant volatility (VAR-NCP), one common volatility factor
+(VAR-CSV), one volatility process per equation under a Cholesky parameterization (VAR-SV), a few
+volatility factors (VAR-FSV), and VAR-SV with an outlier component (VAR-SVO). Chan (2023)
+estimates the marginal likelihoods by integrating out the VAR coefficients analytically and the
+log-volatilities by adaptive importance sampling.
+
+The application is a five-variable quarterly VAR of the unemployment rate, PCE inflation, the
+federal funds rate, financial conditions and GDP growth from 1973 to 2024. VAR-SVO has the
+highest log marginal likelihood, -1008.8. VAR-SV is 9.9 below it, VAR-FSV 13.2, VAR-CSV 120.9 and
+VAR-NCP 578.6. The outlier component marks three quarters as outliers with posterior probability
+0.97 or more: 2008Q4, 2020Q2 and 2020Q3.
+
+Part of the difference between VAR-SV and VAR-CSV comes from the prior. Restricting VAR-SV to a
+single shrinkage hyperparameter for own and other lags lowers its log marginal likelihood by
+65.7, three fifths of the 111 between the two.
 
 ## Try It Now
 
@@ -33,7 +36,7 @@ rank the specifications, and every number below comes from the full build. Its s
 where you point it at your own file.
 
 On this sample the outlier specification has the highest marginal likelihood under these priors.
-That ordering is conditional on the variables, the sample, the order of the variables, the priors
+The ranking is conditional on the variables, the sample, the order of the variables, the priors
 and the set of candidates, so the comparison is worth rerunning on any dataset before a
 specification is adopted.
 
@@ -112,22 +115,21 @@ with the model, under a gamma prior. We return to this difference below.
 
 ## Results for a Five-Variable VAR
 
-The data are the quarterly panel of *Bayesian Macroeconometrics*: real GDP growth, PCE inflation,
-the federal funds rate and the unemployment rate, the four series of its chapters 12 and 13,
-together with the Chicago Fed's National Financial Conditions Index, which its growth-at-risk
-application in Section 4.1.3 pairs with GDP growth. Growth and inflation are annualized quarterly
-rates, the two rates and the NFCI are levels, positive values of the NFCI meaning tighter
-financial conditions than average, and no further scaling is needed. The NFCI begins in 1971Q1,
-which sets the sample at 216 quarters to 2024Q4. The VAR has four lags and the first eight
+The data are five quarterly US series, in the order they enter the VAR: the unemployment rate,
+PCE inflation, the federal funds rate, the Chicago Fed's National Financial Conditions Index
+(NFCI) and real GDP growth. Inflation and growth are annualized quarterly rates; the unemployment
+rate, the federal funds rate and the NFCI are levels, with positive values of the NFCI indicating
+tighter financial conditions than average. No further scaling is needed. The NFCI begins in
+1971Q1, which sets the sample at 216 quarters to 2024Q4. The VAR has four lags and the first eight
 quarters serve as initial conditions, so the estimation sample runs from 1973Q1 to 2024Q4, with
-$`T = 208`$. Every prior mean is zero, as in the book's own script for these series.
+$`T = 208`$. Every prior mean is zero.
 
-The priors, the lag length and the sampler settings are those of Section 5 of Chan (2023): the
-shrinkage hyperparameters are estimated with the model, each chain keeps 20,000 draws after a
-burn-in of 1,000, and each marginal likelihood uses an importance sample of 10,000 draws. Section
-13.1.4 of the book compares three of these specifications on the four macro series by recursive
-one-step-ahead forecasts of inflation; here we compare five of them, with financial conditions
-added, by marginal likelihood.
+The priors, the lag length and the sampler settings are those of Chan (2023): the shrinkage
+hyperparameters are estimated with the model, each chain keeps 20,000 draws after a burn-in of
+1,000, and each marginal likelihood uses an importance sample of 10,000 draws. *Bayesian
+Macroeconometrics* compares three of these specifications on the four series other than the NFCI,
+by recursive one-step-ahead forecasts of inflation; here we compare five of them, with financial
+conditions added, by marginal likelihood.
 
 *Table 1: Log marginal likelihoods of the five-variable VAR, with numerical standard errors. The
 last column is the difference from the best specification. VAR-NCP has no standard error: its
@@ -143,12 +145,13 @@ marginal likelihood is available in closed form.*
 | VAR-SVO | -1008.8 | 0.31 | |
 
 We note three results in the table. First, time-varying volatility matters far more than the
-choice among its forms: the homoskedastic VAR trails the common volatility by 458 and the best
-specification by 579. Second, the three flexible specifications beat the common volatility by 103
-to 121, so one volatility process is too restrictive for these five series. Third, adding the
-outlier component to the Cholesky specification raises the log marginal likelihood by 9.9,
-against numerical standard errors of 0.31 and 0.33, in a sample where GDP growth falls by 33 and
-rises by 30 in successive quarters.
+choice among its forms: the homoskedastic VAR is 458 below the common volatility and 579 below the
+best specification. Second, the three flexible specifications exceed the common volatility by 103
+to 121. That gap is between model-prior configurations, since VAR-CSV keeps the natural conjugate
+prior, and for VAR-SV three fifths of it comes from the prior (Table 2). Third, adding the outlier
+component to the Cholesky specification raises the log marginal likelihood by 9.9, against
+numerical standard errors of 0.31 and 0.33, in a sample where GDP growth falls by 33 and rises by
+30 in successive quarters.
 
 The marginal likelihood also ranks the number of factors, and one factor beats two by 4.8. At
 five variables both counts satisfy the identification condition $`r \leqslant (n-1)/2`$ of
@@ -229,7 +232,7 @@ $`o_t^2`$, those three quarters carry about 59, 177 and 132 times the covariance
 gives an ordinary quarter. Figure 1 shows the whole path beside the common volatility of VAR-CSV,
 which runs from 0.36 in 2018Q2 to 10.64 in 2020Q2.
 
-Carriero, Clark, Marcellino and Mertens (2024) designed the component to keep such quarters from
+Carriero, Clark, Marcellino and Mertens (2024) design the component to keep such quarters from
 lifting the persistent volatility, and Section 14.2 of *Bayesian Macroeconometrics* fits it to
 the common volatility of a 25-variable monthly panel. Here it also raises the log marginal
 likelihood by 9.9 over the same specification without it, which is what one would expect in a
@@ -237,12 +240,12 @@ sample whose largest observations are as extreme as these.
 
 ## Checking the Estimates
 
-Three checks decide whether the ranking in Table 1 can be read at face value. The first is the
-numerical standard error of each estimate, which comes from 50 batches of importance weights and
-runs from 0.08 to 0.51. The weights correct for whatever the fitted density gets wrong, so the
-estimator targets the same marginal likelihood as long as that density covers the target. How
-reliable a finite run is depends on the fit: a density that misses a region can leave both the
-estimate and its batch standard error too small.
+We perform three checks to assess the reliability of the log marginal likelihood estimates in
+Table 1. The first is the numerical standard error of each estimate, which comes from 50 batches
+of importance weights and runs from 0.08 to 0.51. The weights correct for whatever the fitted
+density gets wrong, so the estimator targets the same marginal likelihood as long as that density
+covers the target. How reliable a finite run is depends on the fit: a density that misses a region
+can leave both the estimate and its batch standard error too small.
 
 The second check is a repeat of every run from a second seed, which redraws the chain, refits the
 importance density and redraws the weights, together with two summaries of how concentrated those
@@ -260,7 +263,7 @@ weights are.
 | VAR-FSV, $`r = 2`$ | -1026.8 | -1026.7 | 0.1 | 0.51 |
 | VAR-SVO | -1008.8 | -1008.2 | 0.6 | 0.31 |
 
-No estimate moves by more than 0.7 between seeds, which leaves the ordering of Table 1 and each
+No estimate moves by more than 0.7 between seeds, which leaves the ranking of Table 1 and each
 of its gaps intact. The differences are of the same size as the batch standard errors, which is
 what a well-behaved importance sample gives. A comparison that turned on a log point or two would
 need a longer importance sample, a better-fitting density, or both.
@@ -285,28 +288,34 @@ measures as well.
 
 The third check is how well the chains that fit those importance densities mix. The next table
 gives inefficiency factors at a truncation lag of 200, computed with `bvar.diag`, over the
-hyperparameters, and the count of parameters whose Geweke statistic rejects at the 5% level.
+hyperparameters, and the largest difference between the posterior means of the two runs.
 
-*Table 4: Inefficiency factors by parameter group, and the number of parameters whose Geweke
-statistic rejects at the 5% level, from 20,000 draws.*
+*Table 4: Inefficiency factors by parameter group, from 20,000 draws, and the largest difference
+between the posterior means of the two runs over all hyperparameters, in posterior standard
+deviations.*
 
-| Model | $`\kappa`$ | $`\mu`$ | $`\phi`$ | $`\sigma^2`$ | Geweke rejections |
+| Model | $`\kappa`$ | $`\mu`$ | $`\phi`$ | $`\sigma^2`$ | Largest gap between runs |
 |---|---|---|---|---|---|
-| VAR-CSV | 62 | | 4 | 24 | 2 of 3 |
-| VAR-SV | 1 to 26 | 1 to 2 | 4 to 16 | 17 to 52 | 8 of 18 |
-| VAR-SV, symmetric prior | 1 to 3 | 1 to 2 | 4 to 9 | 19 to 40 | 6 of 18 |
-| VAR-FSV, $`r = 1`$ | 4 to 37 | 1 to 29 | 5 to 12 | 26 to 43 | 5 of 20 |
-| VAR-FSV, $`r = 2`$ | 4 to 32 | 1 to 25 | 5 to 29 | 33 to 68 | 5 of 23 |
-| VAR-SVO | 2 to 18 | 1 to 2 | 9 to 17 | 29 to 99 | 2 of 18 |
+| VAR-CSV | 62 | | 4 | 24 | 0.06 |
+| VAR-SV | 1 to 26 | 1 to 2 | 4 to 16 | 17 to 52 | 0.10 |
+| VAR-SV, symmetric prior | 1 to 3 | 1 to 2 | 4 to 9 | 19 to 40 | 0.08 |
+| VAR-FSV, $`r = 1`$ | 4 to 37 | 1 to 29 | 5 to 12 | 26 to 43 | 0.10 |
+| VAR-FSV, $`r = 2`$ | 4 to 32 | 1 to 25 | 5 to 29 | 33 to 68 | 0.13 |
+| VAR-SVO | 2 to 18 | 1 to 2 | 9 to 17 | 29 to 99 | 0.10 |
 
-The volatility parameters are the slow ones. An inefficiency factor of 100 means that 20,000
-draws carry the information of 200 independent ones, which suffices for fitting the importance
-density and is thin for a posterior standard deviation of $`\sigma_i^2`$. Geweke's statistic
-rejects for 28 of the 100 hyperparameters, and the log-volatility variances account for 13 of
-those and the persistences for 8, so a chain several times longer is worth running before quoting
-posterior summaries of those two blocks. Section 6.5 of *Bayesian Macroeconometrics* sets out all
-three diagnostics, and [ex13](../../examples/ex13_mcmc_diagnostics.m) applies them to a VAR-SV
-sampler in detail.
+The volatility parameters are the slow ones. An inefficiency factor of 100 means that 20,000 draws
+carry the information of 200 independent ones, which suffices for fitting the importance density
+and is thin for a posterior standard deviation of $`\sigma_i^2`$. Even so, the two independent
+runs agree on the posterior mean of every hyperparameter to within 0.13 posterior standard
+deviations.
+
+Within a run, the volatility variances drift the most: between the first tenth and the last half
+of a run their chains move by a median of 0.11 posterior standard deviations and at most 0.50,
+against at most 0.23 for any other hyperparameter. A chain several times longer is worth running
+before quoting their posterior summaries. The marginal likelihoods are less affected, since they
+depend on the chains only through the importance densities they fit, and they agree across runs to
+within 0.7. Section 6.5 of *Bayesian Macroeconometrics* sets out these diagnostics, and
+[ex13](../../examples/ex13_mcmc_diagnostics.m) applies them to a VAR-SV sampler in detail.
 
 ## Applying the Method to Your Data
 
@@ -362,11 +371,11 @@ run tutorials/sv_specification/build.m
 ```
 
 The seven specifications are each estimated twice, and `build.m` saves every run in a `runs`
-folder next to itself, so an interrupted build resumes where it stopped. Setting `build_runs` to
-a subset of 1:7 before running the script computes only those specifications, which spreads them
-over several MATLAB sessions. The computation took 12.8 minutes using MATLAB R2025b on a
-computer with an Intel Core Ultra 7 255U processor and 32 GB of RAM. The script prints every
-result in this tutorial and saves the figure in the same folder as this page. The
+folder next to itself, so an interrupted build resumes from the last saved run. Setting
+`build_runs` to a subset of 1:7 before running the script computes only those specifications,
+which spreads them over several MATLAB sessions. The computation takes 12.8 minutes using MATLAB
+R2025b on a computer with an Intel Core Ultra 7 255U processor and 32 GB of RAM. The script prints
+every result in this tutorial and saves the figure in the same folder as this page. The
 data file [`macro5_Q.csv`](macro5_Q.csv) joins the four series of the book's
 `chapter12/macro4_Q.csv` with the NFCI column of its `chapter04/GDP_NFCI_merged.csv` on the
 quarter; the two files date a quarter by its last and its first month, and the GDP column they

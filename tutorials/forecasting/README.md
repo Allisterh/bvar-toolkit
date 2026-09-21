@@ -38,7 +38,7 @@ This workflow needs MATLAB with the Statistics and Machine Learning Toolbox.
 ![Cumulative log score difference](fig_cumscore.png)
 
 *Figure 1: The running sum of the joint log predictive likelihood of each volatility model minus
-that of the homoskedastic VAR, against the quarter in which the forecast was made. A rising line
+that of the homoskedastic VAR, against the quarter in which the forecast is made. A rising line
 indicates the more accurate model. The top row uses every forecast; the bottom row keeps only
 those whose target quarter falls before 2020, and the vertical scales differ across panels. Both
 models are ahead of the benchmark long before the pandemic, and at one quarter ahead the targets
@@ -130,7 +130,7 @@ and in closed form; the two agree to `0.0000` at both horizons.
 
 ## Accuracy Relative to the Homoskedastic VAR
 
-Forecasts are grouped by the quarter they are for rather than the quarter in which they were made.
+Forecasts are grouped by the quarter they are for rather than the quarter in which they are made.
 A four-quarter-ahead forecast made in 2019Q4 is a forecast of 2020Q4 and belongs with the
 pandemic; grouping by origin would place four pandemic forecasts in the calm block. The scored
 counts differ by horizon, 140 at one quarter and 137 at four, because the last three origins have
@@ -362,10 +362,10 @@ To reproduce all results on this page, run the build script from the root of the
 run tutorials/forecasting/build.m
 ```
 
-The computation took 23.0 minutes using MATLAB R2025b on a computer with an Intel Core Ultra 7
+The computation takes 23.0 minutes using MATLAB R2025b on a computer with an Intel Core Ultra 7
 255U processor and 32 GB of RAM. The script prints every result on this page, or the numbers they
 are computed from, and saves the figures in the same folder. The scores of every individual
-forecast, with the quarter in which it was made and the quarter it is for, are in
+forecast, with the quarter in which it is made and the quarter it is for, are in
 `scores_by_origin.mat`, so that a regrouping or a question about a single quarter requires no
 rerun. Neither [`bench_density.m`](bench_density.m) nor [`check_stability.m`](check_stability.m)
 is part of the build.

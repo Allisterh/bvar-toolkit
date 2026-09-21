@@ -366,7 +366,7 @@ The script `build.m` reads the data of the replication package of Chan (2019) in
 against Table 2 of the paper, and evaluates the marginal likelihood over the grid of its
 Figure 1, which gives the intervals quoted above, and over the wider logarithmic grid of Figure 1
 here. It then draws from the posterior, scans the lag length and runs the forecasting exercise,
-whose code is not part of the package. The computation took 12.7 minutes using MATLAB
+whose code is not part of the package. The computation takes 12.7 minutes using MATLAB
 R2025b on a computer with an Intel Core Ultra 7 255U processor and 32 GB of RAM. The script
 prints every result in this tutorial, or the numbers they are computed from, and saves the
 figures in the same folder as this page.

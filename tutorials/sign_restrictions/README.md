@@ -171,7 +171,7 @@ admissible draws, for six of the 35 variables.*
 | Labor supply | 0.041 | −0.024 | 0.003 | 0.031 | 0.011 | −0.047 |
 | Wage bargaining | 0.051 | −0.029 | 0.013 | 0.081 | −0.013 | −0.039 |
 
-The restricted entries have the signs they were given, which checks the code. The unrestricted
+The restricted entries have the signs they are given, which checks the code. The unrestricted
 entries are the identified content. Real compensation is restricted only
 under the technology, labor supply and wage bargaining shocks, and it is where the three supply
 shocks separate: technology raises it by 0.101 while lowering prices, labor supply lowers it by
@@ -222,8 +222,8 @@ To reproduce all results on this page, run the build script from the root of the
 run tutorials/sign_restrictions/build.m
 ```
 
-The computation took 9.8 minutes using MATLAB R2025b on a computer with an Intel Core Ultra 7
-255U processor and 32 GB of RAM, of which 9.6 minutes was the rejection loop. The script prints
+The computation takes 9.8 minutes using MATLAB R2025b on a computer with an Intel Core Ultra 7
+255U processor and 32 GB of RAM, of which 9.6 minutes is the rejection loop. The script prints
 every result on this page and saves the figures in the same folder. The posterior median and the
 16th and 84th percentiles of every response, for all 35 variables and 8 shocks over 36 quarters,
 are in `irf_bands.mat`.

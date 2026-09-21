@@ -315,7 +315,7 @@ run tutorials/variable_ordering/build.m
 ```
 
 The script `build.m` estimates the models in ex06 with 30,000 posterior draws after a burn-in
-period of 5,000 draws. The computation took 18.6, 19.0 and 30.9 minutes in three runs, using
+period of 5,000 draws. Three runs of the computation take 18.6, 19.0 and 30.9 minutes, using
 MATLAB R2025b on a computer with an Intel Core Ultra 7 255U processor and 32 GB of RAM. The
 script then reads the 20-variable results in the replication package, recomputes the forecast
 comparison from the stored forecasts and checks it against the capture in `tests/golden`. The

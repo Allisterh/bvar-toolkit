@@ -160,34 +160,42 @@ close(fig)
 %  ------------------------------------------------------------------
 fprintf('\n=== Part 3: MCMC diagnostics (bvar.diag) ===\n');
 L = 200;
-fprintf('inefficiency factors at L = %d and Geweke''s Z at the default lag, by parameter group\n', L);
-fprintf('| Model | kappa | mu | phi | sigma^2 | Geweke p < 0.05 |\n');
+fprintf('inefficiency factors at L = %d by parameter group, and the largest gap between the\n', L);
+fprintf('posterior means of the two runs over all hyperparameters, in posterior sd\n');
+fprintf('| Model | kappa | mu | phi | sigma^2 | largest gap between runs |\n');
 fprintf('|---|---|---|---|---|---|\n');
-gwk = strings(0, 1);
+gname = ["kappa" "mu" "phi" "sigma^2"];
+drift = {[], [], [], []};              % |late - early| mean, in posterior sd, by group
 for i = [2 3 4 5 6 7]
-    s = S{i};
-    m = size(s.hpara, 2);
+    s = S{i};  r = R{i};
+    nk = size(s.kappa, 2);  m = size(s.hpara, 2);
     if m == 2                                   % VAR-CSV: [phi sig2], no mu
         grp = {s.kappa, [], s.hpara(:,1), s.hpara(:,2)};
+        gid = [ones(1, nk), 3, 4];
     else
         q = m/3;
         grp = {s.kappa, s.hpara(:,1:q), s.hpara(:,q+1:2*q), s.hpara(:,2*q+1:3*q)};
+        gid = [ones(1, nk), 2*ones(1, q), 3*ones(1, q), 4*ones(1, q)];
     end
-    cells = strings(1, 4);  rej = strings(1, 4);  nrej = 0;  ntot = 0;
+    cells = strings(1, 4);
     for g = 1:4
-        if isempty(grp{g}), cells(g) = "-";  rej(g) = "-";  continue; end
+        if isempty(grp{g}), cells(g) = "-";  continue; end
         IF = bvar.diag.inefficiency_factor(grp{g}, L);
-        [~, pv] = bvar.diag.geweke(grp{g});
         cells(g) = sprintf('%.0f to %.0f', min(IF), max(IF));
-        rej(g) = sprintf('%d of %d', nnz(pv < 0.05), numel(pv));
-        nrej = nrej + nnz(pv < 0.05);  ntot = ntot + numel(pv);
     end
-    fprintf('| %s | %s | %s | %s | %s | %d of %d |\n', s.name, cells, nrej, ntot);
-    gwk(end+1) = sprintf('| %s | %s | %s | %s | %s |', s.name, rej); %#ok<SAGROW>
+    X1 = [s.kappa, s.hpara];  X2 = [r.kappa, r.hpara];
+    sd = std([X1; X2]);
+    fprintf('| %s | %s | %s | %s | %s | %.2f |\n', s.name, cells, ...
+        max(abs(mean(X1) - mean(X2))./sd));
+    N = size(X1, 1);  e = 1:round(.1*N);  l = round(.5*N)+1:N;
+    d = abs([(mean(X1(l,:)) - mean(X1(e,:)))./sd; (mean(X2(l,:)) - mean(X2(e,:)))./sd]);
+    for g = 1:4, drift{g} = [drift{g}, reshape(d(:, gid == g), 1, [])]; end
 end
-fprintf('\nGeweke rejections at the 5%% level, by group\n');
-fprintf('| Model | kappa | mu | phi | sigma^2 |\n|---|---|---|---|---|\n');
-fprintf('%s\n', gwk);
+fprintf('\ndrift within a run, between the first tenth and the last half, in posterior sd,\n');
+fprintf('over both runs of the six specifications\n');
+for g = 1:4
+    fprintf('  %-8s median %.2f, largest %.2f\n', gname(g), median(drift{g}), max(drift{g}));
+end
 fprintf('numerical standard errors of the log marginal likelihoods: %.2f to %.2f\n', min(nse(2:end)), max(nse(2:end)));
 
 fprintf('\nrepeat runs: each specification estimated again from a second seed, which refits the\n');

@@ -5,17 +5,20 @@
 [`bvar.models.var_sv`](../../core/+bvar/+models/var_sv.m),
 [`bvar.forecast.simulate`](../../core/+bvar/+forecast/simulate.m) and
 [`bvar.forecast.mixquantile`](../../core/+bvar/+forecast/mixquantile.m). Method:
-[Carriero, Clark and Marcellino (2016)](../../CITING.md#carriero-clark-and-marcellino-2016) and
+[Carriero, Clark and Marcellino (2016)](../../CITING.md#carriero-clark-and-marcellino-2016),
+[Chan (2020)](../../CITING.md#chan-2020a) and
 [Chan, Koop and Yu (2024)](../../CITING.md#chan-koop-and-yu-2024).*
 
-In this tutorial we forecast the five quarterly US series of
-[the stochastic volatility comparison](../sv_specification/), recursively and out of sample, from
-three reduced-form BVARs: a homoskedastic one, one with a common volatility factor, and one with a
-volatility process per equation. Over 140 forecasts from 1990, both volatility models are more
-accurate than the homoskedastic benchmark by both criteria. The gains are largest for the pandemic
-quarters and are not confined to them. Grouping forecasts by the quarter they are for, 24 and 34
-percent of the one-quarter-ahead gain, and 46 and 66 percent of the four-quarter-ahead gain, is
-earned before 2020. The predictive intervals show why: a homoskedastic VAR is too wide in calm
+In this tutorial we forecast the five quarterly US series of [the volatility-specification
+tutorial](../sv_specification/), recursively and out of sample, from three reduced-form BVARs: a
+homoskedastic one, one with a common volatility factor, and one with a volatility process per
+equation. Each is re-estimated at every forecast origin and scored two ways: by the root mean
+squared forecast error (RMSFE) of its point forecast, and by the log predictive likelihood of the
+outturn under its whole predictive density. Over 140 forecasts from 1990 both volatility models
+improve on the homoskedastic benchmark by both criteria. The density gains are largest for the
+pandemic quarters and are not confined to them: grouping forecasts by the quarter they are for, 24
+and 34 percent of the one-quarter-ahead gain and 46 and 66 percent of the four-quarter-ahead gain
+are earned before 2020. The predictive intervals show why. A homoskedastic VAR is too wide in calm
 years and far too narrow in a crisis.
 
 ## Try It Now
@@ -26,7 +29,7 @@ Five commands, from the root of the repository:
 |---|---|---|
 | `run tutorials/forecasting/your_data.m` | the same comparison over a short window with short chains | about a minute |
 | `run tutorials/forecasting/forecast_now.m` | a forecast of the quarters after the sample, with intervals and an event probability | about a minute |
-| `run tutorials/forecasting/bench_density.m` | Table 1, the two ways of scoring a multi-step density | about a minute |
+| `run tutorials/forecasting/bench_density.m` | the two ways of scoring a multi-step density, on identical draws | about a minute |
 | `run tutorials/forecasting/check_stability.m` | the same quantities from chains of other seeds and four times the length | ten minutes |
 | `run tutorials/forecasting/build.m` | every number and figure on this page | 23 minutes |
 
@@ -36,10 +39,10 @@ This workflow needs MATLAB with the Statistics and Machine Learning Toolbox.
 
 *Figure 1: The running sum of the joint log predictive likelihood of each volatility model minus
 that of the homoskedastic VAR, against the quarter in which the forecast was made. A rising line
-indicates the more accurate model. The top row uses every forecast and the bottom row only those
-whose target quarter falls before 2020; the vertical scale differs across panels. The
-one-quarter-ahead sums end at 806 and 787, with 196 and 265 earned on targets through 2019, and
-the four-quarter-ahead sums end at 367 and 284, with 167 and 188 earned on those targets.*
+indicates the more accurate model. The top row uses every forecast; the bottom row keeps only
+those whose target quarter falls before 2020, and the vertical scales differ across panels. Both
+models are ahead of the benchmark long before the pandemic, and at one quarter ahead the targets
+from 2020 on add more than the preceding thirty years together.*
 
 ## The Three Models
 
@@ -58,24 +61,24 @@ Carriero, Clark and Marcellino (2016), under the same prior as the first model, 
 algorithm of Chan (2020), whose volatility step is the accept-reject Metropolis-Hastings of
 Chan (2017). The third is VAR-OISV, with one log-volatility per equation and the order-invariant
 impact matrix of Chan, Koop and Yu (2024), under that paper's prior with the shrinkage estimated.
-Tutorial 3 uses VAR-SV for a Cholesky specification, so the two names are kept distinct here.
+[The volatility-specification tutorial](../sv_specification/) uses VAR-SV for a Cholesky
+specification, so the two names are kept distinct here.
 
 None of the three depends on the order of the columns, which is the subject of
 [the ordering tutorial](../variable_ordering/). The first two share a prior, so the difference
 between them is the volatility model alone. The third brings its paper's prior with it, so that
-comparison is between whole model-prior configurations, as in the marginal likelihood comparison
-of [tutorial 3](../sv_specification/).
+comparison is between whole model-prior configurations, as in the marginal likelihood
+comparison of the volatility-specification tutorial.
 
 Each model is re-estimated at every origin on data up to that quarter, from 5,000 draws with a
-burn-in period of 1,000, and forecast one to four quarters ahead. Point forecasts are evaluated by
-RMSFE and density forecasts by the log predictive likelihood, the log of the average predictive
-density over the draws.
+burn-in period of 1,000, and forecast one to four quarters ahead. The log predictive likelihood of
+an outturn is the log of the average of its predictive density over those draws.
 
 ## The Data and the Forecast Target
 
 The five series are the quarterly panel of *Bayesian Macroeconometrics*, read from
 [`macro5_Q.csv`](../sv_specification/macro5_Q.csv) in the folder of
-[tutorial 3](../sv_specification/), 1971Q1 to 2024Q4:
+[the volatility-specification tutorial](../sv_specification/), 1971Q1 to 2024Q4:
 
 | Series | Units |
 |---|---|
@@ -86,17 +89,10 @@ The five series are the quarterly panel of *Bayesian Macroeconometrics*, read fr
 | Real GDP growth | annualized quarterly rate, percent |
 
 With four lags and eight initial conditions, the first estimation sample ends in 1989Q4 and the
-first forecast is of 1990Q1.
-
-Three features of the exercise are easily assumed otherwise. First, a forecast at horizon $`h`$ is
-a forecast of the observation in that quarter, so the four-quarter-ahead GDP figure is the
-annualized growth rate of that quarter rather than cumulative growth over the year. Second, the
-exercise is pseudo-out-of-sample: every model at every origin uses only data up to that quarter,
-but it uses the current vintage of that data, revisions included, rather than the figures
-available at the time. A real-time exercise requires vintage files, which
-`bvar.forecast.realtime_loaddata` assembles, and would give less accurate forecasts for every
-model. Third, the third model brings its paper's prior with it, so the comparison involving it is
-between whole model-prior configurations.
+first forecast is of 1990Q1. Every model at every origin uses the data up to that quarter in the
+current vintage, so the exercise is pseudo-out-of-sample; a real-time version needs the vintage
+files that [`bvar.forecast.realtime_loaddata`](../../core/+bvar/+forecast/realtime_loaddata.m)
+assembles.
 
 ## How the Densities Are Computed
 
@@ -107,11 +103,8 @@ covariance at $`T+h`$ is unknown at $`T`$, and the density must be simulated. Tw
 available.
 
 The first simulates a whole path of the data for each draw and evaluates the outturn at the state
-that path reaches. Both estimators are unbiased for the predictive density, and neither is
-unbiased for its logarithm: by Jensen's inequality the log of a noisy density estimate lies below
-the log density, the more so the noisier the estimate. The path-based estimator is the noisier of
-the two, because few simulated paths land near an extreme outturn and the average is then
-determined by a small number of draws.
+that path reaches. It is the noisier of the two, because few simulated paths land near an extreme
+outturn, so the average that results is determined by a small number of draws.
 
 `bvar.forecast.simulate` implements the second. Only the volatility path is simulated; given that
 path the $`h`$-step distribution is Gaussian, with the mean iterating the VAR and the variance
@@ -126,31 +119,14 @@ distribution that results is a mixture: conditioning on the coefficients and the
 gives a normal, and the average of those normals over the draws has heavier tails than any one
 of them.
 
-[`bench_density.m`](bench_density.m) applies the two estimators to identical posterior draws, at
-an ordinary origin and at the pandemic one, over three simulation sizes and five seeds.
+[`bench_density.m`](bench_density.m) compares the two on identical posterior draws. Beyond one
+quarter the path-based estimator returns a lower score and a wider spread across simulation seeds,
+and both gaps are largest where the outturn is extreme: at the pandemic origin, four quarters
+ahead, it gives −19.83 against −18.28, with seed ranges of 1.30 against 0.32. A multi-step
+density score that changes materially between seeds usually has this cause.
 
-*Table 1: Joint log score of the five variables from the same 5,000 posterior draws, averaged over
-five simulation seeds, with the range over those seeds in parentheses. The posterior draws are
-held fixed, so the range measures simulation noise alone.*
-
-| Origin | Horizon | Conditional Gaussian | Path based |
-|---|---|---|---|
-| 2015Q4, ordinary | 1 | −1.49 (0.04) | −1.49 (0.03) |
-| 2015Q4, ordinary | 4 | −3.79 (0.04) | −3.76 (0.37) |
-| 2019Q4, pandemic | 1 | −9.31 (0.08) | −9.31 (0.07) |
-| 2019Q4, pandemic | 4 | −18.28 (0.32) | **−19.83 (1.30)** |
-
-At one quarter ahead the two estimators coincide, since no data path has yet been simulated.
-Beyond that the path-based estimator is both noisier and biased downward, and both effects are
-largest where the outturn is extreme. At 250 draws rather than 5,000 the pandemic four-quarter
-figure falls to −28.98 with a range of 11.01 across seeds, against −19.27 and 1.81 for the
-conditional-Gaussian estimator. Multi-step density scores that change materially between seeds
-usually have this cause.
-
-As an implementation check the build evaluates the homoskedastic model both ways, by simulation
-and in closed form. The two agree to `0.0000` at both horizons, over 140 and 137 forecasts and
-five variables. That check verifies the code. It does not bound the Monte Carlo error that
-remains when the volatility is uncertain, which Table 1 measures.
+As an implementation check the build also scores the homoskedastic model both ways, by simulation
+and in closed form; the two agree to `0.0000` at both horizons.
 
 ## Accuracy Relative to the Homoskedastic VAR
 
@@ -160,7 +136,7 @@ pandemic; grouping by origin would place four pandemic forecasts in the calm blo
 counts differ by horizon, 140 at one quarter and 137 at four, because the last three origins have
 no four-quarter outturn.
 
-*Table 2: Accuracy relative to the homoskedastic VAR. The RMSFE column reports the median
+*Table 1: Accuracy relative to the homoskedastic VAR. The RMSFE column reports the median
 percentage gain across the five variables; the log score column reports the mean gain in the joint
 log predictive likelihood, per quarter.*
 
@@ -185,14 +161,29 @@ mean by its count, the calm block accounts for 24 percent of VAR-CSV's total one
 34 percent of VAR-OISV's, and 46 and 66 percent of the four-quarter gains. The four-quarter gain
 is the smaller of the two and the more evenly distributed.
 
+The two volatility models also separate by period. For targets through 2019 VAR-OISV has the
+larger density gain at both horizons, 2.21 against 1.63 at one quarter and 1.61 against 1.43 at
+four, and it is ahead in 90 of those 120 quarters at one quarter and in 67 of the 117 at four.
+For targets from 2020 the order reverses, VAR-CSV ahead by 30.50 against 26.11 at one quarter
+and 9.98 against 4.81 at four. At one quarter that
+reversal comes from a single quarter: VAR-CSV scores 114 log points above VAR-OISV in 2020Q2 and
+is 26 log points behind over the other nineteen. At four quarters it is broader, 69 log points
+from 2020Q2 and 35 from the rest of the block.
+
+The predictive intervals account for the difference. One factor scales all five variances by the
+same number, and it moves further in both directions than five separate volatilities do: the
+VAR-CSV predictive standard deviation of GDP growth peaks at 27.2 in 2020Q2 against VAR-OISV's
+18.2 in 2020Q3, while its median through 2019 is 2.05 against 2.36. A wider band raises the
+predictive density at an extreme outturn and lowers it at an ordinary one.
+
 The point forecasts follow close to the opposite pattern. Most of the RMSFE gain is earned in calm
 quarters, 13.5 and 20.4 percent at four quarters, while for pandemic targets VAR-CSV is no more
 accurate than the benchmark at either horizon and only VAR-OISV improves on it, by 22.6 percent at
 one quarter.
 
-*Table 3: Accuracy by variable, against the homoskedastic VAR. The RMSFE column is the percentage
+*Table 2: Accuracy by variable, against the homoskedastic VAR. The RMSFE column is the percentage
 gain in root mean squared forecast error and the score column the mean gain in that variable's own
-log predictive likelihood, so the five do not add up to the joint gain of Table 2.*
+log predictive likelihood, so the five do not add up to the joint gain of Table 1.*
 
 | Horizon | Variable | VAR-CSV RMSFE | VAR-CSV score | VAR-OISV RMSFE | VAR-OISV score |
 |---|---|---|---|---|---|
@@ -207,7 +198,7 @@ log predictive likelihood, so the five do not add up to the joint gain of Table 
 | 4 | NFCI | 21.4% | 0.46 | 31.3% | 0.63 |
 | 4 | GDP growth | 2.6% | 0.59 | 3.4% | 0.42 |
 
-The median reported in Table 2 summarizes a wide spread. The point-forecast gains come from the
+The median reported in Table 1 summarizes a wide spread. The point-forecast gains come from the
 financial and policy series: at one quarter, 13.2 and 44.6 percent for the federal funds rate and
 19.3 and 38.4 percent for the NFCI, against 2.7 and 7.9 percent for inflation. Unemployment is the
 one series both volatility models forecast less accurately than the benchmark, by 0.2 and 5.7
@@ -215,9 +206,9 @@ percent at one quarter and by 3.3 and 10.2 percent at four. Its density gain at 
 for VAR-CSV, is the largest of any variable at either horizon. For that series the volatility
 models improve the interval and leave the point forecast slightly worse.
 
-The two criteria therefore select different models: VAR-CSV has the larger log score gain at both
-horizons and VAR-OISV the larger RMSFE gain. These are descriptive comparisons over 140 forecasts,
-and we do not test whether the two volatility models differ from each other.
+Over all 140 forecasts the two criteria select different models: VAR-CSV has the larger log score
+gain at both horizons and VAR-OISV the larger RMSFE gain. Every comparison on this page is
+descriptive, and we do not test whether the two volatility models differ from each other.
 
 ## The Predictive Intervals
 
@@ -227,7 +218,7 @@ and we do not test whether the two volatility models differ from each other.
 homoskedastic line is nearly flat, while the two volatility models fall to about 2 in calm years
 and rise to 27 and 18 in 2020.*
 
-*Table 4: Median one-quarter-ahead predictive standard deviation of GDP growth, by the quarter
+*Table 3: Median one-quarter-ahead predictive standard deviation of GDP growth, by the quarter
 forecast.*
 
 | Model | Targets through 2019 | Targets 2020 onwards |
@@ -242,7 +233,7 @@ them, and far too tight in 2020, which costs a large number at once. Its interva
 2020, from 2.80 to 3.93, because the pandemic observations enter the estimation sample and remain
 in it. That widening is permanent and it occurs only after the event.
 
-*Table 5: Coverage of the predictive intervals for GDP growth and inflation, and their average
+*Table 4: Coverage of the predictive intervals for GDP growth and inflation, and their average
 width, over all 140 forecasts at one quarter and 137 at four. A well calibrated 80 percent
 interval covers 80 percent of the outturns.*
 
@@ -267,7 +258,7 @@ independent. One comparison is larger than that. The homoskedastic 80 percent in
 growth covers 87 percent of the outturns at one quarter, two standard errors above its nominal
 level, and it is also the widest of the three, 7.67 against 6.79 for VAR-OISV. Both volatility
 models reach a coverage nearer the nominal level with a narrower interval, which is what the log
-scores in Table 2 reward.
+scores in Table 1 reward.
 
 ## Forecasts Beyond the End of the Sample
 
@@ -293,7 +284,7 @@ where `mu` and `sd` are the columns `bvar.forecast.simulate` returns for that va
 horizon. Fitting one normal to the mixture's mean and variance, or taking quantiles of the draws'
 means, would both understate the uncertainty.
 
-*Table 6: Probability that quarterly GDP growth is negative, estimated through 2024Q4. The target
+*Table 5: Probability that quarterly GDP growth is negative, estimated through 2024Q4. The target
 is the annualized growth rate of each quarter rather than cumulative growth over the four
 quarters.*
 
@@ -307,7 +298,7 @@ The three models give different answers to a question a forecaster is asked. The
 2025Q1 are close together, at 1.7, 2.9 and 3.0 percent, and what differs is the width. The
 homoskedastic 90 percent interval for GDP growth is [−4.5, 7.9] against VAR-CSV's [−0.0, 5.8],
 because a single covariance matrix fitted to 1971 through 2024 still reflects 2020 five years
-later. The scores in Table 2 measure the same miscalibration in a different form.
+later. The scores in Table 1 measure the same miscalibration in a different form.
 
 The script writes the forecasts and the event probabilities to `outdir`, which defaults to
 `tempdir`. The event and the variable drawn in the fan chart are settings at the top of it. For a
@@ -376,8 +367,8 @@ The computation took 23.0 minutes using MATLAB R2025b on a computer with an Inte
 are computed from, and saves the figures in the same folder. The scores of every individual
 forecast, with the quarter in which it was made and the quarter it is for, are in
 `scores_by_origin.mat`, so that a regrouping or a question about a single quarter requires no
-rerun. [`bench_density.m`](bench_density.m) produces Table 1 and
-[`check_stability.m`](check_stability.m) the seed comparison; neither is part of the build.
+rerun. Neither [`bench_density.m`](bench_density.m) nor [`check_stability.m`](check_stability.m)
+is part of the build.
 
 ## References
 

@@ -280,7 +280,8 @@ Ordering the series with the largest observations last leaves the factors normal
 whose extremes are milder, which is a matter of degree: every series here has quarters that stand
 out, and the 2020 pair in GDP growth is the most extreme of them. VAR-SVO handles those quarters
 with a component built for them. The normalization lies behind the dependence of VAR-SV and
-VAR-SVO on the order of the variables that [tutorial 1](../variable_ordering/) measures as well.
+VAR-SVO on the order of the variables that [the ordering tutorial](../variable_ordering/)
+measures as well.
 
 The third check is how well the chains that fit those importance densities mix. The next table
 gives inefficiency factors at a truncation lag of 200, computed with `bvar.diag`, over the

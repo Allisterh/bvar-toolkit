@@ -48,7 +48,7 @@ mname = ["homoskedastic" "VAR-CSV" "VAR-OISV"];
 NLc = newline;
 nm = numel(mname);
 
-%% ---- data, the panel of tutorial 3 ----
+%% ---- data, the panel of tutorials/sv_specification ----
 tbl = readtable(fullfile(repo, 'tutorials', 'sv_specification', 'macro5_Q.csv'), ...
     'VariableNamingRule', 'preserve');
 vars = {'UNRATE','PCECTPI','FEDFUNDS','NFCI','GDPC1'};

@@ -15,9 +15,9 @@ In this tutorial we identify eight structural shocks in a 35-variable US VAR usi
 restrictions and 7 ranking restrictions on the impact responses. The conventional accept-reject
 algorithm of Rubio-Ramírez, Waggoner and Zha (2010) is not computationally feasible at this scale,
 and it accepts none of the 776,000 candidate draws made here. The algorithm of Chan, Matthes and
-Yu (2026) obtains 100 admissible draws from those same candidates, one in 7,760, and targets the
-same posterior distribution. The two algorithms differ only in which column of a candidate
-rotation may represent which shock.
+Yu (2026) obtains 100 draws that satisfy every restriction from those same candidates, one in
+7,760, and targets the same posterior distribution. The two algorithms differ only in which column
+of a candidate rotation may represent which shock.
 
 ## Try It Now
 
@@ -38,22 +38,22 @@ credible band, over the 100 admissible draws. Output, prices and investment fall
 rises and the funds rate rises on impact; only the impact signs are restricted, so the paths
 beyond quarter zero are what the data and the prior imply.*
 
-## Identification and the Labelling of the Columns
+## Identification and the Labeling of the Columns
 
-A reduced-form VAR identifies the covariance matrix $`\mathbf{\Sigma}`$ and nothing more. Every
-$`\mathbf{L}_0\mathbf{Q}`$ with $`\mathbf{L}_0\mathbf{L}_0' = \mathbf{\Sigma}`$ and
-$`\mathbf{Q}`$ orthogonal is an admissible impact matrix, so identification means keeping the
-rotations whose impact responses have the signs the economics requires, and the set of accepted
-rotations is the object of inference.
+A reduced-form VAR identifies the covariance matrix $`\mathbf{\Sigma}`$. Every
+$`\mathbf{L}_0\mathbf{Q}`$ with $`\mathbf{L}_0\mathbf{L}_0' = \mathbf{\Sigma}`$ and $`\mathbf{Q}`$
+orthogonal is an admissible impact matrix, so identification means keeping the rotations whose
+impact responses have the signs the economic theory requires, and the set of accepted rotations is
+the object of inference.
 
 The rejection algorithm of Rubio-Ramírez, Waggoner and Zha (2010) draws $`\mathbf{Q}`$ uniformly
 and asks whether column $`i`$ satisfies the restrictions of shock $`i`$, for every restricted
-shock. That test fixes a labelling of the columns, and the labelling is arbitrary: a rotation
-whose third column satisfies the monetary restrictions gives the same structural model as one
-whose first column does. With $`m`$ restricted shocks among $`n`$ variables there are
-$`n!/(n-m)!`$ ways to assign shocks to columns, which is $`9.5 \times 10^{11}`$ here. Both rules
-may flip the sign of a column, so what separates them is the assignment, and the rejection
-algorithm tests one of the $`9.5 \times 10^{11}`$.
+shock. That test fixes a labeling of the columns, and the labeling is arbitrary: a rotation whose
+third column satisfies the monetary restrictions gives the same structural model as one whose
+first column does. With $`m`$ restricted shocks among $`n`$ variables there are $`n!/(n-m)!`$ ways
+to assign shocks to columns, which is $`9.5 \times 10^{11}`$ here. Both rules may flip the sign of
+a column, so what separates them is the assignment, and the rejection algorithm tests one of the
+$`9.5 \times 10^{11}`$.
 
 [`bvar.structural.sign_assign`](../../core/+bvar/+structural/sign_assign.m) builds the
 $`m \times n`$ table of which columns admit which shocks, accepts the candidate whenever every
@@ -81,14 +81,14 @@ come from.
 
 ## The Model and the Data
 
-The data ship with the paper's replication package, at
-[`replications/chan_matthes_yu2026_qe_svarsign`](../../replications/chan_matthes_yu2026_qe_svarsign):
-35 quarterly US series from 1983Q1 to 2019Q4, 148 quarters, covering national accounts, five price
-indices, labor market and productivity series, industrial production, interest rates across the
-curve, credit spreads, the dollar, the S&P 500 and the oil price. Twenty of the 35 enter as 100
-times a log level; the rest, among them the eight interest rates, the unemployment rate and
-capacity utilization, enter untransformed. The VAR has five lags and uses the first eight quarters
-as initial conditions, leaving 140 observations.
+The data are the 35 quarterly US series of the paper's replication package, in
+[`replications/chan_matthes_yu2026_qe_svarsign`](../../replications/chan_matthes_yu2026_qe_svarsign),
+from 1983Q1 to 2019Q4, 148 quarters. They cover national accounts, five price indices, labor
+market and productivity series, industrial production, interest rates across the curve, credit
+spreads, the dollar, the S&P 500 and the oil price. Twenty of the 35 enter as 100 times a log
+level; the rest, among them the eight interest rates, the unemployment rate and capacity
+utilization, enter untransformed. The VAR has five lags and uses the first eight quarters as
+initial conditions, leaving 140 observations.
 
 The prior is the asymmetric conjugate prior of Chan (2022), which shrinks own lags and cross lags
 differently and keeps the posterior available in closed form, so the posterior draws are

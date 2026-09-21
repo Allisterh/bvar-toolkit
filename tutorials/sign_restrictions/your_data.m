@@ -5,7 +5,7 @@
 % (2022), with the two shrinkage hyperparameters chosen by maximizing the
 % marginal likelihood, draws candidate rotations until the requested number are
 % admissible under bvar.structural.sign_assign, and reports the impulse
-% responses with 68 per cent credible bands. The same candidates are also tested
+% responses with 68 percent credible bands. The same candidates are also tested
 % by the accept-reject rule of Rubio-Ramirez, Waggoner and Zha (2010), so the
 % run reports what each rule accepts.
 %

@@ -60,7 +60,7 @@ Read them in order; each group builds on the ones before it.
 
 | | Script | What it teaches | Book | Runs in |
 |---|---|---|---|---|
-| 14 | `ex14_mixed_frequency.m` | A monthly VAR with common stochastic volatility in which one series is observed only as a quarterly growth rate: its monthly values are missing data, drawn in one block from their banded conditional distribution under the aggregation of Mariano and Murasawa (2003), the approach of Chan, Poon and Zhu (2023). On simulated data the monthly values come back with correlation 0.94, against 0.88 for a path that sets each month to a third of its quarter's growth, and 91 percent of them lie inside the 90 percent bands. | &mdash; | 11 s |
+| 14 | `ex14_mixed_frequency.m` | A monthly VAR with common stochastic volatility in which one series is observed only as a quarterly growth rate: its monthly values are missing data, drawn in one block from their banded conditional distribution under the aggregation of Mariano and Murasawa (2003), the approach of Chan, Poon and Zhu (2023). On simulated data the monthly values come back with correlation 0.94, against 0.88 for a path that sets each month to a third of its quarter's growth, and 91 percent of them lie inside the 90 percent bands. The tutorial [How Do I Handle Missing and Mixed-Frequency Data in My VAR?](../tutorials/mixed_frequency/) applies it to US data. | &mdash; | 11 s |
 
 Timings are from one warm R2025b session on a desktop machine; treat them as orders of
 magnitude. All but ex09 and ex11 draw figures as well as printing. The chapter column

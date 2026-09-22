@@ -20,8 +20,8 @@ use, and names what each missing one would break.
 ## Learn the Methods
 
 The [tutorials](tutorials/) each answer one research question with the settings of a paper, on
-the data of its replication package or of the book, and can be read without MATLAB. Each comes
-with a script that runs the same analysis on your own data.
+the data of its replication package, of the book or of FRED, and can be read without MATLAB.
+Each comes with a script that runs the same analysis on your own data.
 
 - [Does the Order of the Variables Change My VAR Results?](tutorials/variable_ordering/) Under
   the Cholesky model of stochastic volatility it does: reversing the order of a 20-variable VAR
@@ -42,6 +42,11 @@ with a script that runs the same analysis on your own data.
   the algorithm of Chan, Matthes and Yu (2026), which imposes 98 sign and 7 ranking restrictions
   on eight shocks in a 35-variable VAR, where the conventional accept-reject algorithm is not
   computationally feasible.
+- [How Do I Handle Missing and Mixed-Frequency Data in My VAR?](tutorials/mixed_frequency/) By
+  treating every missing value, including the monthly values of quarterly GDP, as a latent value
+  drawn in one block with the others, as Chan, Poon and Zhu (2023) do; in a monthly VAR with five
+  FRED-MD indicators, monthly GDP falls by 8.5 percent in April 2020, and from 1960 to 2026 it has
+  a correlation of 0.92 with the Brave-Butters-Kelley series.
 
 The fourteen scripts in [`examples/`](examples/) each run in under a minute and are best read in
 order: the building blocks (ex01–ex02, the precision sampler and stochastic volatility), VAR

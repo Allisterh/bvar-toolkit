@@ -45,7 +45,7 @@ Each comes with a script that runs the same analysis on your own data.
 - [How Do I Handle Missing and Mixed-Frequency Data in My VAR?](tutorials/mixed_frequency/) By
   using data augmentation and drawing all the missing values in one block, as Chan, Poon and Zhu
   (2023) do. In a monthly VAR with quarterly GDP, this puts the fall in monthly GDP in April 2020
-  at 8.5 percent.
+  at 7.9 percent.
 
 The fourteen scripts in [`examples/`](examples/) each run in under a minute and are best read in
 order: the building blocks (ex01–ex02, the precision sampler and stochastic volatility), VAR

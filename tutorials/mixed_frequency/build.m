@@ -57,7 +57,7 @@ for j = 1:2
     e = g(5:end) - Zq*(Zq\g(5:end));
     sig2(iq(j)) = 9/19*mean(e.^2);
 end
-p = 4;
+p = 12;
 fprintf(['\ndata: %s to %s, %d months, the first %d as initial conditions; %d quarterly ' ...
     'values of GDP and of investment, %s to %s\n'], mlab(d(1)), mlab(d(end)), T, p, ...
     numel(zq)/2, qlab(d(find(~isnan(X(:,6)), 1))), qlab(d(find(~isnan(X(:,6)), 1, 'last'))));
@@ -68,7 +68,7 @@ fprintf('restrictions across gaps: %d, CPI over %s-%s\n', numel(zg), ...
 %% ------------------------------------------------------------------
 %  Part 2. Estimation
 %  ------------------------------------------------------------------
-nsim = 10000;  burnin = 10000;  seed = 1;  hblock = 36;
+nsim = 20000;  burnin = 2000;  seed = 1;  hblock = 36;
 t1 = tic;
 res = bvar.models.mfvar_csv(Y, p, 'M', M, 'z', z, 'sig2', sig2, 'nsim', nsim, ...
     'burnin', burnin, 'seed', seed, 'hblock', hblock, 'draws', true);
@@ -100,9 +100,9 @@ fprintf('share of proposals accepted when h is one block of %d months: %.3f\n', 
 %  ------------------------------------------------------------------
 gm = res.Y_mean;  qlo = res.Y_q(:,:,1);  qhi = res.Y_q(:,:,5);
 fprintf('\nmonthly growth, percent: posterior mean (90%% band)\n');
-fprintf('%-8s %24s %24s\n', 'month', 'GDP', 'investment');
+fprintf('%-8s %22s %22s\n', 'month', 'GDP', 'investment');
 for t = find(d >= datetime(2020,1,1) & d <= datetime(2020,12,1))'
-    fprintf('%-8s %7.2f (%6.2f, %6.2f) %7.2f (%6.2f, %6.2f)\n', mlab(d(t)), ...
+    fprintf('%-8s %7.2f (%5.1f, %5.1f) %7.2f (%5.1f, %5.1f)\n', mlab(d(t)), ...
         gm(t,6), qlo(t,6), qhi(t,6), gm(t,7), qlo(t,7), qhi(t,7));
 end
 fprintf('the posterior mean path satisfies the aggregation: max |M*y - z| %.1e\n', ...
@@ -112,7 +112,7 @@ fprintf('2020Q2, 100 x log change: GDP %.2f, investment %.2f\n', X(tq,6), X(tq,7
 
 % the ragged edge: July 2026, with no quarterly value yet
 t = T;
-fprintf('\n%s, before the third-quarter release: GDP %.2f (%.2f, %.2f), investment %.2f (%.2f, %.2f)\n', ...
+fprintf('\n%s, before the third-quarter release: GDP %.2f (%.1f, %.1f), investment %.2f (%.1f, %.1f)\n', ...
     mlab(d(t)), gm(t,6), qlo(t,6), qhi(t,6), gm(t,7), qlo(t,7), qhi(t,7));
 % the values that were never published: CPI inflation in the two months around the missing
 % October 2025 index, whose sum is known, and the October 2025 unemployment rate
@@ -122,7 +122,7 @@ for t = tc'
 end
 fprintf('  their sum, from the published index: %.3f\n', zg);
 t = find(isnan(Y(:,3)));
-fprintf('unemployment rate %s: %.2f (%.2f, %.2f); published %s %.1f and %s %.1f\n', ...
+fprintf('unemployment rate %s: %.2f (%.1f, %.1f); published %s %.1f and %s %.1f\n', ...
     mlab(d(t)), gm(t,3), qlo(t,3), qhi(t,3), mlab(d(t-1)), Y(t-1,3), mlab(d(t+1)), Y(t+1,3));
 
 % the Brave-Butters-Kelley series is 12 times the monthly growth rate; divided by 12, its

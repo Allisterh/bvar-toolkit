@@ -6,8 +6,8 @@
 % monthly estimates of each quarterly series over the last twelve months, plots the
 % first quarterly series with its 68 percent credible band, and writes the monthly
 % estimates to a csv and a mat file. The defaults use the tutorial's data from 1990 with
-% short chains and take about 15 seconds; the tutorial uses 10,000 draws after a burn-in
-% period of 10,000.
+% short chains and take about a minute; the tutorial uses 20,000 draws after a burn-in
+% period of 2,000.
 %
 % The file is read with readtable and has one row per month, with the dates in datecol
 % in the format datefmt, such as 2026-07 for yyyy-MM. A quarterly series holds its level
@@ -34,7 +34,7 @@ transform = ["dlog" "dlog" "level" "dlog" "level" "dlog" "dlog"];
 scale     = [1 1 1 1 .1 1 1];                  % multiplies a series used in levels
 first     = "1990-01";                         % first month of the sample; "" for all
 last      = "";                                % last month; "" for all
-p         = 4;                                 % lags
+p         = 12;                                % lags
 nsim      = 1000;                              % draws kept
 burnin    = 500;                               % draws discarded first
 seed      = 1;

@@ -19,9 +19,9 @@ and Zhu (2023) draw all of them in one block. We use the model and priors of the
 application, a VAR with common stochastic volatility, on five monthly FRED-MD series and the two
 quarterly series from 1959 to 2026.
 
-Monthly GDP falls by 8.50 percent in April 2020, with a 90% credible band from −15.07 to −2.33
-percent, and grows by 4.94 percent in June (Table 1). Over 1960 to 2026 the estimated monthly
-growth rates have a correlation of 0.92 with the Brave-Butters-Kelley series, which comes from a
+Monthly GDP falls by 7.92 percent in April 2020, with a 90% credible band from −13.3 to −2.8
+percent, and grows by 4.22 percent in June (Table 1). Over 1960 to 2026 the estimated monthly
+growth rates have a correlation of 0.93 with the Brave-Butters-Kelley series, which comes from a
 collapsed dynamic factor model (Figure 1). The same draw fills in the values that were never
 published: the unemployment rate for October 2025 is estimated at 4.43 percent.
 
@@ -31,8 +31,8 @@ Two commands, from the root of the repository:
 
 | Command | What it produces | Time |
 |---|---|---|
-| `run tutorials/mixed_frequency/your_data.m` | the same model from 1990 with short chains, the monthly estimates of GDP and investment, and a report | about 15 seconds |
-| `run tutorials/mixed_frequency/build.m` | every number and figure on this page | about 8 minutes |
+| `run tutorials/mixed_frequency/your_data.m` | the same model from 1990 with short chains, the monthly estimates of GDP and investment, and a report | about a minute |
+| `run tutorials/mixed_frequency/build.m` | every number and figure on this page | about 25 minutes |
 
 This workflow needs MATLAB with the Statistics and Machine Learning Toolbox.
 
@@ -101,8 +101,8 @@ quarterly growth rates with variance $`19\sigma^2/9`$.
 
 The volatility path is drawn in blocks of 36 months, each from its conditional distribution given
 the rest of the path, with the accept-reject Metropolis-Hastings step of Chan (2017)
-(`bvar.sv.csv_armh_block`). On this sample, 95.9% of the proposals for a block of 36 months are
-accepted, against 1.1% of the proposals for the whole path of 806 months in one step.
+(`bvar.sv.csv_armh_block`). On this sample, 95.5% of the proposals for a block of 36 months are
+accepted, against 0.7% of the proposals for the whole path of 798 months in one step.
 
 ## Data
 
@@ -111,7 +111,7 @@ the CPI and payroll employment in 100 times log changes, the unemployment rate i
 average weekly hours in manufacturing divided by 10. They come from the August 2026 vintage of
 FRED-MD (McCracken and Ng, 2016). Real GDP and real private fixed investment come from the FRED-QD
 vintage of the same month (McCracken and Ng, 2021) and enter as 100 times their quarterly log
-changes. The sample runs from 1959:02 to 2026:07, and the VAR has four lags, so the first four
+changes. The sample runs from 1959:02 to 2026:07, and the VAR has twelve lags, so the first twelve
 months serve as initial conditions.
 
 Three monthly values are also missing. The Bureau of Labor Statistics published no CPI and no
@@ -124,12 +124,12 @@ been published, so no quarterly value restricts that month.
 
 ## Results for Monthly GDP and Investment
 
-The results are based on 10,000 posterior draws after a burn-in period of 10,000 draws. We perform
+The results are based on 20,000 posterior draws after a burn-in period of 2,000 draws. We perform
 two checks to determine the reliability of the estimates. First, the restrictions hold in every
-draw, the largest violation being $`1.2 \times 10^{-13}`$. Second, the inefficiency factors of the
-monthly values of GDP have a median of 5.2 and a maximum of 18.0, those of investment 5.7 and
-24.5, and those of the volatility path 12.9 and 23.9, so the effective sample size of each is at
-least 408 draws.
+draw, the largest violation being $`1.0 \times 10^{-13}`$. Second, the inefficiency factors of the
+monthly values of GDP have a median of 5.4 and a maximum of 22.5, those of investment 6.0 and
+20.4, and those of the volatility path 12.5 and 25.0, so the effective sample size of each is at
+least 800 draws.
 
 *Table 1: Monthly growth of real GDP and real private fixed investment in 2020, 100 times the
 log change: posterior means and 90% credible bands, and the Brave-Butters-Kelley series in the
@@ -137,17 +137,17 @@ same units.*
 
 | Month | GDP | 90% band | Investment | 90% band | Brave-Butters-Kelley |
 |---|---|---|---|---|---|
-| 2020:02 | −0.46 | (−1.82, 0.85) | 0.17 | (−3.02, 3.33) | −1.05 |
-| 2020:03 | −3.19 | (−6.17, −0.24) | −2.23 | (−9.13, 4.99) | −3.53 |
-| 2020:04 | −8.50 | (−15.07, −2.33) | −11.02 | (−24.37, 1.58) | −6.00 |
-| 2020:05 | 1.39 | (−7.18, 10.70) | 3.26 | (−15.28, 23.26) | −0.63 |
-| 2020:06 | 4.94 | (−1.54, 11.75) | 6.29 | (−7.17, 20.27) | 2.77 |
-| 2020:07 | 3.06 | (−1.24, 6.84) | −0.82 | (−10.77, 7.92) | 3.71 |
+| 2020:02 | −0.46 | (−1.8, 0.8) | 0.36 | (−2.7, 3.5) | −1.05 |
+| 2020:03 | −3.27 | (−6.3, −0.3) | −3.17 | (−10.1, 3.6) | −3.53 |
+| 2020:04 | −7.92 | (−13.3, −2.8) | −10.34 | (−21.5, 0.3) | −6.00 |
+| 2020:05 | 0.97 | (−6.2, 8.5) | 3.58 | (−11.7, 19.6) | −0.63 |
+| 2020:06 | 4.22 | (−1.5, 10.1) | 5.31 | (−6.8, 17.7) | 2.77 |
+| 2020:07 | 3.40 | (−0.2, 6.7) | 0.55 | (−7.6, 8.0) | 3.71 |
 
 Table 1 shows that most of the decline in the second quarter of 2020 falls in April. Real GDP
 falls by 8.20 percent in that quarter, and the monthly estimates satisfy the aggregation exactly.
-Investment falls by 11.02 percent in April, with a band from −24.37 to 1.58 percent. The bands are
-widest in May and June: for GDP in May they run from −7.18 to 10.70 percent.
+Investment falls by 10.34 percent in April, with a band from −21.5 to 0.3 percent. The bands are
+widest in May and June: for GDP in May they run from −6.2 to 8.5 percent.
 
 ![GDP and investment in 2020](fig_2020.png)
 
@@ -155,19 +155,19 @@ widest in May and June: for GDP in May they run from −7.18 to 10.70 percent.
 the log change, 2019:07–2021:06: posterior means and 68% credible bands.*
 
 Over the 798 months from 1960:01 to 2026:06, the correlation between the monthly GDP estimates and
-the Brave-Butters-Kelley series is 0.92, and 0.93 without 2020. The root mean squared difference
-is 0.21 percentage points, and 0.13 without 2020. The two differ most in the pandemic months: the
+the Brave-Butters-Kelley series is 0.93, and 0.91 without 2020. The root mean squared difference
+is 0.19 percentage points, and 0.14 without 2020. The two differ most in the pandemic months: the
 Brave-Butters-Kelley series falls by 6.00 percent in April 2020 and grows by 2.77 percent in June,
-against 8.50 and 4.94 percent here.
+against 7.92 and 4.22 percent here.
 
 ## Months Without Data
 
 The same draw fills in the monthly values that were never published. The unemployment rate for
-October 2025 is estimated at 4.43 percent, with a 90% band from 4.29 to 4.57, between the
-published 4.4 in September and 4.5 in November. CPI inflation is estimated at 0.13 percent in both
-October and November 2025, which sum to the published two-month change of 0.25 percent. For July
-2026, the first month of the third quarter, GDP growth is estimated at 0.20 percent, with a band
-from −0.45 to 0.83, and investment growth at 0.44 percent, with a band from −1.04 to 1.92. No
+October 2025 is estimated at 4.43 percent, with a 90% band from 4.3 to 4.6, between the published
+4.4 in September and 4.5 in November. CPI inflation is estimated at 0.136 percent in October and
+0.116 percent in November 2025, which sum to the published two-month change of 0.252 percent. For
+July 2026, the first month of the third quarter, GDP growth is estimated at 0.20 percent, with a
+band from −0.4 to 0.8, and investment growth at 0.49 percent, with a band from −0.9 to 1.9. No
 quarterly value restricts these estimates, which come from the VAR dynamics and the July values of
 the monthly series.
 
@@ -178,18 +178,18 @@ row per month. Its settings block sets the file, the date column and its format,
 their names, which of them are quarterly, how each is transformed, the sample, the lag length and
 the chain length. A quarterly series holds its level in the last month of each quarter and enters
 as 100 times its quarterly log change. A monthly series enters in 100 times log changes or in
-levels, and may have missing values anywhere; when one of its levels is missing inside the
-sample, the growth rates around it keep their known sum. The script prints the monthly estimates
-of each quarterly series over the last twelve months, plots the first of them with its 68%
-credible band, and writes the monthly estimates to a csv and a mat file in `outdir`, which
-defaults to `tempdir`. With its default settings, which use the data of this tutorial from 1990
-and chains of 1,000 draws, it runs in about 15 seconds.
+levels, and may have missing values anywhere; when one of its levels is missing inside the sample,
+the growth rates around it keep their known sum. The script prints the monthly estimates of each
+quarterly series over the last twelve months, plots the first of them with its 68% credible band,
+and writes the monthly estimates to a csv and a mat file in `outdir`, which defaults to `tempdir`.
+With its default settings, which use the data of this tutorial from 1990 and chains of 1,000
+draws, it runs in about a minute.
 
 The model is estimated by the function `bvar.models.mfvar_csv`:
 
 ```matlab
 [M, z, Y] = bvar.util.mm_constraint(X, quarterly);
-res = bvar.models.mfvar_csv(Y, p, 'M', M, 'z', z, 'sig2', sig2, 'nsim', 10000, 'burnin', 10000);
+res = bvar.models.mfvar_csv(Y, p, 'M', M, 'z', z, 'sig2', sig2, 'nsim', 20000, 'burnin', 2000);
 ```
 
 The matrix `X` is $`T \times n`$, one row per month, with each quarterly growth rate in the last
@@ -216,7 +216,7 @@ series as they appear in the FRED-MD and FRED-QD files `2026-rev-08-md.csv` and
 `2026-rev-08-qd.csv`, with each quarterly value in the last month of its quarter, and
 [`bbk_mgdp.csv`](bbk_mgdp.csv), the Brave-Butters-Kelley series as FRED published it on 31 August
 2026. It builds the restrictions, estimates the model, prints every result on this page, and saves
-the figures in the same folder as this page. The build takes 8.0 minutes using MATLAB R2025b on a
+the figures in the same folder as this page. The build takes 24.6 minutes using MATLAB R2025b on a
 computer with an Intel Core Ultra 7 255U processor and 32 GB of RAM.
 
 ## References

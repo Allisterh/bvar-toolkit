@@ -4,25 +4,21 @@
 %   [h, n_accept, n_block] = bvar.sv.csv_armh_block(s2, rho, sigh2, h, n)
 %   [h, n_accept, n_block] = bvar.sv.csv_armh_block(..., 'block', 60, 'c_reject', 3)
 %
-%   s2          : T x 1, e_t'*Sig^{-1}*e_t, the squared whitened errors summed over the
-%                 n series at each t
+%   s2          : T x 1, e_t'*Sig^{-1}*e_t at each t
 %   rho, sigh2  : AR(1) coefficient and innovation variance of the zero-mean h, whose
 %                 first value has the stationary distribution
 %   h, n        : current log-volatility path (T x 1) and number of series
 %   'block'     : block length, default 60; unless 'block' >= T, the first block has a
-%                 random length between 1 and 'block', drawn with randi, so the block ends
-%                 move from sweep to sweep
+%                 random length between 1 and 'block', drawn with randi
 %   'c_reject'  : c in the envelope target <= c * proposal, default 3
 %   'ForcedAccept' : take every proposal regardless of the MH ratio, default false
 %   'MaxIterMode', 'MaxIterAR' : caps on the two loops, defaults 500 and 1000
 %   n_accept, n_block : blocks whose proposal was accepted, and blocks in the sweep
 %
 % Each block is drawn from its conditional given the rest of the path, with the proposal
-% of bvar.sv.csv_armh: a Gaussian at the mode of that conditional. On a long sample
-% with a few very large errors, the proposal for the whole path is accepted rarely,
-% while short blocks keep a high acceptance rate. With 'block' >= T the path is one
-% block, and the proposal precision is evaluated at the mode, where bvar.sv.csv_armh
-% evaluates it at the iterate before the last Newton step. Written for this toolkit.
+% of bvar.sv.csv_armh, a Gaussian at the mode of that conditional. With 'block' >= T the
+% path is one block, and the update differs from bvar.sv.csv_armh only in evaluating the
+% proposal precision at the mode. Written for this toolkit.
 %
 % See:
 % Chan, J.C.C. (2017). The Stochastic Volatility in Mean Model with Time-Varying
@@ -75,7 +71,6 @@ for ib = 1:n_block
     sB = s2(B);
     logpi = @(x) -.5*x'*QBB*x - x'*b - n/2*sum(x) - .5*exp(-x)'*sB;
 
-    % the mode of the block's conditional, by Newton steps
     x = h(B);  err = Inf;  it = 0;
     while ~(err <= tol_mode)
         it = it + 1;

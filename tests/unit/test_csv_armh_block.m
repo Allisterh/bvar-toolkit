@@ -1,14 +1,12 @@
 function test_csv_armh_block
-% bvar.sv.csv_armh_block must leave the conditional posterior of the common log-volatility
-% path invariant, whatever the block length. With T = 3 that posterior is computed on a
-% grid, and chains with blocks of length 1 and 2 and with the path as one block must match
-% its means and variances, at the default envelope constant, where the accept-reject step
-% almost always accepts, and at c_reject = .2, where the Metropolis-Hastings step matters.
+% Chains of bvar.sv.csv_armh_block with blocks of length 1 and 2 and with the whole path as
+% one block must match the means and variances of the conditional posterior of h, computed
+% on a grid for T = 3, at the default c_reject and at c_reject = .2, where the
+% Metropolis-Hastings step matters.
 rng(20260921, 'twister');
 T = 3; n = 3; rho = .9; sigh2 = .3;
 s2 = [2; 8; .5];
 
-% the exact posterior on a grid
 g = linspace(-5, 6, 111)';
 [h1, h2, h3] = ndgrid(g, g, g);
 Hm = [h1(:) h2(:) h3(:)];
@@ -40,7 +38,6 @@ for cr = [3 .2]
     end
 end
 
-% forced acceptance takes every proposal
 [~, a, b] = bvar.sv.csv_armh_block(s2, rho, sigh2, zeros(T,1), n, 'block', 1, 'ForcedAccept', true);
 assert(a == b, 'csv_armh_block: ForcedAccept must accept every block');
 

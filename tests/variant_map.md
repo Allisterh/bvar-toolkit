@@ -63,14 +63,22 @@ average over simulated paths to the deterministic iteration `bvar.forecast.predi
 `bvar.forecast.mixquantile` (2026-09-20; quantiles of a predictive distribution that is a mixture
 of one normal per draw, by bisection on its cdf, which the forecasting tutorial's intervals and
 event probabilities need; `test_forecast_mixquantile` checks that the result inverts the mixture
-cdf to 1e-9 and reduces to the normal quantile when the components agree), and
+cdf to 1e-9 and reduces to the normal quantile when the components agree),
 `bvar.structural.check_separable` (2026-09-20; whether a set of sign and ranking restrictions
 separates every pair of shocks, which is the condition `sign_assign` needs and cannot check for
 itself, running as it does once per candidate rotation. Called with the sign restrictions alone it
 reports which pairs the ranking restrictions are carrying. `test_check_separable` pins it on the
 35-variable restriction set of the SVAR-sign package, where 5 of the 28 pairs are separated only
-by the rankings). None of these is retrofitted into a legacy body: they exist for new code, and
-the legacy spellings they generalize stay as they are.
+by the rankings), and the mixed-frequency set of 2026-09-21: `bvar.util.select_obs` (the twin of
+`ssm.select_obs` in statespace-toolkit, its body line for line apart from the error identifier;
+`test_select_obs` reproduces the two illustrations in Section 2.1 of Chan, Poon and Zhu 2023),
+`bvar.util.mm_constraint` and `bvar.util.dlog_gaps` (the restrictions that tie quarterly growth
+rates to monthly ones, and growth rates across a gap in a series to the change over it;
+`test_mm_constraint` and `test_dlog_gaps`) and `bvar.samplers.missing_var` (the missing values of
+a VAR in one block under those restrictions; `test_missing_var` checks the conditional mean and
+covariance against dense conditioning on the observed values and the restrictions). None of these
+is retrofitted into a legacy body: they exist for new code, and the legacy spellings they
+generalize stay as they are.
 
 Edits made during extraction, in full: provenance header prepended; function renamed where
 the table says so (surform, surform2, init_approx1N, realtime_loaddata, heatmap_fx). Bodies

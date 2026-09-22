@@ -44,7 +44,8 @@
 % values here are those of bvar.models.var_csv. Each sweep draws the missing values
 % (bvar.samplers.missing_var), the coefficients jointly (bvar.samplers.var_coef_joint),
 % Sig, h (bvar.sv.csv_armh_block) and (phi, sigh2) (bvar.sv.sv0_params, truncated
-% candidate). Written for this toolkit.
+% candidate). The draws of h, here in blocks, and of (phi, sigh2) follow the algorithm of
+% Chan (2020). Written for this toolkit.
 %
 % See:
 % Chan, J.C.C., Poon, A. and Zhu, D. (2023). High-Dimensional Conditionally Gaussian
@@ -52,6 +53,8 @@
 % Section 4.1.
 % Carriero, A., Clark, T.E. and Marcellino, M. (2016). Common Drifting Volatility in
 % Large Bayesian VARs, Journal of Business and Economic Statistics, 34(3): 375-390.
+% Chan, J.C.C. (2020). Large Bayesian VARs: A Flexible Kronecker Error Covariance
+% Structure, Journal of Business and Economic Statistics, 38(1): 68-79.
 
 function res = mfvar_csv(Y, p, varargin)
 M = []; z = []; sig2 = []; kappa = [.04 .01]; V0 = 100; m0 = 0;

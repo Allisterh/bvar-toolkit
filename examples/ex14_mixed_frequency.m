@@ -17,6 +17,8 @@
 % blocks per sweep: the missing values in one draw from their banded conditional, with
 % M*y = z imposed exactly (bvar.samplers.missing_var); the coefficients jointly; Sig;
 % the log-volatilities in blocks (bvar.sv.csv_armh_block); and their AR(1) parameters.
+% The last two blocks follow the algorithm of Chan (2020), with the log-volatilities drawn
+% in blocks.
 %
 % DATA. Generated, so the monthly values of the quarterly series are known. The output
 % compares the posterior with them, and with the monthly path that sets each month of a
@@ -27,6 +29,8 @@
 % State Space Models with Missing Data, Journal of Econometrics, 236(1): 105468.
 % Carriero, A., Clark, T.E. and Marcellino, M. (2016). Common Drifting Volatility in
 % Large Bayesian VARs, Journal of Business and Economic Statistics, 34(3): 375-390.
+% Chan, J.C.C. (2020). Large Bayesian VARs: A Flexible Kronecker Error Covariance
+% Structure, Journal of Business and Economic Statistics, 38(1): 68-79.
 % Mariano, R.S. and Murasawa, Y. (2003). A New Coincident Index of Business Cycles
 % Based on Monthly and Quarterly Series, Journal of Applied Econometrics, 18(4):
 % 427-443.

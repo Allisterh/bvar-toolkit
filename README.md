@@ -2,10 +2,11 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22804032.svg)](https://doi.org/10.5281/zenodo.22804032)
 
-MATLAB code for Bayesian VARs by [Joshua Chan](https://joshuachan.org). The repository archives
-fourteen replication packages from [joshuachan.org](https://joshuachan.org/code.html) exactly as
-published and factors their shared machinery, from the samplers and shrinkage priors to the
-marginal likelihood estimators and forecasting routines, into one tested library.
+A MATLAB library for large Bayesian VARs: samplers, shrinkage priors, stochastic volatility,
+marginal likelihoods and forecasting. The repository archives fourteen replication packages from
+[joshuachan.org](https://joshuachan.org/code.html) exactly as published and factors their shared
+machinery into the library, where unit tests check it against the published code. The
+[examples](examples/) and [tutorials](tutorials/) show how to use it.
 
 ```matlab
 run setup.m                 % adds core/ and third_party/ to the path

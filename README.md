@@ -43,11 +43,11 @@ with a script that runs the same analysis on your own data.
   on eight shocks in a 35-variable VAR, where the conventional accept-reject algorithm is not
   computationally feasible.
 
-The thirteen scripts in [`examples/`](examples/) each run in under a minute and are best read in
+The fourteen scripts in [`examples/`](examples/) each run in under a minute and are best read in
 order: the building blocks (ex01–ex02, the precision sampler and stochastic volatility), VAR
 specifications (ex03–ex08), model comparison and forecasting with an estimated VAR
-(ex09–ex10), structural identification by sign restrictions (ex11–ex12), and diagnostics for
-the output of a sampler (ex13).
+(ex09–ex10), structural identification by sign restrictions (ex11–ex12), diagnostics for
+the output of a sampler (ex13), and missing data and mixed frequencies (ex14).
 [`examples/README.md`](examples/README.md) lists what each one teaches and which library
 functions it calls.
 
@@ -103,12 +103,12 @@ copy the nearest `run_all.m` as a template.
 |---|---|
 | `bvar.priors` | Minnesota, natural conjugate and asymmetric conjugate priors (`minn`, `niw`, `acp_stru`, `acp_redu`), the Minnesota scaling they share (`resid_var_ar4`, `minnesota_C`, `vtheta`), and `acp_opt_kappa`, which chooses the shrinkage hyperparameters by maximizing the closed-form marginal likelihood. |
 | `bvar.sv` | Stochastic volatility: the auxiliary mixture sampler for three state equations (`ksc_rw_h0`, `ksc_rw_diffuse`, `ksc_ar1_mean`), a common volatility factor (`csv_armh`, and `csv_armh_block`, which updates it one block at a time), the state-equation parameters (`sv_params`, `sv0_params`) and the Student-t degrees of freedom (`nu_studentt`). |
-| `bvar.samplers` | The other Gibbs blocks: VAR coefficients equation by equation (`eq_gauss`, `eq_var_redu_tri`, `eq_svar_oi`, `eq_var_oi`, `eq_tri_cs`, `alp_tri_cs`), factor stochastic volatility (`factor_fsv`, `eq_fsv_load`), the hybrid TVP-VAR (`eq_hyb_tvp`), direct draws under the asymmetric conjugate prior (`acp_theta_sig`), hierarchical shrinkage (`gig_shrinkage`, `horseshoe_kappa_psi`, `nu_psi_ng`) and the missing values of a VAR in one block, under linear restrictions such as a quarterly aggregation (`missing_var`). |
+| `bvar.samplers` | The other Gibbs blocks: VAR coefficients equation by equation (`eq_gauss`, `eq_var_redu_tri`, `eq_svar_oi`, `eq_var_oi`, `eq_tri_cs`, `alp_tri_cs`), factor stochastic volatility (`factor_fsv`, `eq_fsv_load`), the hybrid TVP-VAR (`eq_hyb_tvp`), direct draws under the asymmetric conjugate prior (`acp_theta_sig`), hierarchical shrinkage (`gig_shrinkage`, `horseshoe_kappa_psi`, `nu_psi_ng`), a joint draw of all VAR coefficients under an independent normal prior (`var_coef_joint`) and the missing values of a VAR in one block, under linear restrictions such as a quarterly aggregation (`missing_var`). |
 | `bvar.structural` | Impact matrices and identification: the order-invariant impact matrix (`b0_row_sampler`, `construct_Sigt`), the map to the reduced form (`reduced_form`) and sign restrictions (`qr_sign`, `sign_restrict`, `sign_assign`, `irf_redu`). |
 | `bvar.ml` | Marginal likelihoods: Chib's method for the models of Chan (2020, JBES) (`kron_bvar*`), adaptive importance sampling for those of Chan (2023, JoE) (`mlvarsv_*`), the closed form under the asymmetric conjugate prior (`acp`), and the integrated likelihoods and log densities they share. |
 | `bvar.forecast` | Forecasts from a chain: `iterate` runs one draw forward and scores it, `predictive` returns the mean and standard deviation of the h-step predictive distribution of every draw and `simulate` does the same by simulation when the error covariance varies over time, `tables` accumulates RMSFEs and log predictive likelihoods, and `realtime_loaddata` assembles a real-time data vintage. |
 | `bvar.diag` | Diagnostics for MCMC output: inefficiency factors (`inefficiency_factor`), Monte Carlo standard errors (`mcse`) and Geweke's convergence diagnostic (`geweke`), each from the long-run variance that `specvar0` estimates. |
-| `bvar.models` | Complete samplers: `var_sv`, a VAR with Cholesky or order-invariant stochastic volatility under the prior of Chan, Koop and Yu (2024), and `var_csv`, a VAR with one common volatility factor. Both can also return their parameter draws. |
+| `bvar.models` | Complete samplers: `var_sv`, a VAR with Cholesky or order-invariant stochastic volatility under the prior of Chan, Koop and Yu (2024), `var_csv`, a VAR with one common volatility factor, and `mfvar_csv`, the same model with missing data and mixed frequencies under the priors of Chan, Poon and Zhu (2023). Each can also return its draws. |
 | `bvar.util` | Shared pieces: the lag matrix (`build_lags`), the difference matrix of the precision samplers (`diffmat`), sparse expansions (`surform`, `surform2`), credible bands for figures (`shaded_band`), the selection matrices of a missing data pattern (`select_obs`), the restrictions that tie quarterly growth rates to monthly ones (`mm_constraint`) and growth rates across a gap in a series to the change over it (`dlog_gaps`), the csv and mat files a script writes at the end (`report`) and small numerical helpers. |
 
 Where two legacy versions of a step differ numerically, both survive under separate names.

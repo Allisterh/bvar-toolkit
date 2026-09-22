@@ -17,7 +17,7 @@ lists implementations of the same models in R and Python.
 | Minnesota-type adaptive hierarchical priors | `replications/chan2021_ijf_mahp`, `bvar.samplers.gig_shrinkage`, `nu_psi_ng`, `eq_gauss`; ex10 | [Chan (2021)](#chan-2021) |
 | The asymmetric conjugate prior, its closed-form marginal likelihood and optimal hyperparameters | `replications/chan2022_qe_acp`, `replications/chan2019wp_acp`, `bvar.priors.acp_stru`, `acp_redu`, `acp_opt_kappa`, `bvar.samplers.acp_theta_sig`, `bvar.ml.acp`; ex11, ex12 | [Chan (2022)](#chan-2022) |
 | Non-Gaussian, heteroscedastic or serially dependent errors, and their marginal likelihoods | `replications/chan2020_jbes_kronecker`, `bvar.ml.kron_*`, `intlike_*`, `llike_*`; ex09 | [Chan (2020a)](#chan-2020a) |
-| Common stochastic volatility | `bvar.models.var_csv`, `bvar.sv.csv_armh`, `csv_armh_block`; ex05, tutorials/forecasting | [Carriero, Clark and Marcellino (2016)](#carriero-clark-and-marcellino-2016) for the model; [Chan (2020a)](#chan-2020a) for the estimation algorithm, whose volatility step is the accept-reject Metropolis-Hastings of [Chan (2017)](#chan-2017) |
+| Common stochastic volatility | `bvar.models.var_csv`, `bvar.sv.csv_armh`, `csv_armh_block`; ex05, ex14, tutorials/forecasting | [Carriero, Clark and Marcellino (2016)](#carriero-clark-and-marcellino-2016) for the model; [Chan (2020a)](#chan-2020a) for the estimation algorithm, whose volatility step is the accept-reject Metropolis-Hastings of [Chan (2017)](#chan-2017) |
 | Cholesky stochastic volatility | `bvar.samplers.eq_tri_cs`, `alp_tri_cs`, `bvar.models.var_sv` with `'model'` set to `'CS'`; ex04, ex06 | [Cogley and Sargent (2005)](#cogley-and-sargent-2005) for the model; [Carriero, Chan, Clark and Marcellino (2022)](#carriero-chan-clark-and-marcellino-2022) for the corrected equation-by-equation algorithm in `eq_tri_cs`, and [Carriero, Clark and Marcellino (2019)](#carriero-clark-and-marcellino-2019) for the original |
 | Choosing a stochastic volatility specification by marginal likelihood; factor stochastic volatility | `replications/chan2023_joe_mlvarsv`, `bvar.ml.mlvarsv_*`, `bvar.samplers.factor_fsv`, `eq_fsv_load`, `eq_var_redu_tri`, `bvar.priors.impact_B0`, `bvar.sv.init_approx1N`, `svo_outlier`; ex04, ex07 | [Chan (2023a)](#chan-2023a) |
 | Order-invariant stochastic volatility | `replications/chan_koop_yu2024_jbes_oisv`, `bvar.models.var_sv`, `bvar.samplers.eq_svar_oi`, `eq_var_oi`, `horseshoe_kappa_psi`, `bvar.structural.b0_row_sampler`, `construct_Sigt`, `bvar.sv.sv_params`, `sv0_params`; ex06 | [Chan, Koop and Yu (2024)](#chan-koop-and-yu-2024) for the model; [Waggoner and Zha (2003)](#waggoner-and-zha-2003) and [Villani (2009)](#villani-2009) for the row-by-row draw of the impact matrix in `b0_row_sampler` |
@@ -27,6 +27,7 @@ lists implementations of the same models in R and Python.
 | Sign restrictions | `bvar.structural.qr_sign`, `sign_restrict`, `irf_redu`, `reduced_form`; ex11, ex12 | [Rubio-Ramírez, Waggoner and Zha (2010)](#rubio-ramírez-waggoner-and-zha-2010) |
 | Sign and ranking restrictions in large structural VARs | `replications/chan_matthes_yu2026_qe_svarsign`, `bvar.structural.sign_assign`; ex11, ex12, tutorials/sign_restrictions | [Chan, Matthes and Yu (2026)](#chan-matthes-and-yu-2026) |
 | Sign restrictions over several horizons | ex12 | [Uhlig (2005)](#uhlig-2005) |
+| Missing data and mixed frequencies: the missing values of a VAR drawn in one block, under restrictions that tie them to observed quarterly values | `bvar.models.mfvar_csv`, `bvar.samplers.missing_var`, `var_coef_joint`, `bvar.util.select_obs`, `mm_constraint`, `dlog_gaps`; ex14 | [Chan, Poon and Zhu (2023)](#chan-poon-and-zhu-2023); [Mariano and Murasawa (2003)](#mariano-and-murasawa-2003) for the aggregation of monthly growth rates into quarterly ones |
 | Sensitivity of forecasts to prior hyperparameters | `replications/cjz2018_ad_var` | [Chan, Jacobi and Zhu (2019)](#chan-jacobi-and-zhu-2019) |
 | Hyperparameter selection by automatic differentiation | `replications/cjz2019_ad_opthyper`, `bvar.priors.niw(..., 'opthyper_ncp')` | [Chan, Jacobi and Zhu (2020)](#chan-jacobi-and-zhu-2020) |
 | Prior robustness of marginal likelihoods | `replications/cjz2021_jae_ad_ml` | [Chan, Jacobi and Zhu (2022)](#chan-jacobi-and-zhu-2022) |
@@ -454,6 +455,33 @@ restrictions identify 8 shocks.
 }
 ```
 
+### Chan, Poon and Zhu (2023)
+
+Chan, J. C. C., Poon, A. and Zhu, D. (2023). High-Dimensional Conditionally Gaussian State
+Space Models with Missing Data. *Journal of Econometrics* 236(1): 105468.
+[Journal version](https://doi.org/10.1016/j.jeconom.2023.05.005) ·
+[Working paper](https://joshuachan.org/papers/BVAR-MF-R1.pdf)
+
+An efficient approach to sampling the missing values of a conditionally Gaussian state space
+model in one block, from a conditional distribution whose precision matrix is banded for common
+missing data patterns, with restrictions that tie missing high-frequency values to observed
+low-frequency ones. Its applications are a weekly mixed-frequency VAR with common stochastic
+volatility, which produces weekly GDP estimates, and a dynamic factor model with stochastic
+volatility on unbalanced FRED-MD vintages.
+
+```bibtex
+@article{CPZ23,
+  author  = {Chan, J. C. C. and Poon, A. and Zhu, D.},
+  title   = {High-Dimensional Conditionally {G}aussian State Space Models with Missing Data},
+  journal = {Journal of Econometrics},
+  year    = {2023},
+  volume  = {236},
+  number  = {1},
+  pages   = {105468},
+  doi     = {10.1016/j.jeconom.2023.05.005}
+}
+```
+
 ### Cogley and Sargent (2005)
 
 Cogley, T. and Sargent, T. J. (2005). Drifts and Volatilities: Monetary Policies and Outcomes
@@ -562,6 +590,28 @@ With Doan, Litterman and Sims (1984), the origin of the Minnesota prior.
   number  = {1},
   pages   = {25--38},
   doi     = {10.1080/07350015.1986.10509491}
+}
+```
+
+### Mariano and Murasawa (2003)
+
+Mariano, R. S. and Murasawa, Y. (2003). A New Coincident Index of Business Cycles Based on
+Monthly and Quarterly Series. *Journal of Applied Econometrics* 18(4): 427-443.
+[Journal version](https://doi.org/10.1002/jae.695)
+
+A coincident index of business cycles from monthly and quarterly series, with the log-linear
+approximation that ties a quarterly growth rate to the monthly growth rates of the same series.
+
+```bibtex
+@article{MM03,
+  author  = {Mariano, R. S. and Murasawa, Y.},
+  title   = {A New Coincident Index of Business Cycles Based on Monthly and Quarterly Series},
+  journal = {Journal of Applied Econometrics},
+  year    = {2003},
+  volume  = {18},
+  number  = {4},
+  pages   = {427--443},
+  doi     = {10.1002/jae.695}
 }
 ```
 

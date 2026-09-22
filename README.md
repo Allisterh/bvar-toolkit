@@ -43,10 +43,9 @@ Each comes with a script that runs the same analysis on your own data.
   on eight shocks in a 35-variable VAR, where the conventional accept-reject algorithm is not
   computationally feasible.
 - [How Do I Handle Missing and Mixed-Frequency Data in My VAR?](tutorials/mixed_frequency/) By
-  treating every missing value, including the monthly values of quarterly GDP, as a latent value
-  drawn in one block with the others, as Chan, Poon and Zhu (2023) do; in a monthly VAR with five
-  FRED-MD indicators, monthly GDP falls by 8.5 percent in April 2020, and from 1960 to 2026 it has
-  a correlation of 0.92 with the Brave-Butters-Kelley series.
+  using data augmentation and drawing all the missing values in one block, as Chan, Poon and Zhu
+  (2023) do. In a monthly VAR with quarterly GDP, this puts the fall in monthly GDP in April 2020
+  at 8.5 percent.
 
 The fourteen scripts in [`examples/`](examples/) each run in under a minute and are best read in
 order: the building blocks (ex01–ex02, the precision sampler and stochastic volatility), VAR

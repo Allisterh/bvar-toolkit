@@ -68,7 +68,7 @@ to the book's R and Python scripts and to the R package `bvars`.
 Every package is here exactly as published, never edited, under
 `replications/<paper>/legacy/`, with a permanent `as-published/<paper>` git tag and the source
 zip's md5 recorded in [`provenance.md`](provenance.md). Run those files as you would the
-original download. Six packages also have a driver, `run_all.m`, that runs the same computation
+original download. Seven packages also have a driver, `run_all.m`, that runs the same computation
 with the library functions.
 
 ### Which Model Do I Want?
@@ -81,7 +81,7 @@ with the library functions.
 | Asymmetric conjugate prior, closed-form ML, sign restrictions | Chan (2022, QE) | `chan2022_qe_acp` | `run_all`, `run_jointden` |
 | Which SV specification for a large VAR? | Chan (2023, JoE) | `chan2023_joe_mlvarsv` | `run_all('VAR-SV',…)`, `run_ml` |
 | Time-varying parameters, equation by equation | Chan (2023, JBES) | `chan2023_jbes_hybtvp` | `run_all` |
-| Which time-varying parameter VAR, by marginal likelihood or DIC | Chan & Eisenstat (2018, JAE) | `chan_eisenstat2018_jae_mltvpsv` | legacy only |
+| Which time-varying parameter VAR, by marginal likelihood or DIC | Chan & Eisenstat (2018, JAE) | `chan_eisenstat2018_jae_mltvpsv` | `run_all('TVP-SV',…)` |
 | Forecast comparison across priors and volatility models | Chan (2020, Springer) | `chan2020_springer_largebvar` | legacy only |
 | The precision sampler for state space models | Chan & Jeliazkov (2009) | `chan_jeliazkov2009_statespace` | legacy only |
 | Sign and ranking restrictions in a large structural VAR | Chan, Matthes & Yu (2026, QE) | `chan_matthes_yu2026_qe_svarsign` | legacy; algorithm in `bvar.structural.sign_assign` |

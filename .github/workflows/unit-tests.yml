@@ -7,7 +7,7 @@
 # MATLAB is licensed automatically because the repository is public; a private
 # fork needs an MLM_LICENSE_TOKEN secret.
 #
-# Two unit tests are skipped because they call xlsread with a range argument,
+# Three unit tests are skipped because they call xlsread with a range argument,
 # which needs Excel, and no hosted runner has it. The unit runner names and counts
 # the skipped tests.
 #
@@ -38,7 +38,7 @@ jobs:
       - name: Run the unit suite
         uses: matlab-actions/run-command@v2
         env:
-          BVAR_SKIP_TESTS: test_forecast_iterate_springer,test_hybtvp_equivalence
+          BVAR_SKIP_TESTS: test_forecast_iterate_springer,test_hybtvp_equivalence,test_mltvpsv_equivalence
         with:
           command: run('tests/unit/run_unit_tests.m')
 

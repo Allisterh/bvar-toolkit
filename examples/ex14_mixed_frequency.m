@@ -5,9 +5,9 @@
 %
 %       y_t = b_0 + B_1 y_{t-1} + ... + B_p y_{t-p} + e_t,   e_t ~ N(0, exp(h_t)*Sig),
 %
-% in which one series is observed only as a quarterly growth rate. Its monthly growth
-% rates are missing data, tied to each quarterly value z by the log-linear aggregation
-% of Mariano and Murasawa (2003),
+% in which one series is observed only as a quarterly growth rate, the mixed-frequency VAR of
+% Schorfheide and Song (2015). Its monthly growth rates are missing data, tied to each
+% quarterly value z by the log-linear aggregation of Mariano and Murasawa (2003),
 %
 %       z = (y_t + 2*y_{t-1} + 3*y_{t-2} + 2*y_{t-3} + y_{t-4})/3,
 %
@@ -34,6 +34,8 @@
 % Mariano, R.S. and Murasawa, Y. (2003). A New Coincident Index of Business Cycles
 % Based on Monthly and Quarterly Series, Journal of Applied Econometrics, 18(4):
 % 427-443.
+% Schorfheide, F. and Song, D. (2015). Real-Time Forecasting with a Mixed-Frequency VAR,
+% Journal of Business and Economic Statistics, 33(3): 366-380.
 
 run(fullfile(fileparts(fileparts(mfilename('fullpath'))), 'setup.m'))
 fprintf('\n=== ex14: a mixed-frequency VAR with common stochastic volatility ===\n');

@@ -55,6 +55,8 @@
 % Large Bayesian VARs, Journal of Business and Economic Statistics, 34(3): 375-390.
 % Chan, J.C.C. (2020). Large Bayesian VARs: A Flexible Kronecker Error Covariance
 % Structure, Journal of Business and Economic Statistics, 38(1): 68-79.
+% Schorfheide, F. and Song, D. (2015). Real-Time Forecasting with a Mixed-Frequency VAR,
+% Journal of Business and Economic Statistics, 33(3): 366-380.
 
 function res = mfvar_csv(Y, p, varargin)
 M = []; z = []; sig2 = []; kappa = [.04 .01]; V0 = 100; m0 = 0;

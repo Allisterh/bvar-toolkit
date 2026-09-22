@@ -27,7 +27,7 @@ lists implementations of the same models in R and Python.
 | Sign restrictions | `bvar.structural.qr_sign`, `sign_restrict`, `irf_redu`, `reduced_form`; ex11, ex12 | [Rubio-Ramírez, Waggoner and Zha (2010)](#rubio-ramírez-waggoner-and-zha-2010) |
 | Sign and ranking restrictions in large structural VARs | `replications/chan_matthes_yu2026_qe_svarsign`, `bvar.structural.sign_assign`; ex11, ex12, tutorials/sign_restrictions | [Chan, Matthes and Yu (2026)](#chan-matthes-and-yu-2026) |
 | Sign restrictions over several horizons | ex12 | [Uhlig (2005)](#uhlig-2005) |
-| Missing data and mixed frequencies: the missing values of a VAR drawn in one block, under restrictions that tie them to observed quarterly values | `bvar.models.mfvar_csv`, `bvar.samplers.missing_var`, `var_coef_joint`, `bvar.util.select_obs`, `mm_constraint`, `dlog_gaps`; ex14, tutorials/mixed_frequency | [Chan, Poon and Zhu (2023)](#chan-poon-and-zhu-2023); [Mariano and Murasawa (2003)](#mariano-and-murasawa-2003) for the aggregation of monthly growth rates into quarterly ones; [Chan (2020a)](#chan-2020a) for the draws of the common stochastic volatility and its parameters |
+| Missing data and mixed frequencies: the missing values of a VAR drawn in one block, under restrictions that tie them to observed quarterly values | `bvar.models.mfvar_csv`, `bvar.samplers.missing_var`, `var_coef_joint`, `bvar.util.select_obs`, `mm_constraint`, `dlog_gaps`; ex14, tutorials/mixed_frequency | [Chan, Poon and Zhu (2023)](#chan-poon-and-zhu-2023); [Schorfheide and Song (2015)](#schorfheide-and-song-2015) for the mixed-frequency VAR; [Mariano and Murasawa (2003)](#mariano-and-murasawa-2003) for the aggregation of monthly growth rates into quarterly ones; [Chan (2020a)](#chan-2020a) for the draws of the common stochastic volatility and its parameters |
 | Sensitivity of forecasts to prior hyperparameters | `replications/cjz2018_ad_var` | [Chan, Jacobi and Zhu (2019)](#chan-jacobi-and-zhu-2019) |
 | Hyperparameter selection by automatic differentiation | `replications/cjz2019_ad_opthyper`, `bvar.priors.niw(..., 'opthyper_ncp')` | [Chan, Jacobi and Zhu (2020)](#chan-jacobi-and-zhu-2020) |
 | Prior robustness of marginal likelihoods | `replications/cjz2021_jae_ad_ml` | [Chan, Jacobi and Zhu (2022)](#chan-jacobi-and-zhu-2022) |
@@ -724,6 +724,30 @@ whose impact responses have the required signs.
   number  = {2},
   pages   = {665--696},
   doi     = {10.1111/j.1467-937X.2009.00578.x}
+}
+```
+
+### Schorfheide and Song (2015)
+
+Schorfheide, F. and Song, D. (2015). Real-Time Forecasting with a Mixed-Frequency VAR. *Journal of
+Business and Economic Statistics* 33(3): 366-380.
+[Journal version](https://doi.org/10.1080/07350015.2014.954707)
+
+A VAR for monthly and quarterly series, specified at the monthly frequency and cast in state space
+form, in which the monthly values of the quarterly series are unobserved, estimated by Bayesian
+methods under a Minnesota-style prior, with real-time forecasts compared with those of a quarterly
+VAR and of MIDAS regressions.
+
+```bibtex
+@article{SS15,
+  author  = {Schorfheide, F. and Song, D.},
+  title   = {Real-Time Forecasting with a Mixed-Frequency {VAR}},
+  journal = {Journal of Business and Economic Statistics},
+  year    = {2015},
+  volume  = {33},
+  number  = {3},
+  pages   = {366--380},
+  doi     = {10.1080/07350015.2014.954707}
 }
 ```
 

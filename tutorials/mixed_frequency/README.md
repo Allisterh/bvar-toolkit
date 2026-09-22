@@ -4,18 +4,20 @@
 [`bvar.models.mfvar_csv`](../../core/+bvar/+models/mfvar_csv.m),
 [`bvar.samplers.missing_var`](../../core/+bvar/+samplers/missing_var.m) and
 [`bvar.util.mm_constraint`](../../core/+bvar/+util/mm_constraint.m). Method:
-[Chan, Poon and Zhu (2023)](../../CITING.md#chan-poon-and-zhu-2023) and
+[Chan, Poon and Zhu (2023)](../../CITING.md#chan-poon-and-zhu-2023),
+[Schorfheide and Song (2015)](../../CITING.md#schorfheide-and-song-2015) and
 [Chan (2020)](../../CITING.md#chan-2020a).*
 
 In this tutorial we estimate a VAR on data with three kinds of missing values: series published
 only quarterly, values that were never published, and the months at the end of the sample that no
 quarterly value covers yet. The quarterly series are US real GDP and real private fixed
-investment. The VAR is specified at the monthly frequency, and the monthly values of each
-quarterly series are treated as missing data, tied to the published quarterly growth rates by the
-log-linear aggregation of Mariano and Murasawa (2003). Given the parameters, the missing values
-are jointly Gaussian with a banded precision matrix, so Chan, Poon and Zhu (2023) draw all of them
-in one block. We use the model and priors of their first application, a VAR with common stochastic
-volatility, on five monthly FRED-MD series and the two quarterly series from 1959 to 2026.
+investment. Following Schorfheide and Song (2015), the VAR is specified at the monthly frequency,
+and the monthly values of each quarterly series are treated as missing data, tied to the published
+quarterly growth rates by the log-linear aggregation of Mariano and Murasawa (2003). Given the
+parameters, the missing values are jointly Gaussian with a banded precision matrix, so Chan, Poon
+and Zhu (2023) draw all of them in one block. We use the model and priors of their first
+application, a VAR with common stochastic volatility, on five monthly FRED-MD series and the two
+quarterly series from 1959 to 2026.
 
 Monthly GDP falls by 8.50 percent in April 2020, with a 90% credible band from −15.07 to −2.33
 percent, and grows by 4.94 percent in June (Table 1). Over 1960 to 2026 the estimated monthly
@@ -80,8 +82,8 @@ all of them from one Cholesky factor of that matrix and then imposes
 $`\mathbf{M}\mathbf{y} = \mathbf{z}`$ exactly (`bvar.samplers.missing_var`). Given the completed
 data, the remaining parameters are drawn as in a VAR without missing data: the coefficients
 jointly from their Gaussian conditional distribution, $`\mathbf{\Sigma}`$ from its inverse-Wishart
-conditional distribution, and the volatility path and its parameters as in the algorithm of Chan
-(2020).
+conditional distribution, and the volatility path and its parameters following the approach of
+Chan (2020).
 
 We use the priors of Chan, Poon and Zhu (2023). The coefficients have independent normal priors
 centered at zero, with variance $`\kappa_1/l^2`$ on the own lag $`l`$,
@@ -250,5 +252,9 @@ McCracken, M. W. and Ng, S. (2016). FRED-MD: A Monthly Database for Macroeconomi
 McCracken, M. W. and Ng, S. (2021). FRED-QD: A Quarterly Database for Macroeconomic Research.
 *Federal Reserve Bank of St. Louis Review*, 103(1): 1-44.
 [doi:10.20955/r.103.1-44](https://doi.org/10.20955/r.103.1-44)
+
+Schorfheide, F. and Song, D. (2015). Real-Time Forecasting with a Mixed-Frequency VAR. *Journal of
+Business and Economic Statistics*, 33(3): 366-380.
+[doi:10.1080/07350015.2014.954707](https://doi.org/10.1080/07350015.2014.954707)
 
 BibTeX entries for these papers are in [`CITING.md`](../../CITING.md).

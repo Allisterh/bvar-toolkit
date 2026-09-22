@@ -75,17 +75,17 @@ by the rankings), and the mixed-frequency set of 2026-09-21: `bvar.util.select_o
 `bvar.util.mm_constraint` and `bvar.util.dlog_gaps` (the restrictions that tie quarterly growth
 rates to monthly ones, and growth rates across a gap in a series to the change over it;
 `test_mm_constraint` and `test_dlog_gaps`), `bvar.samplers.missing_var` (the missing values of a
-VAR in one block under those restrictions; `test_missing_var` checks the conditional mean and
-covariance against dense conditioning on the observed values and the restrictions),
-`bvar.sv.csv_armh_block` (the accept-reject Metropolis-Hastings step of `bvar.sv.csv_armh` applied
-to one block of the path at a time, which keeps a high acceptance rate on a long sample with a few
-very large errors; `test_csv_armh_block` checks that chains with blocks of length 1 and 2 and with
-the path as one block match a grid posterior, at two envelope constants),
-`bvar.samplers.var_coef_joint` (all VAR coefficients in one draw under an independent normal
-prior, with a weight per period; `test_var_coef_joint` checks the mean and covariance of its draws
-against dense algebra) and `bvar.models.mfvar_csv` (the sampler of ex14; `test_mfvar_csv` also
-pins its prior variances). None of these is retrofitted into a legacy body: they exist for new
-code, and the legacy spellings they generalize stay as they are.
+VAR in one block under those restrictions, hard or soft; `test_missing_var` checks the conditional
+mean and covariance against dense conditioning on the observed values and the restrictions, of
+either kind), `bvar.sv.csv_armh_block` (the accept-reject Metropolis-Hastings step of
+`bvar.sv.csv_armh` applied to one block of the path at a time, which keeps a high acceptance rate
+on a long sample with a few very large errors; `test_csv_armh_block` checks that chains with
+blocks of length 1 and 2 and with the path as one block match a grid posterior, at two envelope
+constants), `bvar.samplers.var_coef_joint` (all VAR coefficients in one draw under an independent
+normal prior, with a weight per period; `test_var_coef_joint` checks the mean and covariance of
+its draws against dense algebra) and `bvar.models.mfvar_csv` (the sampler of ex14;
+`test_mfvar_csv` also pins its prior variances). None of these is retrofitted into a legacy body:
+they exist for new code, and the legacy spellings they generalize stay as they are.
 
 Edits made during extraction, in full: provenance header prepended; function renamed where
 the table says so (surform, surform2, init_approx1N, realtime_loaddata, heatmap_fx). Bodies

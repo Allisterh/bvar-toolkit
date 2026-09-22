@@ -1,7 +1,8 @@
 function test_missing_var
 % bvar.samplers.missing_var must give the conditional distribution of the missing values of
-% a VAR(p) given the observed values and the restrictions M*y = z, which is computed here a
-% second way, by conditioning the joint normal of the whole stacked path with dense algebra.
+% a VAR(p) given the observed values and the restrictions M*y = z, hard or soft, which is
+% computed here a second way, by conditioning the joint normal of the whole stacked path
+% with dense algebra.
 rng(20260921, 'twister');
 n = 3; p = 2; T = 36;
 A = [0.2 -0.1 0.3; 0.5 0.1 0; 0.1 0.4 0.1; 0 0.1 0.3; 0.1 0 0; 0 -0.1 0.1; 0 0 0.1];
@@ -24,6 +25,10 @@ y3 = Yt(:,3);
 X(qend,3) = y3(qend - (0:4))*[1 2 3 2 1]'/3;
 [M, z, Y] = bvar.util.mm_constraint(X, [false false true]);
 Y(14,1) = NaN;  Y(T,2) = NaN;
+% one more restriction, on two missing values and an observed one: y(14,1) + y(14,3) +
+% y(15,1) = 0.7
+M = [M; sparse([1 1 1], [13*n+1, 13*n+3, 14*n+1], 1, 1, T*n)];
+z = [z; 0.7];
 V0 = [4; 9; 25];  m0 = [0.1; -0.2; 0.3];
 
 [ym, ymhat, S] = bvar.samplers.missing_var(Y, A, Sig, h, p, 'M', M, 'z', z, ...
@@ -62,6 +67,26 @@ assert(max(abs(Cdraw(:) - Vdense(:))) < 0.04*max(abs(Vdense(:))), ...
 ycomp = S.So*S.yo + S.Sm*ym;
 assert(max(max(abs(M*ycomp - z))) < 1e-9, 'missing_var: a draw breaks the restrictions');
 
+% soft restrictions, z = M*y + e with e ~ N(0, diag(o)): condition on yo and z, whose joint
+% covariance now has diag(o) added to the block of z
+o = 0.05 + 0.1*rand(numel(z), 1);
+[ys, yshat] = bvar.samplers.missing_var(Y, A, Sig, h, p, 'M', M, 'z', z, 'O', o, ...
+    'V0', V0, 'm0', m0, 'ndraws', 40000);
+No = numel(S.yo);
+Cv = L*Vy*L' + blkdiag(zeros(No), diag(o));
+Gs = Vy*L'/Cv;
+ms = S.Sm'*(mu + Gs*(v - L*mu));
+Vs = S.Sm'*(Vy - Gs*L*Vy)*S.Sm;  Vs = (Vs + Vs')/2;
+assert(norm(yshat - ms, inf) < 1e-8, 'missing_var: the soft conditional mean differs from dense conditioning');
+zs = (mean(ys, 2) - ms)./(sqrt(diag(Vs))/sqrt(size(ys,2)));
+assert(max(abs(zs)) < 5, 'missing_var: soft draws are %.1f Monte Carlo sd from the dense mean', max(abs(zs)));
+Cs = cov(ys');
+assert(max(abs(Cs(:) - Vs(:))) < 0.04*max(abs(Vs(:))), ...
+    'missing_var: the covariance of the soft draws differs from dense conditioning');
+% tiny variances give the hard restrictions back
+[~, ytiny] = bvar.samplers.missing_var(Y, A, Sig, h, p, 'M', M, 'z', z, 'O', 1e-10, 'V0', V0, 'm0', m0);
+assert(norm(ytiny - ymhat, inf) < 1e-4, 'missing_var: soft restrictions with tiny variances must approach the hard ones');
+
 % no restrictions: the unrestricted conditional, the same way
 [~, ymhat0] = bvar.samplers.missing_var(Y, A, Sig, h, p, 'V0', V0, 'm0', m0);
 L0 = S.So';
@@ -80,6 +105,9 @@ bad = { @() bvar.samplers.missing_var(Y, A(1:end-1,:), Sig, h, p), 'badSize'; ..
         @() bvar.samplers.missing_var(Y, A, Sig, h(1:end-1), p), 'badSize'; ...
         @() bvar.samplers.missing_var(Y, A, Sig, h, p, 'M', M), 'badRestriction'; ...
         @() bvar.samplers.missing_var(Y, A, Sig, h, p, 'M', [M; sparse(1,1,1,1,T*n)], 'z', [z; 0]), 'badRestriction'; ...
+        @() bvar.samplers.missing_var(Y, A, Sig, h, p, 'O', 1), 'badRestriction'; ...
+        @() bvar.samplers.missing_var(Y, A, Sig, h, p, 'M', M, 'z', z, 'O', [1 2]), 'badRestriction'; ...
+        @() bvar.samplers.missing_var(Y, A, Sig, h, p, 'M', M, 'z', z, 'O', 0), 'badRestriction'; ...
         @() bvar.samplers.missing_var(Y, A, Sig, h, p, 'zzz', 1), 'badOption'};
 for ib = 1:size(bad, 1)
     try

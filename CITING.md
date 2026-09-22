@@ -125,6 +125,7 @@ adapts to the common volatility factor.
   volume  = {35},
   number  = {1},
   pages   = {17--28},
+  doi     = {10.1080/07350015.2015.1052459}
 }
 ```
 
@@ -172,6 +173,7 @@ non-Gaussian and serially correlated errors, illustrated by a real-time forecast
   booktitle = {Macroeconomic Forecasting in the Era of Big Data},
   editor    = {Fuleky, P.},
   series    = {Advanced Studies in Theoretical and Applied Econometrics},
+  volume    = {52},
   publisher = {Springer},
   address   = {Cham},
   year      = {2020},
@@ -321,6 +323,7 @@ interval forecasts from a VAR to any prior hyperparameter.
   author    = {Chan, J. C. C. and Jacobi, L. and Zhu, D.},
   title     = {How Sensitive Are {VAR} Forecasts to Prior Hyperparameters? {A}n Automated Sensitivity Analysis},
   booktitle = {Topics in Identification, Limited Dependent Variables, Partial Observability, Experimentation, and Flexible Modeling: Part A},
+  editor    = {Jeliazkov, I. and Tobias, J. L.},
   series    = {Advances in Econometrics},
   volume    = {40A},
   publisher = {Emerald Publishing Limited},
@@ -506,7 +509,7 @@ and ex06 estimate.
 
 ### Doan, Litterman and Sims (1984)
 
-Doan, T., Litterman, R. and Sims, C. A. (1984). Forecasting and Conditional Projection Using
+Doan, T., Litterman, R. B. and Sims, C. A. (1984). Forecasting and Conditional Projection Using
 Realistic Prior Distributions. *Econometric Reviews* 3(1): 1-100.
 [Journal version](https://doi.org/10.1080/07474938408800053)
 
@@ -514,7 +517,7 @@ With Litterman (1986), the origin of the Minnesota prior.
 
 ```bibtex
 @article{DLS84,
-  author  = {Doan, T. and Litterman, R. and Sims, C. A.},
+  author  = {Doan, T. and Litterman, R. B. and Sims, C. A.},
   title   = {Forecasting and Conditional Projection Using Realistic Prior Distributions},
   journal = {Econometric Reviews},
   year    = {1984},
@@ -574,7 +577,7 @@ The seven-component normal mixture approximation that the auxiliary mixture samp
 
 ### Litterman (1986)
 
-Litterman, R. (1986). Forecasting with Bayesian Vector Autoregressions: Five Years of
+Litterman, R. B. (1986). Forecasting with Bayesian Vector Autoregressions: Five Years of
 Experience. *Journal of Business and Economic Statistics* 4(1): 25-38.
 [Journal version](https://doi.org/10.1080/07350015.1986.10509491)
 
@@ -582,7 +585,7 @@ With Doan, Litterman and Sims (1984), the origin of the Minnesota prior.
 
 ```bibtex
 @article{litterman86,
-  author  = {Litterman, R.},
+  author  = {Litterman, R. B.},
   title   = {Forecasting with {B}ayesian Vector Autoregressions: Five Years of Experience},
   journal = {Journal of Business and Economic Statistics},
   year    = {1986},

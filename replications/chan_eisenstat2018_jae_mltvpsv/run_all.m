@@ -7,46 +7,46 @@
 %
 %   model  - 'TVP-SV' | 'TVP' | 'TVP-R1-SV' | 'TVP-R2-SV' | 'TVP-R3-SV' | 'CVAR-SV' |
 %            'CVAR' | 'RS-VAR' | 'RS-VAR-R1' | 'RS-VAR-R2', the paper's labels, or the
-%            legacy code 1-10 (main_tvpsv.m lines 17-18, which call models 6-10
-%            VAR-SV, VAR, RS-VAR, RS-VAR-1 and RS-VAR-2; these spellings are
-%            accepted too); default 'CVAR-SV' (legacy default model = 6)
+%            legacy code 1-10 (main_tvpsv.m lines 17-18); the legacy spellings
+%            VAR-SV, VAR, RS-VAR-1 and RS-VAR-2 of models 6, 7, 9 and 10 are
+%            accepted too; default 'CVAR-SV' (legacy default model = 6)
 %   p      - number of lags, 1-4 (line 23); default 2
 %   r      - number of regimes of the three RS models, at least 2 (line 22);
 %            default 2; the other models ignore it
 %   nsims, burnin - defaults 20000 / 5000 (lines 25-26)
-%   seed   - when nonempty, rng(seed,'twister') is set before any draw;
-%            omitted/empty uses the ambient stream as-is
-%   'data' - a data matrix used in place of the package's file; its first 4 rows
-%            are initial conditions, as with the file
+%   seed   - when nonempty, rng(seed,'twister') is set before any draw; omitted or
+%            empty uses the ambient stream as it is
+%   'data' - a data matrix in place of the package's file; its first 4 rows are
+%            initial conditions, as with the file
 %
 % out holds the stored draws and the script-tail summaries under their legacy names,
-% the design matrices and the log prior density (out.prior, a function handle) that
-% the marginal-likelihood and DIC routines take, and Y (stacked T*n x 1), Y0 and
-% shortY (T x n).
+% the design matrices and the log prior density out.prior (a function handle) that
+% the marginal-likelihood routines take, and Y (stacked T*n x 1), Y0 and shortY
+% (T x n). run_ml.m in this folder adds the marginal likelihood.
 %
 % Reproduces main_tvpsv.m and the model scripts draw for draw
-% (tests/unit/test_mltvpsv_equivalence.m), with three deliberate divergences. The
-% scripts re-seed the global stream from the wall clock and switch MATLAB to the v4/v5
-% generators (TVPSV.m 53, TVP.m 48, TVP_R1_SV.m 61, TVP_R2_SV.m 71, TVP_R3_SV.m 76,
-% VAR_SV.m 46, VAR.m 41, VAR_RS.m 63, VAR_RS_R1.m 62, VAR_RS_R2.m 64); run_all drops
-% those lines so the caller controls seeding. It factors each non-diagonal precision
-% matrix once and solves with that factor, where the scripts solve with backslash and
-% factor again for the draw; the solutions differ in the last bits, so the test gives
-% the legacy copies the substitutions of tests/unit/private/one_factor_patch.m. The
-% wall-clock timing displays are not reproduced.
+% (tests/unit/test_mltvpsv_equivalence.m), with three deliberate divergences:
+% - the scripts re-seed the global stream from the wall clock and switch MATLAB to the
+%   v4/v5 generators (TVPSV.m 53, TVP.m 48, TVP_R1_SV.m 61, TVP_R2_SV.m 71,
+%   TVP_R3_SV.m 76, VAR_SV.m 46, VAR.m 41, VAR_RS.m 63, VAR_RS_R1.m 62, VAR_RS_R2.m 64);
+%   run_all drops those lines, so the caller controls seeding;
+% - each non-diagonal precision matrix is factored once, and the factor serves the
+%   solve and the draw; the scripts factor it twice, and the solutions differ in the
+%   last bits, so the test applies the substitutions of
+%   tests/unit/private/one_factor_patch.m to the legacy copies;
+% - the wall-clock timing displays are not reproduced.
 %
-% Two legacy quirks are reproduced as published. In TVP-R3-SV the draw of mu_0 uses the
-% current mu_0 as its prior mean (TVP_R3_SV.m 100), where the script defines the prior
-% mean amu = 0 (line 15). In RS-VAR-R2 a regime with no observations redraws the common
-% error variances from their prior inside the regime loop (VAR_RS_R2.m 77), so the
-% coefficient draws of the later regimes in that sweep use the prior draw.
-%
-% Scope: estimation only. The marginal likelihoods (ml_*.m, intlike_*.m) and the DIC
-% (dic_*.m) are separate phases.
+% Two legacy quirks are reproduced deliberately; correcting either makes the
+% equivalence test fail. In TVP-R3-SV the draw of mu_0 uses the current mu_0 as its
+% prior mean (TVP_R3_SV.m 100), where the script defines the prior mean amu = 0
+% (line 15). In RS-VAR-R2 a regime with no observations redraws the common error
+% variances from their prior inside the regime loop (VAR_RS_R2.m 77), and the
+% coefficient draws of the later regimes in that sweep use that draw.
 %
 % Core used: bvar.util.build_lags, bvar.util.surform (SURform.m), bvar.util.surform2
-% (SURform2.m), bvar.sv.ksc_rw_h0 (SVRW.m). constructX.m, dirirnd.m and ldiripdf.m
-% have no core counterpart and are copied below as local functions.
+% (SURform2.m), bvar.sv.ksc_rw_h0 (SVRW.m), bvar.util.dirirnd (dirirnd.m),
+% bvar.ml.ldiripdf (ldiripdf.m). constructX.m has no core counterpart and is copied
+% below as a local function.
 %
 % See:
 % Chan, J.C.C. and Eisenstat, E. (2018). Bayesian model comparison for time-varying
@@ -907,7 +907,7 @@ alp0 = pr.rs.alp0*ones(r,1);  % symmetric prior
 
 cpri = -.5*k*r*log(2*pi) - .5*r*sum(log(Vtheta)) + r*nu0'*log(S0) - r*sum(gammaln(nu0));
 prior = @(the,s,Pm) cpri -.5*(the-repmat(atheta,r,1))'*((the-repmat(atheta,r,1))./repmat(Vtheta,r,1)) ...
-    -(repmat(nu0,r,1)+1)'*log(s) - sum(repmat(S0,r,1)./s) + sum(ldiripdf(Pm,alp0)) ;
+    -(repmat(nu0,r,1)+1)'*log(s) - sum(repmat(S0,r,1)./s) + sum(bvar.ml.ldiripdf(Pm,alp0)) ;
 
     % design [20-32]
 X2 = zeros(n*T,n*(n-1)/2);
@@ -1030,7 +1030,7 @@ nu0 = pr.nu*ones(n,1); S0 = pr.S_sig*ones(n,1).*(nu0-1);
 alp0 = pr.rs.alp0*ones(r,1);  % symmetric prior
 cpri = -.5*k*log(2*pi) - .5*sum(log(Vtheta)) + r*nu0'*log(S0) - r*sum(gammaln(nu0));
 prior = @(the,s,Pm) cpri -.5*(the-atheta)'*((the-atheta)./Vtheta) ...
-    - (repmat(nu0,r,1)+1)'*log(s) - sum(repmat(S0,r,1)./s) + sum(ldiripdf(Pm,alp0)) ;
+    - (repmat(nu0,r,1)+1)'*log(s) - sum(repmat(S0,r,1)./s) + sum(bvar.ml.ldiripdf(Pm,alp0)) ;
 
     % design [19-31]
 X2 = zeros(n*T,n*(n-1)/2);
@@ -1145,7 +1145,7 @@ alp0 = pr.rs.alp0*ones(r,1);  % symmetric prior
 
 cpri = -.5*k*r*log(2*pi) - .5*r*sum(log(Vtheta)) + nu0'*log(S0) - sum(gammaln(nu0));
 prior = @(the,s,Pm) cpri -.5*(the-repmat(atheta,r,1))'*((the-repmat(atheta,r,1))./repmat(Vtheta,r,1)) ...
-    -(nu0+1)'*log(s) - sum(S0./s) + sum(ldiripdf(Pm,alp0)) ;
+    -(nu0+1)'*log(s) - sum(S0./s) + sum(bvar.ml.ldiripdf(Pm,alp0)) ;
 
     % design [20-32]
 X2 = zeros(n*T,n*(n-1)/2);
@@ -1286,7 +1286,7 @@ for i = 1:r
     for j = 1:r
         ni(j) = sum(S(idx+1) == j);
     end
-    P(i,:) = dirirnd(alp0+ni);
+    P(i,:) = bvar.util.dirirnd(alp0+ni);
 end
 end
 
@@ -1320,28 +1320,4 @@ for i=2:n
     end
 end
 Xout = sparse([idi1; idi2],[idj1; idj2],[reshape(X1',n*T*m,1);reshape(X2',T*k,1)]);
-end
-
-function draws = dirirnd(alp,N)
-% dirirnd.m, verbatim: N draws from the Dirichlet distribution with parameter alp
-if nargin == 1
-    N = 1;
-end
-n = length(alp);
-x = gamrnd(repmat(alp',N,1),1,N,n);
-draws = x./repmat(sum(x,2),1,n);
-end
-
-function lden = ldiripdf(y, alpha)
-% ldiripdf.m, verbatim: the log Dirichlet density of each row of y
-[~,k] = size(y);
-if ~(k == length(alpha))
-    error('dimensions do not match ');
-end
-if size(alpha, 1) < size(alpha, 2)
-    alpha = alpha';
-end
-
-const = gammaln(sum(alpha)) - sum(gammaln(alpha));
-lden = const + log(y)*(alpha - 1);
 end

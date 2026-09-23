@@ -7,9 +7,8 @@
 %
 % The scripts write each prior as a scalar times ones(k,1); the scalar is stored
 % here and run_all expands it once the dimension is known. A value that several
-% scripts share is stored once, with every line that sets it. The marginal
-% likelihood and DIC settings (M, nchains, simstep) belong to later phases and are
-% recorded under pr.ml and pr.dic as documentation only.
+% scripts share is stored once, with every line that sets it. run_ml.m reads pr.ml.M;
+% the DIC settings under pr.dic are recorded for reference, and no driver reads them.
 %
 % See:
 % Chan, J.C.C. and Eisenstat, E. (2018). Bayesian model comparison for
@@ -28,9 +27,9 @@ pr.r_default      = 2;                  % line 22: regimes of the regime-switchi
 pr.p_default      = 2;                  % line 23; the comment there allows p = 1,2,3,4 (p <= n0)
 pr.nsims_default  = 20000;              % line 25
 pr.burnin_default = 5000;               % line 26
-pr.ml.M = 10000;                        % line 27: importance-sampling draws (later phase)
-pr.dic.nchains = 10;                    % line 28: chains behind each DIC estimate (later phase)
-pr.dic.simstep = 20;                    % line 32: thinning of the draws the DIC evaluates (later phase)
+pr.ml.M = 10000;                        % line 27: importance-sampling draws (run_ml.m)
+pr.dic.nchains = 10;                    % line 28: chains behind each DIC estimate (not read)
+pr.dic.simstep = 20;                    % line 32: thinning of the draws the DIC evaluates (not read)
 
     % ---- Gaussian priors: mean 0, variance 10 ----
 pr.prior_mean = 0;      % atheta: TVPSV.m 11, TVP.m 12, VAR_SV.m 12, VAR.m 12, VAR_RS*.m 12;

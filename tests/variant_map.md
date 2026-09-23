@@ -1232,7 +1232,7 @@ covered by the equivalence test.
 | `bvar.sv.csv_armh` | the accept-reject envelope constant, hard-coded `log(3)`, is the option `c_reject`; both unbounded `while` loops are capped by `MaxIterMode` (500) and `MaxIterAR` (1000) and raise a named error rather than returning a draw that is not from the target; every exposed option is validated. The mode-search tolerance stays hard-coded and is deliberately NOT an option: convergence to the mode is what makes the proposal state-independent, hence the MH ratio correct, so exposing it would trade correctness for speed silently | `c_reject = 3`, caps never reached | `c_reject` is efficiency-only by an exact argument, not just empirically: the AR loop draws from `min(pi, c*q)`, the MH ratio for that proposal is `exp(max(b,0) - max(a,0))` which is what the three-way branch computes, and `logc` cancels on both sides of detailed balance. Checked numerically at machine precision (residual 1.4e-14) and by a mixing-free one-step invariance test on 300,000 draws from the exact target. Both extremes are live - at `c_reject` = 1e-4 the envelope is violated essentially always, and at 300 on a heavy-tailed target it still fails - so the MH repair is never idle. In the suite: `tests/unit/test_csv_armh.m`, a Geweke joint-distribution test, since `s2_t \| h_t = exp(h_t)*chi2(n)` makes both conditionals exact. The invariant distribution is unchanged for `c_reject` in 0.2 to 20 (max\|z\| 2.2) while a kernel given the wrong `n` scores 115; forced accept is exact at a valid envelope and fails below it, which is what the MH step is for; both caps fire; the values that used to fail silently (`c_reject` 0 or negative) are rejected |
 | `bvar.ml.kron_bvar_t_csv` | two dead assignments dropped - `h_mean` (computed, never read, and never in `out` despite the header claiming it) and an `s2` overwritten before any read | neither consumed randomness, so the draws are unchanged | `tests/unit/test_kron_equivalence.m` (unchanged, still bitwise) |
 | `bvar.ml.llike_ma`, `bvar.ml.lniwpdf` | take the lower Cholesky factor, `chol(Sig,'lower')` in `llike_ma` and `chol(iVA0,'lower')`, `chol(S0,'lower')` in the log-determinants of `lniwpdf`, where the legacy copies take the upper one (2026-09-18), so that the library uses one convention throughout. Sparse factorizations, as in the `ksc_*` samplers, agree bitwise either way; dense ones need not: under MKL 2024.1 in R2025b the lower factor and the transposed upper factor differed in the last bits for every size from 6 to 1000 tried (five random matrices each, by up to about 1e-14) and agreed for sizes 1 to 5 | none; the log densities agreed exactly with the unmodified legacy copies at the test points, which is not guaranteed in general | `tests/unit/test_kron_ml_densities.m`: within 1e-12 relative of the unmodified legacy copies at n = 4 and n = 20, and bitwise against copies carrying the same three substitutions; `tests/unit/test_kron_equivalence.m` runs the legacy pipeline with those copies, so it remains a bitwise comparison |
-| `bvar.sv.ksc_rw_h0`, `ksc_rw_diffuse`, `ksc_ar1_mean`, `csv_armh`; `bvar.ml.intlike_csv`, `intlike_csv_ma`, `lniwpdf`, `mlvarsv_csv`, `mlvarsv_fsv`, `mlvarsv_arsv_redu`, `mlvarsv_arsvo_redu`, `kron_bvar_t_ma`; `bvar.samplers.alp_tri_cs`, `factor_fsv`; `bvar.structural.b0_row_sampler`; the `run_all.m` drivers of the Kronecker, ml_varsv, HYB and ml_tvpsv packages | each function factors each matrix once (2026-09-19). The factor `C = chol(K,'lower')` serves the solves, as `(C')\(C\b)`, the draw, as `C'\z`, and the log determinant, as `2*sum(log(diag(C)))`. The legacy code solves with `K\b` (or `b'/K`), which factors `K` a second time. In the mode searches of `csv_armh`, `intlike_csv` and `intlike_csv_ma` each Newton step factors its matrix with `chol`, and the factor of the last step serves the proposal. The solves differ from `K\b` in the last bits (by about 1e-15 for the banded precision matrices of the samplers, for T from 50 to 10,000) and are no faster. Where a sampler compares a uniform with a probability computed from them, a long chain eventually takes the other branch and from then on is a different realization of the same sampler. Reusing a factor for a log determinant (`mlvarsv_arsv_redu`, `mlvarsv_arsvo_redu`, `mlvarsv_fsv`) and dropping the second `chol(Sig_mean)` of `kron_bvar_t_ma` change no bits. `intlike_t_csv` and `intlike_csv_t_ma` are unchanged: the matrix they factor after the mode search, the negative Hessian at the mode, is never solved during the search. Diagonal matrices (`Kh0` in the MAHP and HYB drivers and examples, and the precisions of the initial states in the ml_tvpsv driver) are unchanged too, since backslash divides by the diagonal without factoring | none | `tests/unit/private/one_factor_patch.m` declares the substitution for each legacy copy, each asserted to occur exactly once, and the bitwise tests that run these copies apply it (`test_ksc_rw_h0`, `test_ksc_rw_diffuse`, `test_ksc_ar1_mean`, `test_csv_armh`, `test_kron_intlike`, `test_kron_ml_densities`, `test_kron_equivalence`, `test_mahp_equivalence`, `test_forecast_iterate_mahp`, `test_forecast_iterate_springer`, `test_hybtvp_equivalence`, `test_mlvarsv_equivalence`, `test_mlvarsv_ml`, `test_oisv_equivalence`, `test_mltvpsv_equivalence`), so they remain bitwise comparisons |
+| `bvar.sv.ksc_rw_h0`, `ksc_rw_diffuse`, `ksc_ar1_mean`, `csv_armh`; `bvar.ml.intlike_csv`, `intlike_csv_ma`, `lniwpdf`, `mlvarsv_csv`, `mlvarsv_fsv`, `mlvarsv_arsv_redu`, `mlvarsv_arsvo_redu`, `kron_bvar_t_ma`, `intlike_tvp`, `intlike_tvpsv`, `intlike_cvarsv`, `mltvpsv_*`; `bvar.samplers.alp_tri_cs`, `factor_fsv`; `bvar.structural.b0_row_sampler`; the `run_all.m` drivers of the Kronecker, ml_varsv, HYB and ml_tvpsv packages | each function factors each matrix once (2026-09-19). The factor `C = chol(K,'lower')` serves the solves, as `(C')\(C\b)`, the draw, as `C'\z`, and the log determinant, as `2*sum(log(diag(C)))`. The legacy code solves with `K\b` (or `b'/K`), which factors `K` a second time. In the mode searches of `csv_armh`, `intlike_csv` and `intlike_csv_ma` each Newton step factors its matrix with `chol`, and the factor of the last step serves the proposal. The solves differ from `K\b` in the last bits (by about 1e-15 for the banded precision matrices of the samplers, for T from 50 to 10,000) and are no faster. Where a sampler compares a uniform with a probability computed from them, a long chain eventually takes the other branch and from then on is a different realization of the same sampler. Reusing a factor for a log determinant (`mlvarsv_arsv_redu`, `mlvarsv_arsvo_redu`, `mlvarsv_fsv`) and dropping the second `chol(Sig_mean)` of `kron_bvar_t_ma` change no bits. `intlike_t_csv` and `intlike_csv_t_ma` are unchanged: the matrix they factor after the mode search, the negative Hessian at the mode, is never solved during the search. In the `mltvpsv_*` routines the precision of each Gaussian importance density is formed from the Cholesky factor its draws use, where the legacy code inverts the covariance with backslash. Diagonal matrices (`Kh0` in the MAHP and HYB drivers and examples, and the precisions of the initial states in the ml_tvpsv driver) are unchanged too, since backslash divides by the diagonal without factoring | none | `tests/unit/private/one_factor_patch.m` declares the substitution for each legacy copy, each asserted to occur exactly once, and the bitwise tests that run these copies apply it (`test_ksc_rw_h0`, `test_ksc_rw_diffuse`, `test_ksc_ar1_mean`, `test_csv_armh`, `test_kron_intlike`, `test_kron_ml_densities`, `test_kron_equivalence`, `test_mahp_equivalence`, `test_forecast_iterate_mahp`, `test_forecast_iterate_springer`, `test_hybtvp_equivalence`, `test_mlvarsv_equivalence`, `test_mlvarsv_ml`, `test_oisv_equivalence`, `test_mltvpsv_equivalence`, `test_mltvpsv_ml`, `test_mltvpsv_ml_equivalence`), so they remain bitwise comparisons |
 | `bvar.sv.sv0_params`, `bvar.models.var_sv` | the option `'proposal', 'truncated'` of `sv0_params` draws the phi candidate from the normal part of its conditional, N(phi_hat, 1/Kphi), truncated to (-phi_bnd, phi_bnd), and accepts it with probability min{1, exp(g(phic) - g(phi))}, g the part of the density of h(1) that depends on phi; the target is unchanged. The package's step draws the candidate from the untruncated normal and rejects it outside the bound. The truncated draw is an inverse transform on the side of the interval nearest the mean, and beyond about 37 standard deviations, where the normal cdf underflows, the exponential rejection sampler of Robert (1995). `var_sv` uses the truncated candidate by default, and its option `'phi_proposal', 'untruncated'` restores the package's step (2026-09-19) | `sv0_params`: the default `'untruncated'` is the package's step, bitwise (`test_sv0_params`, `test_oisv_equivalence`); `var_sv`: only with `'phi_proposal', 'untruncated'` (`test_var_sv`) | `tests/unit/test_sv0_params.m`: 20,000 draws of the step against the posterior of phi given h, with sig2 integrated out, on a fine grid, for a path whose posterior sits against the bound, one with an interior mode and one against the negative bound: means within 1.3 Monte Carlo standard errors of the exact ones and standard deviations within 1%; the draw stays inside the bound for a normal centred 50,000 standard deviations beyond it, in either direction. `tests/unit/test_var_sv.m`: under the default every phi moves within 30 draws |
 | `bvar.ml.mlvarsv_arsv_redu`, `mlvarsv_arsvo_redu`, `mlvarsv_fsv` | the option `'gram', 'blocks'` forms the weighted Gram matrix of the regressors in the posterior precision of the VAR coefficients from its k x k blocks (2026-09-19). For the two Cholesky-SV routines that matrix is the sum over i of `B0(i,j)*B0(i,l)*X'*diag(exp(-h(:,i)))*X`, computed by the new `bvar.util.kron_gram`; for VAR-FSV it is the sum over t of `kron(P_t, x_t'*x_t)`, with `P_t` the inverse of the tth n x n block of `Sy` (the local `deny_fsv_blocks`). The published code multiplies out the Tn x nk matrix `kron(B0,X)` divided by the volatilities, and for VAR-FSV solves with the Tn x Tn matrix `Sy`; the operation count of the Gram matrix falls from O(T n^3 k^2) to O(n T k^2 + n^3 k^2). At n = 25, T = 255, p = 4 one importance-sampling draw takes about 1.4 s against about 0.3 s under the two Cholesky-SV routines, and 4.5 s against 0.25 s under VAR-FSV; what remains is dominated by the nk x nk Cholesky factorization, which both paths do. Neither path draws random numbers, so the two consume the identical stream | `'full'`, the published computation, bitwise (`test_mlvarsv_ml` and `test_mlvarsv_equivalence`, unchanged) | `tests/unit/test_mlvarsv_gram.m`: `bvar.util.kron_gram` against the products it replaces, within 1e-12 relative; each of the three routines run through `run_ml` at n = 5 under both settings, with the identical terminal rng state, identical fitted importance densities and log weights within 1e-6. At n = 25 the largest gap between log weights of about 1,000 in absolute value is 1.5e-7, and the estimates differ by 1.6e-10 (VAR-SV) and 1.1e-8 (VAR-FSV), against numerical standard errors of about 1 |
 
@@ -1288,9 +1288,10 @@ exactly as they are. Change one and the corresponding test fails, which is the p
 
 ## ml_tvpsv against the rest of the repository (2026-09-17)
 
-`chan_eisenstat2018_jae_mltvpsv` was imported verbatim on 2026-09-15; its estimation is
-functionized in the next section. Every one of its 40 `.m` files was compared with every other `.m` file in the
-repository, ignoring comments, whitespace and function names. Two have a code twin:
+`chan_eisenstat2018_jae_mltvpsv` was imported verbatim on 2026-09-15; its estimation and
+marginal likelihoods are functionized in the next two sections. Every one of its 40 `.m`
+files was compared with every other `.m` file in the repository, ignoring comments,
+whitespace and function names. Two have a code twin:
 
 - `SURform.m` is `bvar.util.surform`, as are the HYB and sp_code copies.
 - `SURform2.m` is `bvar.util.surform2`, as are the ml_varsv and Springer copies.
@@ -1306,7 +1307,7 @@ their integrated-likelihood, marginal-likelihood and DIC routines, `constructX` 
 `constructX_RS`, and the Dirichlet helpers `dirifit`, `dirirnd` and `ldiripdf`. The comparison
 is textual, so a functionization pass starts from these files, and any equivalence with
 existing core, of the kind `SVRW.m` has, needs a test to establish it. The package reads its
-data with `xlsread` and a range argument, so such tests will have to stay local.
+data with `xlsread` and a range argument, so such tests stay local.
 
 ## ml_tvpsv functionized: estimation (2026-09-22)
 
@@ -1325,11 +1326,11 @@ p = 1 and p = 4 on a model of each design, and the three RS models at r = 3 and 
 stored draws, repetition under a seed, the labels and the bad inputs).
 
 From core, `SVRW.m` is `bvar.sv.ksc_rw_h0`, `SURform.m` and `SURform2.m` are
-`bvar.util.surform` and `surform2`, and the lag loop every script writes is
-`bvar.util.build_lags`. `constructX.m`, `dirirnd.m` and `ldiripdf.m` are local functions of
-`run_all.m`, copied verbatim. `dirifit.m` and the marginal-likelihood and DIC routines belong to
-the next phases. `constructX_RS.m` is dead: it uses `T` and `n` without defining them, and
-nothing calls it.
+`bvar.util.surform` and `surform2`, the lag loop every script writes is
+`bvar.util.build_lags`, and `dirirnd.m` and `ldiripdf.m` are `bvar.util.dirirnd` and
+`bvar.ml.ldiripdf` (next section). `constructX.m` is a local function of `run_all.m`,
+copied verbatim. `constructX_RS.m` is dead: it uses `T` and `n` without defining them, and nothing
+calls it.
 
 The deviations are those of the other drivers. The clock-seed lines are dropped, the fourteen
 solves with a non-diagonal precision matrix factor it once (`one_factor_patch` declares the
@@ -1354,6 +1355,67 @@ TVP-SV mean solved with backslash; and either quirk corrected. The starting tran
 of the RS models enters the draws only through the first draw of the regimes, which compares a
 uniform with a probability, so 1e-9 on it leaves every draw unchanged. Its off-diagonal from .2
 to .4, or its diagonal from .8 to .6, makes the test fail.
+
+## ml_tvpsv functionized: marginal likelihoods (2026-09-22)
+
+`replications/chan_eisenstat2018_jae_mltvpsv/run_ml.m` runs the `cp_ml` pipeline of
+`main_tvpsv.m`: `run_all`, then the model's marginal-likelihood routine on the same rng
+stream, with the legacy displays. The routines are in core:
+
+| Core function | Canonical source (legacy) | Also canonicalizes | Verified |
+|---|---|---|---|
+| `bvar.util.dirirnd` | chan_eisenstat2018_jae_mltvpsv `dirirnd.m` | (single copy) | unit (`test_dirichlet`, draws bitwise) |
+| `bvar.ml.ldiripdf` | `ldiripdf.m` (the unused output `n` of `size` is `~`) | (single copy) | unit (same, + closed form) |
+| `bvar.ml.dirifit` | `dirifit.m` (the unused output `k` of `size` is `~`) | (single copy) | unit (same, + recovery of known parameters) |
+| `bvar.ml.intlike_tvp` | `intlike_tvp.m` (one factor, see Deviations from legacy) | (single copy) | unit (`test_mltvpsv_ml`) |
+| `bvar.ml.intlike_tvpsv` | `intlike_tvpsv.m` (one factor; the fallback's `sparse(1:T*m,1:T*n,...)` reads `1:T*n`, see the audit) | the integrated likelihood of TVP-SV, TVP-R1-SV, TVP-R2-SV and TVP-R3-SV | unit (same, both draw-count paths) |
+| `bvar.ml.intlike_cvarsv` | `intlike_varsv.m` (renamed; one factor in the Newton steps) | (single copy) | unit (same, both draw-count paths) |
+| `bvar.ml.intlike_rsvar` | `intlike_var_rs.m` (renamed; the first-period probability is the argument `p1`, default 1/r) | the likelihood of the three RS models | unit (same, at r = 3) |
+| `bvar.ml.mltvpsv_tvpsv`, `mltvpsv_tvp`, `mltvpsv_tvp_r1_sv`, `mltvpsv_tvp_r2_sv`, `mltvpsv_tvp_r3_sv`, `mltvpsv_cvarsv`, `mltvpsv_cvar` | `ml_tvpsv.m`, `ml_tvp.m`, `ml_tvp_r1_sv.m`, `ml_tvp_r2_sv.m`, `ml_tvp_r3_sv.m`, `ml_varsv.m`, `ml_var.m` (renamed; the `disp` line moved to `run_ml`; the importance precisions from their factors; a third output with the log weights and the 20 batch estimates) | (models 1-7) | unit (`test_mltvpsv_ml`) + end-to-end (`test_mltvpsv_ml_equivalence`) |
+| `bvar.ml.mltvpsv_rs`, `mltvpsv_rs_r1`, `mltvpsv_rs_r2` | `ml_var_rs.m`, `ml_var_rs_r1.m`, `ml_var_rs_r2.m` (as above, and the argument `bugcompat`) | (models 8-10) - AFFECTED through `intlike_var_rs.m`; `'bugcompat',true` reproduces the legacy bitwise, the default corrects | unit (same, bugcompat bitwise + the corrected estimate equals the published one plus log(3/r)) + end-to-end |
+
+`test_mltvpsv_ml` runs on CI: it compares the routines with the patched legacy copies on the
+draws `run_all` gives on generated data, and the integrated likelihoods directly at three
+parameter points, one of which makes `intlike_tvpsv` increase its draws. It takes 8 seconds.
+`test_mltvpsv_ml_equivalence` compares `run_ml` with the legacy pipeline on the package's data
+at 13 settings (every model at p = 2 and r = 2, the RS models at r = 3); it reads the data with
+`xlsread`, so it is local, and takes 61 seconds.
+
+In a scratch mirror, each of these changes makes a test fail: 1e-9 on the gradient of the EM
+algorithm's Newton step in `bvar.ml.intlike_tvpsv`, on the prior constant of
+`intlike_cvarsv`, on the importance constants of `mltvpsv_cvar` and `mltvpsv_tvp_r3_sv`, on
+the score of `dirifit` and on the constant of `ldiripdf`; the default first-period probability
+of `intlike_rsvar` at 1/(r+1); and `run_ml` passing the opposite `bugcompat` to RS-VAR. Two
+changes leave every output unchanged on the test's data, so no test can see them: a
+tolerance of 1e-5 in `dirifit`, where its Newton steps fall from about 1e-3 to 1e-7 in one
+iteration and stop at the same step, and the inverse by backslash in place of the factor
+for the 12 x 12 importance covariance of TVP-R3-SV, where the two give the same bits.
+
+### ml_tvpsv bug audit, marginal likelihoods (2026-09-22) - all findings, including clean bills
+
+- `intlike_var_rs.m` line 15 starts the Hamilton filter from p(s_1 = j) = 1/3 for every j,
+  whatever r is. The log likelihood adds log(sum(p(s_1) .* like)) at t = 1, so every value it
+  returns is shifted by log(r/3): nothing at r = 3, and the three RS marginal likelihoods move
+  by the same constant at any other r. The draws of the samplers do not depend on it, since the
+  filter there normalizes each step. `bvar.ml.intlike_rsvar` takes the first-period
+  probability as an argument, defaulting to 1/r; the RS routines and `run_ml` pass 1/3 under
+  `'bugcompat', true`.
+- `intlike_tvpsv.m` line 63, in the branch taken when the EM algorithm has not converged after
+  100 iterations, builds `sparse(1:T*m,1:T*n,einvhttzhat)` with m = n(n-1)/2. At n = 3, the
+  package's dimension, m = n and the line is correct; at any other n the branch raises an error.
+  The core reads `1:T*n`, identical wherever the published line runs. No test reaches the branch.
+- `dirifit.m` tests the vector `abs(err) > 1e-4` as its `while` condition, which MATLAB treats as
+  true only while every element holds, so the Newton iteration stops once any element of the
+  step is at most 1e-4. Kept verbatim; the importance density it fits remains valid.
+- `ml_tvp_r3_sv.m`: its prior gives mu_0 the mean zero. The sampler's quirk at `TVP_R3_SV.m`
+  line 100 changes only the draws the importance density is fitted to, and an importance
+  sampling estimator is consistent for any density that covers the posterior. Clean bill.
+- Clean bills after reading every line against the model: `ml_tvpsv.m`, `ml_tvp.m`,
+  `ml_tvp_r1_sv.m`, `ml_tvp_r2_sv.m`, `ml_varsv.m`, `ml_var.m`, `ml_var_rs.m`,
+  `ml_var_rs_r1.m`, `ml_var_rs_r2.m` (apart from the likelihood they call), `intlike_tvp.m`,
+  `intlike_varsv.m`, and the rest of `intlike_tvpsv.m`, including its normalizing constants
+  (the log determinant of the random-walk prior of h is -T times the sum of log Sigh, and that
+  of the TVP prior of the states -T times the sum of log Sigtheta).
 
 ## The AD packages against the rest of the repository (2026-09-18)
 

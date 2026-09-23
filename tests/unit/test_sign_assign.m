@@ -62,7 +62,7 @@ for isim = 1:nbatch
     end
 
         % the strict scheme, for the acceptance comparison. Its row inequalities
-        % are indexed by column rather than by shock, so the equivalent input is
+        % are indexed by column, so the equivalent input is
         % the three nonzero rows applied to the columns they restrict.
     [okS,~] = bvar.structural.sign_restrict(L, S, Rineq([2 4 5],:), [2 4 5]);
     nacc_strict = nacc_strict + okS;

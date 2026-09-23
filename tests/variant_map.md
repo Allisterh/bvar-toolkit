@@ -6,7 +6,7 @@ are numerically different. Update this file with every extraction.
 
 `core/` is a library, not a second copy of the archive, and is free to improve on the
 published code. Where a function has, record BOTH: the legacy equivalence that still pins its
-default path, and the test that establishes the new behaviour is correct on its own terms.
+default path, and the test that establishes the new behavior is correct on its own terms.
 The deviations are listed in the **deviations from legacy** section at the end.
 
 ## Canonicalized in step 3 (zero-risk extractions, 2026-09-01)
@@ -258,8 +258,8 @@ The CS block is the CORRECTED triangular algorithm of Carriero, Chan, Clark and 
 original drew equation j from a conditional that omitted part of the information,
 conditioning on y(1),...,y(j-1) instead of the whole of y, so it did not sample the
 triangular factorization it was aiming at; the corrigendum restores the missing term at the
-same complexity. In `bvar.samplers.eq_tri_cs` the correction is the stacking of rows ii:n
-rather than equation ii alone, and the legacy package says as much - `forecast_CS_MH.m`
+same complexity. In `bvar.samplers.eq_tri_cs` the correction is the stacking of rows ii:n,
+where the original used equation ii alone, and the legacy package says as much - `forecast_CS_MH.m`
 line 2 reads "using CCCM algorithm". Anyone porting this block to another package should
 check which version they are copying from.
 
@@ -508,7 +508,7 @@ routines were extracted in step 10 (below); the (Sig,A) draw is still deferred.
 - `test_sv_params_mlvarsv` asserts `sample_SVpara` resolves from the ml_varsv legacy copy, not
   the same-name OISV one.
 - Data note: the shipped `macrodata_Q_2019Q4.csv` is 242 x 248, so T = 234 - the
-  `linspace(1961,2019.75,T)` axis in VAR_CSV.m's figure implies 236 and is cosmetically off by
+  `linspace(1961,2019.75,T)` axis in VAR_CSV.m's figure implies 236, so its dates are off by
   two quarters. Display only; no estimate depends on it.
 - There is NO constant named `nuub` (or `nu_ub`/`nub`) anywhere in this legacy package
   (grep-verified). A lead carried into this step that does not correspond to these files.
@@ -553,7 +553,7 @@ same patches as step
 | `bvar.ml.mlvarsv_fsv` | `utility/ml_var_fsv.m` (incl. its `deny_fsv` subfunction) | (model 4) - CLEAN BILL; the only routine implementing `flag_marg = 1` | unit (same, all three settings; `store_w` bitwise) |
 | `bvar.ml.mlvarsv_arsvo_redu` | `utility/ml_var_arsvo_redu.m` | (model 5) - AFFECTED three times, all in the outlier block; `'bugcompat',true` reproduces the legacy bitwise, the default corrects | unit (same, all three settings, bugcompat bitwise + corrected-mode assertions) |
 
-Reused rather than re-extracted: `bvar.priors.niw('mlvarsv_ncp')` (legacy prior_NCP, called per
+Reused from earlier steps: `bvar.priors.niw('mlvarsv_ncp')` (legacy prior_NCP, called per
 IS draw to refresh VA from the drawn kappa), `bvar.priors.minn` with n0pre = 4 (prior_Minn),
 `bvar.priors.impact_B0` (prior_B0), `bvar.util.tnormrnd`, `bvar.util.vec`, `bvar.util.ldet`,
 `bvar.util.mgammaln`, `bvar.util.surform2` (SURform2 - `deny_fsv` is the first CORE function to
@@ -610,7 +610,7 @@ patch should have touched, is not among them).
   of the atom o = 1 at PERIOD `o_idx(t)` instead of the probability of the drawn atom at period t, so the importance density's ordinate
 is evaluated at the wrong entry. Correct:
   `o_hat(sub2ind(size(o_hat),(1:T)',o_idx))`. (Below T = 32 the linear indices spill into
-  column 2 and the behaviour changes; the test therefore runs at the full T.)
+  column 2 and the behavior changes; the test therefore runs at the full T.)
 - **`ml_var_arsvo_redu.m` line 153 (defect 3, missing Jacobian):**
   `c1 = -n*T/2*log(2*pi) -.5*sum(sum(h)) -.5*sum(log(Hyper.Valp));` is byte-identical to
   ml_var_arsv_redu.m line 135, but line 155 scales the residuals by the outlier size -
@@ -787,7 +787,7 @@ more are extracted here, and this pass adds the toolkit's first identification m
 | `bvar.priors.acp_redu` / `acp_stru` | `utility/prior_ACP_redu.m` / `prior_ACP_stru.m` | already core (step 4, R1 canonical); all six fields of each reproduce exactly on this package's settings | verified in the pass |
 
 `plotCI.m` is not extracted: it is four lines of `fill` with no statistical content, and the
-drivers here return arrays rather than drawing figures.
+drivers here return arrays and draw no figures.
 
 - Functionized: `run_all.m` (main_ACP_apps.m, the sign-restricted impulse responses) and
   `run_jointden.m` (main_ACP_jointden.m, the marginal-likelihood surface over the two
@@ -795,7 +795,7 @@ drivers here return arrays rather than drawing figures.
 - **The impulse-response copy here is the fixed one.** Two other copies of this routine in
   the wider codebase start the response loop at the wrong index and report every horizon
   shifted by one period. The BVAR_ACP_R1 zip of 2026-08-27, which this repository archives,
-  carries the correction, which is why it rather than another copy is canonical. Anyone
+  carries the correction, which is why it is the canonical copy. Anyone
   comparing figures against an older run should establish which copy produced them.
 - **`run_all` must not stop mid-batch.** The legacy rejection loop has no `count_sat < nsim`
   guard inside the batch, so the final batch runs to its end and `store_response` finishes
@@ -879,7 +879,7 @@ Only the paper's own contribution is extracted here.
 | `bvar.structural.sign_assign` | the inline block at `proposed_15var.m` 72-113 | body verbatim; wrapped as a function, with m and n taken from the arguments and the acceptance test returned as a flag | unit (draw-for-draw, 400 draws) |
 
 - Example `examples/ex11_sign_restrictions.m` runs both acceptance rules over one batch of
-  posterior draws, so the comparison is of the rules rather than of the sampling. At n = 6
+  posterior draws, so the comparison isolates the rules: the sampling is common to both. At n = 6
   with five sign-restricted shocks and three row inequalities, 50000 rotations yield 7
   acceptances under the strict rule and 2544 under `sign_assign`. The batch is that large
   because the strict rule needs it: its rate is 0.01%, so 10000 draws would expect a single
@@ -896,7 +896,7 @@ Only the paper's own contribution is extracted here.
   consolidation candidate. `provenance.md` and `NOTICE.md` record it.
 - Not functionized: the five main programs, `RWZ_15var.m`, `proposed_15var.m` and
   `Application_Uhlig2005.m`. They depend on `auxFunctions`, so a driver could not be a
-  core-only entry point, and their output is figures rather than reusable computation.
+  core-only entry point, and their output is figures, with no reusable computation.
 - Five `utility/` files have no ACP counterpart and are not extracted: `FEVD`,
   `get_OptKappa_ver2`, `sample_BSig_NCP`, `sample_ThetaSig_NCP`, `plotCI_othercolor`. Note
   that `sample_ThetaSig_NCP.m` and `sample_BSig_NCP.m` are the same 26 lines and both declare
@@ -995,8 +995,8 @@ A future deduplication must not unify any of these; doing so silently changes pu
   `eq_svar_oi` is the verbatim CKY24 block and the bitwise anchor of the OISV replication -
   it must never be edited for speed. `eq_var_oi` (new 2026-09-06) computes the same draw
   with the same rng consumption in `O(T k^2 + k^3)` per equation instead of
-  `O(T n k^2 + k^3)`, by summing the per-equation precision weights rather than stacking
-  `kron(B0(:,ii),X)`; the `k^3` Cholesky is common to both. Use
+  `O(T n k^2 + k^3)`, by summing the per-equation precision weights, where the published
+  block stacks `kron(B0(:,ii),X)`; the `k^3` Cholesky is common to both. Use
   `eq_var_oi` in new code, `eq_svar_oi` when reproducing CKY24 draw-for-draw. Equivalence
   and the speed ratio: `tests/unit/test_eq_var_oi.m`.
 - **`anormrnd.m` vs `tnormrnd.m`**: anormrnd is the OISV bimodal two-component draw for the
@@ -1063,7 +1063,7 @@ A future deduplication must not unify any of these; doing so silently changes pu
 
 - Verdict EQUIVALENT. Perturbation checks: a horizon-index perturbation and a 1e-7 constant
   perturbation in scratch mirrors both fail the forecast tests; suite green on revert.
-- Of the 11 canonicalized blocks, 6 rest on independent byte-diffs rather than end-to-end
+- Of the 11 canonicalized blocks, 6 rest on independent byte-diffs, without end-to-end
   tests: the MAHP NG/Minn forecast tails (byte-identical to the tested MNG canonical, so
   effectively covered) and the springer small/NCP/IP/SSVS bodies (verbatim modulo the
   declared caller-supplied pieces). The CALLER contract for those four springer models
@@ -1214,13 +1214,13 @@ First consumer: an out-of-tree clustered stochastic volatility VAR sampler.
 `core/` began as extraction and is now allowed to improve on the published code. The archive
 under `replications/*/legacy/` is untouched either way, and the replication drivers still
 reproduce the published numbers, because every deviation keeps a default that reproduces the
-legacy behaviour bit for bit. The exceptions are three of the rows below: the lower
+legacy behavior bit for bit. The exceptions are three of the rows below: the lower
 Cholesky factor in two log densities and one Cholesky factor per matrix, which change the last
 bits, and the default phi candidate of `bvar.models.var_sv`, which changes its draws but not
 the distribution they target. What changes is the
-standard of proof: legacy equivalence pins the default path, and the new behaviour needs a
-test of the property that makes it correct, argued directly rather than by comparison
-against a legacy file that does not have it.
+standard of proof: legacy equivalence pins the default path, and the new behavior needs a
+test of the property that makes it correct, argued directly, since no legacy file has
+it to compare against.
 
 For a sampler that property is usually an INVARIANCE. A new option may change how long a step
 takes or how often it accepts, and must leave the distribution the step targets alone; the
@@ -1229,11 +1229,11 @@ covered by the equivalence test.
 
 | core function | deviation | default reproducing legacy | correctness test |
 |---|---|---|---|
-| `bvar.sv.csv_armh` | the accept-reject envelope constant, hard-coded `log(3)`, is the option `c_reject`; both unbounded `while` loops are capped by `MaxIterMode` (500) and `MaxIterAR` (1000) and raise a named error rather than returning a draw that is not from the target; every exposed option is validated. The mode-search tolerance stays hard-coded and is deliberately NOT an option: convergence to the mode is what makes the proposal state-independent, hence the MH ratio correct, so exposing it would trade correctness for speed silently | `c_reject = 3`, caps never reached | `c_reject` is efficiency-only by an exact argument, not just empirically: the AR loop draws from `min(pi, c*q)`, the MH ratio for that proposal is `exp(max(b,0) - max(a,0))` which is what the three-way branch computes, and `logc` cancels on both sides of detailed balance. Checked numerically at machine precision (residual 1.4e-14) and by a mixing-free one-step invariance test on 300,000 draws from the exact target. Both extremes are live - at `c_reject` = 1e-4 the envelope is violated essentially always, and at 300 on a heavy-tailed target it still fails - so the MH repair is never idle. In the suite: `tests/unit/test_csv_armh.m`, a Geweke joint-distribution test, since `s2_t \| h_t = exp(h_t)*chi2(n)` makes both conditionals exact. The invariant distribution is unchanged for `c_reject` in 0.2 to 20 (max\|z\| 2.2) while a kernel given the wrong `n` scores 115; forced accept is exact at a valid envelope and fails below it, which is what the MH step is for; both caps fire; the values that used to fail silently (`c_reject` 0 or negative) are rejected |
+| `bvar.sv.csv_armh` | the accept-reject envelope constant, hard-coded `log(3)`, is the option `c_reject`; both unbounded `while` loops are capped by `MaxIterMode` (500) and `MaxIterAR` (1000) and raise a named error when reached, so every draw returned is from the target; every exposed option is validated. The mode-search tolerance stays hard-coded and is deliberately NOT an option: convergence to the mode is what makes the proposal state-independent, hence the MH ratio correct, so exposing it would trade correctness for speed silently | `c_reject = 3`, caps never reached | `c_reject` is efficiency-only by an exact argument, not just empirically: the AR loop draws from `min(pi, c*q)`, the MH ratio for that proposal is `exp(max(b,0) - max(a,0))` which is what the three-way branch computes, and `logc` cancels on both sides of detailed balance. Checked numerically at machine precision (residual 1.4e-14) and by a mixing-free one-step invariance test on 300,000 draws from the exact target. Both extremes are live - at `c_reject` = 1e-4 the envelope is violated essentially always, and at 300 on a heavy-tailed target it still fails - so the MH repair is never idle. In the suite: `tests/unit/test_csv_armh.m`, a Geweke joint-distribution test, since `s2_t \| h_t = exp(h_t)*chi2(n)` makes both conditionals exact. The invariant distribution is unchanged for `c_reject` in 0.2 to 20 (max\|z\| 2.2) while a kernel given the wrong `n` scores 115; forced accept is exact at a valid envelope and fails below it, which is what the MH step is for; both caps fire; the values that used to fail silently (`c_reject` 0 or negative) are rejected |
 | `bvar.ml.kron_bvar_t_csv` | two dead assignments dropped - `h_mean` (computed, never read, and never in `out` despite the header claiming it) and an `s2` overwritten before any read | neither consumed randomness, so the draws are unchanged | `tests/unit/test_kron_equivalence.m` (unchanged, still bitwise) |
 | `bvar.ml.llike_ma`, `bvar.ml.lniwpdf` | take the lower Cholesky factor, `chol(Sig,'lower')` in `llike_ma` and `chol(iVA0,'lower')`, `chol(S0,'lower')` in the log-determinants of `lniwpdf`, where the legacy copies take the upper one (2026-09-18), so that the library uses one convention throughout. Sparse factorizations, as in the `ksc_*` samplers, agree bitwise either way; dense ones need not: under MKL 2024.1 in R2025b the lower factor and the transposed upper factor differed in the last bits for every size from 6 to 1000 tried (five random matrices each, by up to about 1e-14) and agreed for sizes 1 to 5 | none; the log densities agreed exactly with the unmodified legacy copies at the test points, which is not guaranteed in general | `tests/unit/test_kron_ml_densities.m`: within 1e-12 relative of the unmodified legacy copies at n = 4 and n = 20, and bitwise against copies carrying the same three substitutions; `tests/unit/test_kron_equivalence.m` runs the legacy pipeline with those copies, so it remains a bitwise comparison |
 | `bvar.sv.ksc_rw_h0`, `ksc_rw_diffuse`, `ksc_ar1_mean`, `csv_armh`; `bvar.ml.intlike_csv`, `intlike_csv_ma`, `lniwpdf`, `mlvarsv_csv`, `mlvarsv_fsv`, `mlvarsv_arsv_redu`, `mlvarsv_arsvo_redu`, `kron_bvar_t_ma`, `intlike_tvp`, `intlike_tvpsv`, `intlike_cvarsv`, `mltvpsv_*`; `bvar.samplers.alp_tri_cs`, `factor_fsv`; `bvar.structural.b0_row_sampler`; the `run_all.m` drivers of the Kronecker, ml_varsv, HYB and ml_tvpsv packages | each function factors each matrix once (2026-09-19). The factor `C = chol(K,'lower')` serves the solves, as `(C')\(C\b)`, the draw, as `C'\z`, and the log determinant, as `2*sum(log(diag(C)))`. The legacy code solves with `K\b` (or `b'/K`), which factors `K` a second time. In the mode searches of `csv_armh`, `intlike_csv` and `intlike_csv_ma` each Newton step factors its matrix with `chol`, and the factor of the last step serves the proposal. The solves differ from `K\b` in the last bits (by about 1e-15 for the banded precision matrices of the samplers, for T from 50 to 10,000) and are no faster. Where a sampler compares a uniform with a probability computed from them, a long chain eventually takes the other branch and from then on is a different realization of the same sampler. Reusing a factor for a log determinant (`mlvarsv_arsv_redu`, `mlvarsv_arsvo_redu`, `mlvarsv_fsv`) and dropping the second `chol(Sig_mean)` of `kron_bvar_t_ma` change no bits. `intlike_t_csv` and `intlike_csv_t_ma` are unchanged: the matrix they factor after the mode search, the negative Hessian at the mode, is never solved during the search. In the `mltvpsv_*` routines the precision of each Gaussian importance density is formed from the Cholesky factor its draws use, where the legacy code inverts the covariance with backslash. Diagonal matrices (`Kh0` in the MAHP and HYB drivers and examples, and the precisions of the initial states in the ml_tvpsv driver) are unchanged too, since backslash divides by the diagonal without factoring | none | `tests/unit/private/one_factor_patch.m` declares the substitution for each legacy copy, each asserted to occur exactly once, and the bitwise tests that run these copies apply it (`test_ksc_rw_h0`, `test_ksc_rw_diffuse`, `test_ksc_ar1_mean`, `test_csv_armh`, `test_kron_intlike`, `test_kron_ml_densities`, `test_kron_equivalence`, `test_mahp_equivalence`, `test_forecast_iterate_mahp`, `test_forecast_iterate_springer`, `test_hybtvp_equivalence`, `test_mlvarsv_equivalence`, `test_mlvarsv_ml`, `test_oisv_equivalence`, `test_mltvpsv_equivalence`, `test_mltvpsv_ml`, `test_mltvpsv_ml_equivalence`), so they remain bitwise comparisons |
-| `bvar.sv.sv0_params`, `bvar.models.var_sv` | the option `'proposal', 'truncated'` of `sv0_params` draws the phi candidate from the normal part of its conditional, N(phi_hat, 1/Kphi), truncated to (-phi_bnd, phi_bnd), and accepts it with probability min{1, exp(g(phic) - g(phi))}, g the part of the density of h(1) that depends on phi; the target is unchanged. The package's step draws the candidate from the untruncated normal and rejects it outside the bound. The truncated draw is an inverse transform on the side of the interval nearest the mean, and beyond about 37 standard deviations, where the normal cdf underflows, the exponential rejection sampler of Robert (1995). `var_sv` uses the truncated candidate by default, and its option `'phi_proposal', 'untruncated'` restores the package's step (2026-09-19) | `sv0_params`: the default `'untruncated'` is the package's step, bitwise (`test_sv0_params`, `test_oisv_equivalence`); `var_sv`: only with `'phi_proposal', 'untruncated'` (`test_var_sv`) | `tests/unit/test_sv0_params.m`: 20,000 draws of the step against the posterior of phi given h, with sig2 integrated out, on a fine grid, for a path whose posterior sits against the bound, one with an interior mode and one against the negative bound: means within 1.3 Monte Carlo standard errors of the exact ones and standard deviations within 1%; the draw stays inside the bound for a normal centred 50,000 standard deviations beyond it, in either direction. `tests/unit/test_var_sv.m`: under the default every phi moves within 30 draws |
+| `bvar.sv.sv0_params`, `bvar.models.var_sv` | the option `'proposal', 'truncated'` of `sv0_params` draws the phi candidate from the normal part of its conditional, N(phi_hat, 1/Kphi), truncated to (-phi_bnd, phi_bnd), and accepts it with probability min{1, exp(g(phic) - g(phi))}, g the part of the density of h(1) that depends on phi; the target is unchanged. The package's step draws the candidate from the untruncated normal and rejects it outside the bound. The truncated draw is an inverse transform on the side of the interval nearest the mean, and beyond about 37 standard deviations, where the normal cdf underflows, the exponential rejection sampler of Robert (1995). `var_sv` uses the truncated candidate by default, and its option `'phi_proposal', 'untruncated'` restores the package's step (2026-09-19) | `sv0_params`: the default `'untruncated'` is the package's step, bitwise (`test_sv0_params`, `test_oisv_equivalence`); `var_sv`: only with `'phi_proposal', 'untruncated'` (`test_var_sv`) | `tests/unit/test_sv0_params.m`: 20,000 draws of the step against the posterior of phi given h, with sig2 integrated out, on a fine grid, for a path whose posterior sits against the bound, one with an interior mode and one against the negative bound: means within 1.3 Monte Carlo standard errors of the exact ones and standard deviations within 1%; the draw stays inside the bound for a normal centered 50,000 standard deviations beyond it, in either direction. `tests/unit/test_var_sv.m`: under the default every phi moves within 30 draws |
 | `bvar.ml.mlvarsv_arsv_redu`, `mlvarsv_arsvo_redu`, `mlvarsv_fsv` | the option `'gram', 'blocks'` forms the weighted Gram matrix of the regressors in the posterior precision of the VAR coefficients from its k x k blocks (2026-09-19). For the two Cholesky-SV routines that matrix is the sum over i of `B0(i,j)*B0(i,l)*X'*diag(exp(-h(:,i)))*X`, computed by the new `bvar.util.kron_gram`; for VAR-FSV it is the sum over t of `kron(P_t, x_t'*x_t)`, with `P_t` the inverse of the tth n x n block of `Sy` (the local `deny_fsv_blocks`). The published code multiplies out the Tn x nk matrix `kron(B0,X)` divided by the volatilities, and for VAR-FSV solves with the Tn x Tn matrix `Sy`; the operation count of the Gram matrix falls from O(T n^3 k^2) to O(n T k^2 + n^3 k^2). At n = 25, T = 255, p = 4 one importance-sampling draw takes about 1.4 s against about 0.3 s under the two Cholesky-SV routines, and 4.5 s against 0.25 s under VAR-FSV; what remains is dominated by the nk x nk Cholesky factorization, which both paths do. Neither path draws random numbers, so the two consume the identical stream | `'full'`, the published computation, bitwise (`test_mlvarsv_ml` and `test_mlvarsv_equivalence`, unchanged) | `tests/unit/test_mlvarsv_gram.m`: `bvar.util.kron_gram` against the products it replaces, within 1e-12 relative; each of the three routines run through `run_ml` at n = 5 under both settings, with the identical terminal rng state, identical fitted importance densities and log weights within 1e-6. At n = 25 the largest gap between log weights of about 1,000 in absolute value is 1.5e-7, and the estimates differ by 1.6e-10 (VAR-SV) and 1.1e-8 (VAR-FSV), against numerical standard errors of about 1 |
 
 Header convention for these: state what the function does and how to call it. The legacy
@@ -1261,9 +1261,9 @@ exactly as they are. Change one and the corresponding test fails, which is the p
 | `bvar.ml.kron_bvar_csv_t_ma` | R*T randn in the intlike, then the reduced run's draws. |
 | `bvar.ml.kron_bvar_t_csv` | R*T randn in the intlike, then the reduced run's draws. |
 | `bvar.ml.kron_bvar_t_ma` | the reduced run only (gamrnd, randn, rand); fminunc/fminbnd are deterministic. |
-| `bvar.ml.mlvarsv_arsv_redu` | all of it inside the importance-sampling loops - gamrnd(M,1) per kappa block and randn(M,n) for mu while fitting the IS density, then randn(T*n,1) for the log-volatility path and randn(k_beta,1) for the coefficients per draw. A top-level estimator rather than a Gibbs block. |
-| `bvar.ml.mlvarsv_arsvo_redu` | as bvar.ml.mlvarsv_arsv_redu, plus betarnd(M,1) for the outlier probability while fitting the IS density and one rand(T,1) per draw for the outlier-scale grid. A top-level estimator rather than a Gibbs block. |
-| `bvar.ml.mlvarsv_csv` | all of it inside the importance-sampling loops - gamrnd(M,1) per kappa block, then one randn(T,1) per draw for h. This is a top-level estimator rather than a Gibbs block, so it is not meant to be spliced into a seeded sweep. |
+| `bvar.ml.mlvarsv_arsv_redu` | all of it inside the importance-sampling loops - gamrnd(M,1) per kappa block and randn(M,n) for mu while fitting the IS density, then randn(T*n,1) for the log-volatility path and randn(k_beta,1) for the coefficients per draw. A top-level estimator, used outside any Gibbs sweep. |
+| `bvar.ml.mlvarsv_arsvo_redu` | as bvar.ml.mlvarsv_arsv_redu, plus betarnd(M,1) for the outlier probability while fitting the IS density and one rand(T,1) per draw for the outlier-scale grid. A top-level estimator, used outside any Gibbs sweep. |
+| `bvar.ml.mlvarsv_csv` | all of it inside the importance-sampling loops - gamrnd(M,1) per kappa block, then one randn(T,1) per draw for h. This is a top-level estimator; it does not belong inside a seeded Gibbs sweep. |
 | `bvar.ml.mlvarsv_fsv` | big_sig2 is drawn even under flag_marg = 2, where nothing reads it; the draw shifts the rng stream without changing any value. |
 | `bvar.samplers.alp_tri_cs` | randn(ii-1,1) per equation, equations in order ii = 2:n. |
 | `bvar.samplers.eq_fsv_load` | randn(k+min(ii-1,r),1) per equation, ii = 1:n. The caller keeps alp = A(:). |

@@ -316,7 +316,7 @@ function [point, lpl, ljnt, psd, pit, w80, w95] = store(point, lpl, ljnt, psd, .
 % quantiles would need a root find per interval end, 17,000 of them over this
 % exercise, so the widths come from the mixture sampled once per draw, which is
 % accurate enough for a width and thousands of times cheaper. The forecasts of
-% forecast_now.m, where there are a few dozen quantiles rather than thousands, use
+% forecast_now.m need only a few dozen quantiles, so they use
 % bvar.forecast.mixquantile and no sampling.
 nd = size(yh, 1);
 for ih = 1:2

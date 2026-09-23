@@ -28,7 +28,7 @@
 %                    by -.6 and .5
 %
 % The sampler is the one of replications/chan2023_jbes_hybtvp/run_all.m, with
-% the shrinkage hyperparameters held at their initial values rather than drawn,
+% the shrinkage hyperparameters fixed at their initial values,
 % and one prior changed: the time variation in each slope and impact
 % coefficient has prior standard deviation .1, where the paper's preset uses
 % .01, which makes a constant coefficient and a varying one easier to tell

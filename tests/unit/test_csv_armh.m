@@ -15,7 +15,7 @@ function test_csv_armh
 %     as alternating s2 given h with this kernel. If it does, the kernel has the
 %     right invariant distribution.
 %
-%     WHAT THIS DETECTS, measured rather than assumed. Giving the kernel a rho 2%
+%     WHAT THIS DETECTS (measured). Giving the kernel a rho 2%
 %     away from the one the data came from scores max|z| about 6, and 4% about 9,
 %     against a threshold of 4; a wrong n scores 115. So it catches an error of a
 %     few percent in a conditional, and it will NOT catch an arbitrarily small
@@ -93,8 +93,8 @@ for c_reject = [0.2 1 3 20]
 end
 
     % the test must be able to fail. Feed the kernel a DIFFERENT n from the one
-    % the data were generated with, so its conditional is genuinely wrong;
-    % changing both would just be a different, self-consistent model.
+    % the data were generated with, so its conditional is wrong; changing both
+    % would give a different, self-consistent model.
 z = geweke_z(Tg,ng,ng+1,rg,sg,M,burn,nb,{},false);
 assert(max(abs(z)) > 20, ...
     'csv_armh: the Geweke check did not detect a deliberately wrong n (max|z| = %.2f)', ...
@@ -114,7 +114,7 @@ assert(max(abs(z)) > 8, ...
     'csv_armh: forced accept below the envelope bound should NOT be exact (max|z| = %.2f)', ...
     max(abs(z)));
 
-    % both loop caps raise rather than returning a draw that is not from the target
+    % reaching either loop cap raises a named error
 try
     bvar.sv.csv_armh(s2,rho,sigh2,h0,n,'MaxIterMode',1);
     error('csv_armh:testFailed', 'MaxIterMode did not raise');

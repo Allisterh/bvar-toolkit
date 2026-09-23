@@ -3,7 +3,7 @@ function test_sv0_params
 % defaults. With 'proposal' set to 'truncated', the step must leave the posterior of
 % phi given h invariant, for a path whose posterior sits against the bound, one
 % with an interior mode and one against the negative bound, and its truncated
-% normal draw must stay inside the bound when the normal is centred tens of
+% normal draw must stay inside the bound when the normal is centered tens of
 % thousands of standard deviations beyond it.
 root = getappdata(0, 'bvar_repo_root');
 leg = fullfile(root, 'replications', 'chan_koop_yu2024_jbes_oisv', 'legacy', 'utility');
@@ -61,7 +61,7 @@ for ic = 1:size(paths, 1)
         ic, mean(d), std(d), m, s);
 end
 
-    % a prior centred at 1.5 or -1.5 with a tiny variance puts the normal tens of
+    % a prior centered at 1.5 or -1.5 with a tiny variance puts the normal tens of
     % thousands of standard deviations beyond the bound; the draw stays inside it
 for c = [1.5 -1.5]
     H2 = struct('nuh', 3, 'Sh', .1, 'phi0', c, 'Vphi', 1e-10);
@@ -72,7 +72,7 @@ for c = [1.5 -1.5]
         if f, moved = true; break, end
     end
     assert(moved && abs(ph) < .99 && abs(ph) > .99 - 1e-6 && sign(ph) == sign(c), ...
-        'sv0_params(truncated): tail draw %.10f for a prior centred at %.1f', ph, c);
+        'sv0_params(truncated): tail draw %.10f for a prior centered at %.1f', ph, c);
 end
 
 expect_error(@() bvar.sv.sv0_params(h, phi_in, Hyper, [], 'proposal', 'nw'), ...

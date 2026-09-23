@@ -48,7 +48,7 @@ Read them in order; each group builds on the ones before it.
 | | Script | What it teaches | Book | Runs in |
 |---|---|---|---|---|
 | 11 | `ex11_sign_restrictions.m` | Identifying a structural VAR by sign restrictions, and the cost of the search: two acceptance rules run over the same posterior draws and the same rotations, one requiring each shock in its own column and one searching over assignments. | &mdash; | 5 s |
-| 12 | `ex12_dynamic_sign_restrictions.m` | Sign restrictions imposed over a stretch of the impulse response rather than on impact alone — Uhlig's (2005) agnostic identification of a monetary shock. Collects 1000 accepted draws under each acceptance rule and compares the resulting credible bands: the two rules have different acceptance rates and produce the same bands. | &mdash; | 13 s |
+| 12 | `ex12_dynamic_sign_restrictions.m` | Sign restrictions imposed at several horizons of the impulse response — Uhlig's (2005) agnostic identification of a monetary shock. Collects 1000 accepted draws under each acceptance rule and compares the resulting credible bands: the two rules have different acceptance rates and produce the same bands. | &mdash; | 13 s |
 
 ### Checking a sampler
 

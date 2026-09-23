@@ -15,7 +15,7 @@
 % The structural form is A y_t = B x_t + eps_t with A unit lower triangular and
 % Var(eps_t) = diag(sig). The reduced form follows by inversion:
 % Sigtilde = A^{-1} diag(sig) A^{-T} and Btilde = (A^{-1} B')'. Both are formed
-% with backslash rather than an explicit inverse.
+% with backslash.
 %
 % See:
 % Chan, J.C.C. (2022). Asymmetric Conjugate Priors for Large Bayesian VARs,

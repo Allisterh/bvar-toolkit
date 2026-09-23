@@ -1,7 +1,7 @@
 # Notice
 
 `LICENSE` is the MIT license and nothing else, so that GitHub and other tooling
-identify it as MIT rather than "Other". This file carries the scope notes that
+identify it as MIT. This file carries the scope notes that
 used to sit above the grant.
 
 ## Scope
@@ -12,7 +12,7 @@ original file headers carry earlier and more restrictive wording ("This code is
 free to use for academic purposes only, provided that the paper is cited as:
 ..."). Those headers are preserved unaltered as part of the verbatim archive and
 are superseded by the repository license; citing the corresponding paper remains
-expected scholarly practice rather than a licensing condition.
+expected scholarly practice, and the license does not require it.
 
 ## Not covered
 

@@ -7,9 +7,8 @@
 %   BVAR_SKIP_TESTS=test_forecast_iterate_springer
 %
 % Skipped tests are named individually in the output and counted in the summary,
-% so a run that covers less than the whole suite says so rather than reporting a
-% clean sweep. The CI workflow uses this for the two tests that cannot run on a
-% hosted runner (see .github/workflows/unit-tests.yml). Skipping is for tests
+% so a run that covers less than the whole suite says so. The CI workflow uses
+% this for the tests that cannot run on a hosted runner (see .github/workflows/unit-tests.yml). Skipping is for tests
 % that CANNOT run in an environment, never for tests that fail in it.
 
 thisdir = fileparts(mfilename('fullpath'));
@@ -40,8 +39,8 @@ for ii = 1:numel(tests)
     end
 end
 
-% A name in BVAR_SKIP_TESTS that matches nothing is a typo, and would silently
-% widen coverage claims rather than narrow them - fail loudly instead.
+% A name in BVAR_SKIP_TESTS that matches nothing is a typo; skipped silently, it
+% would make the run claim more coverage than it has, so it raises an error.
 names = cellfun(@(f) erase(f, '.m'), {tests.name}, 'UniformOutput', false);
 unknown = setdiff(skip, names);
 if ~isempty(unknown)

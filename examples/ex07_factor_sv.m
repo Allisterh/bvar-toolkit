@@ -24,7 +24,7 @@
 % The data are simulated from the model, so the factors, the loadings and the
 % covariance paths all have a known truth. The sampler is the one of
 % replications/chan2023_joe_mlvarsv/legacy/VAR_FSV.m, with the shrinkage
-% hyperparameters held at the paper's values rather than drawn.
+% hyperparameters fixed at the paper's values.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large

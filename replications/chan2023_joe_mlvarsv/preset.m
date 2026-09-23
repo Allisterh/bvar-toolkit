@@ -68,7 +68,7 @@ pr.csv.C_from_VA = true;                    % VAR_CSV.m 19: C = Hyper.VA/kappa -
 pr.csv.h_init_forced_accept = true;         % VAR_CSV.m 27: sample_CSV(s2,phi,sig2,zeros(T,1),n,true) at chain init
 pr.csv.forced_accept_before = 20;           % VAR_CSV.m 52: `if isim < 20` forces the h proposal through during early burn-in
 pr.csv.kappa_shape_offset = 'n^2*p/2';      % VAR_CSV.m 69: gigrnd(c0(1)-n^2*p/2, 2*c0(2), tmpc, 1) over the k-1 non-intercept rows
-pr.csv.plot_T_id = [1961, 2019.75];         % VAR_CSV.m 102: linspace for the exp(h/2) figure - cosmetic, not reproduced by run_all
+pr.csv.plot_T_id = [1961, 2019.75];         % VAR_CSV.m 102: linspace for the exp(h/2) figure, which run_all does not draw
 
     % ---- VAR-SV (model 3, VAR_ARSV_redu.m) ----
     % Priors: prior_Minn(p,kappa1,kappa2,kappa3,Y0,Y) [main_varsv.m 86]

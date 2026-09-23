@@ -16,7 +16,7 @@
 % one normal to the mixture's mean and variance: the mixture is skewed and
 % fat-tailed whenever the draws disagree, which is the case worth reporting.
 %
-% For the probability of an event rather than a quantile, the cdf is one line:
+% For the probability of an event, the cdf is one line:
 % mean(normcdf((x - mu)./sd)) is the predictive probability of falling below x.
 
 function q = mixquantile(mu, sd, p)

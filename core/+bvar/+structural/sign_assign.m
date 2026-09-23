@@ -21,7 +21,7 @@
 %           columns randomly permuted and re-signed; unchanged when ok is false
 %
 % bvar.structural.sign_restrict requires column i to satisfy shock i, the
-% accept-reject scheme of Rubio-Ramirez, Waggoner and Zha (2010). The labelling
+% accept-reject scheme of Rubio-Ramirez, Waggoner and Zha (2010). The labeling
 % of the columns of Q is arbitrary, so this function accepts whenever every
 % shock has an admissible column, and accepts far more often as a result.
 % Proposition 1 of Chan, Matthes and Yu (2026) shows the target distribution is
@@ -32,7 +32,7 @@
 % has taken it, which is safe only when no column can admit two shocks. That is
 % Assumption 2 of the paper, which bvar.structural.check_separable tests; call
 % it once before the rejection loop. Restrictions violating it are out of scope:
-% this function errors rather than mis-assigns, and the paper's second
+% this function raises an error when it meets one, and the paper's second
 % algorithm, which enumerates the admissible set, is not implemented here.
 %
 % THE CALLER must accept or reject the pair (A,Sigma) and Q jointly, since

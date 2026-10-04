@@ -17,3 +17,7 @@ came from, and a BibTeX entry.
 | [Does Modeling the Volatility Improve My Forecasts?](forecasting/) | `bvar.models.var_csv`, `bvar.models.var_sv`, `bvar.forecast.simulate` | [Carriero, Clark and Marcellino (2016)](https://doi.org/10.1080/07350015.2015.1040116); [Chan, Koop and Yu (2024)](https://doi.org/10.1080/07350015.2023.2252039) |
 | [Can I Use Many Sign Restrictions in My Large VAR?](sign_restrictions/) | `bvar.structural.sign_assign`, `bvar.structural.sign_restrict`, `bvar.priors.acp_opt_kappa` | [Chan, Matthes and Yu (2026)](https://doi.org/10.3982/QE2529); [Chan (2022)](https://doi.org/10.3982/QE1381) |
 | [How Do I Handle Missing and Mixed-Frequency Data in My VAR?](mixed_frequency/) | `bvar.models.mfvar_csv`, `bvar.samplers.missing_var`, `bvar.util.mm_constraint` | [Chan, Poon and Zhu (2023)](https://doi.org/10.1016/j.jeconom.2023.05.005); [Schorfheide and Song (2015)](https://doi.org/10.1080/07350015.2014.954707); [Chan (2020a)](https://doi.org/10.1080/07350015.2018.1451336) |
+
+The tutorials of this repository and of
+[statespace-toolkit](https://github.com/joshuaccchan/statespace-toolkit/tree/main/tutorials) are
+listed together, grouped by topic, at [joshuachan.org/tutorials](https://joshuachan.org/tutorials/).

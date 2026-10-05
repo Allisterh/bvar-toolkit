@@ -46,15 +46,15 @@ those whose target quarter falls before 2020, and the vertical scales differ acr
 ## The Three Models
 
 All three are reduced-form VARs with four lags. The first is homoskedastic, with
-$`\mathbf{u}_t \sim N(\mathbf{0}, \mathbf{\Sigma})`$ under the natural conjugate prior. The second
-is VAR-CSV,
+$`\mathbf{u}_t \sim N(\mathbf{0}, \boldsymbol{\Sigma})`$ under the natural conjugate prior. The
+second is VAR-CSV,
 
 ```math
-\mathbf{u}_t \sim N(\mathbf{0}, \mathrm{e}^{h_t}\mathbf{\Sigma}), \qquad
+\mathbf{u}_t \sim N(\mathbf{0}, \mathrm{e}^{h_t}\boldsymbol{\Sigma}), \qquad
 h_t = \phi h_{t-1} + \varepsilon_t,
 ```
 
-where the mean of $`h_t`$ is fixed at zero, so that $`\mathbf{\Sigma}`$ carries the scale of the
+where the mean of $`h_t`$ is fixed at zero, so that $`\boldsymbol{\Sigma}`$ carries the scale of the
 errors and one factor scales the whole matrix. This is the common stochastic volatility of
 Carriero, Clark and Marcellino (2016), under the same prior as the first model, estimated by the
 algorithm of Chan (2020), whose volatility step is the accept-reject Metropolis-Hastings of Chan
@@ -104,10 +104,10 @@ extreme realized value, so the average that results is determined by a small num
 path the $`h`$-step distribution is Gaussian, with the mean iterating the VAR and the variance
 
 ```math
-\mathbf{V}_h = \sum_{i=0}^{h-1} \mathbf{\Psi}_i \mathbf{\Sigma}_{T+h-i} \mathbf{\Psi}_i',
+\mathbf{V}_h = \sum_{i=0}^{h-1} \boldsymbol{\Psi}_i \boldsymbol{\Sigma}_{T+h-i} \boldsymbol{\Psi}_i',
 ```
 
-where $`\mathbf{\Psi}_i`$ are the moving-average matrices of the VAR. The density is therefore
+where $`\boldsymbol{\Psi}_i`$ are the moving-average matrices of the VAR. The density is therefore
 evaluated exactly and only the volatility is integrated by Monte Carlo. The predictive
 distribution that results is a mixture: conditioning on the coefficients and the volatility path
 gives a normal, and the average of those normals over the draws has heavier tails than any one

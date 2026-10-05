@@ -40,11 +40,11 @@ beyond quarter zero are what the data and the prior imply.*
 
 ## Identification and the Labeling of the Columns
 
-A reduced-form VAR identifies the covariance matrix $`\mathbf{\Sigma}`$. Every
-$`\mathbf{L}_0\mathbf{Q}`$ with $`\mathbf{L}_0\mathbf{L}_0' = \mathbf{\Sigma}`$ and $`\mathbf{Q}`$
-orthogonal is an admissible impact matrix, so identification means keeping the rotations whose
-impact responses have the signs the economic theory requires, and the set of accepted rotations is
-the object of inference.
+A reduced-form VAR identifies the covariance matrix $`\boldsymbol{\Sigma}`$. Every
+$`\mathbf{L}_0\mathbf{Q}`$ with $`\mathbf{L}_0\mathbf{L}_0' = \boldsymbol{\Sigma}`$ and
+$`\mathbf{Q}`$ orthogonal is an admissible impact matrix, so identification means keeping the
+rotations whose impact responses have the signs the economic theory requires, and the set of
+accepted rotations is the object of inference.
 
 The rejection algorithm of Rubio-Ramírez, Waggoner and Zha (2010) draws $`\mathbf{Q}`$ uniformly
 and asks whether column $`i`$ satisfies the restrictions of shock $`i`$, for every restricted

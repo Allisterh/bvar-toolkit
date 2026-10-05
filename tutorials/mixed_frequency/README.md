@@ -71,7 +71,7 @@ The VAR is
 ```math
 \mathbf{y}_t = \mathbf{b}_0 + \mathbf{B}_1\mathbf{y}_{t-1} + \cdots + \mathbf{B}_p\mathbf{y}_{t-p}
 + \boldsymbol{\varepsilon}_t, \qquad
-\boldsymbol{\varepsilon}_t \sim N(\mathbf{0}, \mathrm{e}^{h_t}\mathbf{\Sigma}),
+\boldsymbol{\varepsilon}_t \sim N(\mathbf{0}, \mathrm{e}^{h_t}\boldsymbol{\Sigma}),
 ```
 
 where the log-volatility $`h_t`$ follows a stationary AR(1) process with mean zero, the common
@@ -81,17 +81,17 @@ because $`\mathbf{y}_t`$ enters only the equations of months $`t`$ to $`t+p`$. T
 all of them from one Cholesky factor of that matrix and then imposes
 $`\mathbf{M}\mathbf{y} = \mathbf{z}`$ exactly (`bvar.samplers.missing_var`). Given the completed
 data, the remaining parameters are drawn as in a VAR without missing data: the coefficients
-jointly from their Gaussian conditional distribution, $`\mathbf{\Sigma}`$ from its inverse-Wishart
-conditional distribution, and the volatility path and its parameters following the approach of
-Chan (2020).
+jointly from their Gaussian conditional distribution, $`\boldsymbol{\Sigma}`$ from its
+inverse-Wishart conditional distribution, and the volatility path and its parameters following the
+approach of Chan (2020).
 
 We use the priors of Chan, Poon and Zhu (2023). The coefficients have independent normal priors
 centered at zero, with variance $`\kappa_1/l^2`$ on the own lag $`l`$,
 $`\kappa_2 s_i^2/(l^2 s_j^2)`$ on lag $`l`$ of variable $`j`$ in equation $`i`$ and $`100 s_i^2`$
 on the intercept, where $`\kappa_1 = 0.04`$, $`\kappa_2 = 0.01`$ and $`s_i^2`$ is the residual
 variance of an AR(4) model for variable $`i`$. The error covariance matrix has the prior
-$`\mathbf{\Sigma} \sim IW(n+3, \mathbf{I}_n)`$ and the variance of the volatility innovations the
-prior $`\sigma_h^2 \sim IG(10, 0.004)`$. The paper gives the AR coefficient $`\phi`$ a normal
+$`\boldsymbol{\Sigma} \sim IW(n+3, \mathbf{I}_n)`$ and the variance of the volatility innovations
+the prior $`\sigma_h^2 \sim IG(10, 0.004)`$. The paper gives the AR coefficient $`\phi`$ a normal
 prior truncated to $`|\phi| < 1`$ without its mean and variance; we set them to 0.98 and
 $`0.05^2`$, the values of the common-volatility model elsewhere in this repository. The paper does
 not say how $`s_i^2`$ is computed for a series with no monthly values; for a quarterly series we

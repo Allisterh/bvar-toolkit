@@ -305,8 +305,9 @@ application of Chan (2022) sets the prior on the reduced-form coefficients inste
 
 Given the coefficients and the error covariance matrix, the $`h`$-step forecast of a VAR is
 Gaussian: the mean iterates the VAR forward, and the variance is
-$`\sum_{j=0}^{h-1}\Psi_j \Sigma \Psi_j'`$, with $`\Psi_j`$ the moving-average matrices. One call
-returns that mean and standard deviation for every draw, variable and horizon:
+$`\sum_{j=0}^{h-1}\boldsymbol{\Psi}_j \boldsymbol{\Sigma} \boldsymbol{\Psi}_j'`$, with
+$`\boldsymbol{\Psi}_j`$ the moving-average matrices. One call returns that mean and standard
+deviation for every draw, variable and horizon:
 
 ```matlab
 [mu, sd] = bvar.forecast.predictive(A, Sigma, ylag, H);

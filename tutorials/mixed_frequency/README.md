@@ -71,7 +71,7 @@ The VAR is
 ```math
 \mathbf{y}_t = \mathbf{b}_0 + \mathbf{B}_1\mathbf{y}_{t-1} + \cdots + \mathbf{B}_p\mathbf{y}_{t-p}
 + \boldsymbol{\varepsilon}_t, \qquad
-\boldsymbol{\varepsilon}_t \sim N(\mathbf{0}, \mathrm{e}^{h_t}\boldsymbol{\Sigma}),
+\boldsymbol{\varepsilon}_t \sim \mathcal{N}(\mathbf{0}, \mathrm{e}^{h_t}\boldsymbol{\Sigma}),
 ```
 
 where the log-volatility $`h_t`$ follows a stationary AR(1) process with mean zero, the common
@@ -90,14 +90,14 @@ centered at zero, with variance $`\kappa_1/l^2`$ on the own lag $`l`$,
 $`\kappa_2 s_i^2/(l^2 s_j^2)`$ on lag $`l`$ of variable $`j`$ in equation $`i`$ and $`100 s_i^2`$
 on the intercept, where $`\kappa_1 = 0.04`$, $`\kappa_2 = 0.01`$ and $`s_i^2`$ is the residual
 variance of an AR(4) model for variable $`i`$. The error covariance matrix has the prior
-$`\boldsymbol{\Sigma} \sim IW(n+3, \mathbf{I}_n)`$ and the variance of the volatility innovations
-the prior $`\sigma_h^2 \sim IG(10, 0.004)`$. The paper gives the AR coefficient $`\phi`$ a normal
-prior truncated to $`|\phi| < 1`$ without its mean and variance; we set them to 0.98 and
-$`0.05^2`$, the values of the common-volatility model elsewhere in this repository. The paper does
-not say how $`s_i^2`$ is computed for a series with no monthly values; for a quarterly series we
-set it to 9/19 of the residual variance of an AR(4) model for its quarterly growth rates, because
-under the aggregation above, independent monthly growth rates with variance $`\sigma^2`$ give
-quarterly growth rates with variance $`19\sigma^2/9`$.
+$`\boldsymbol{\Sigma} \sim \mathcal{IW}(n+3, \mathbf{I}_n)`$ and the variance of the volatility
+innovations the prior $`\sigma_h^2 \sim \mathcal{IG}(10, 0.004)`$. The paper gives the AR
+coefficient $`\phi`$ a normal prior truncated to $`|\phi| < 1`$ without its mean and variance; we
+set them to 0.98 and $`0.05^2`$, the values of the common-volatility model elsewhere in this
+repository. The paper does not say how $`s_i^2`$ is computed for a series with no monthly values;
+for a quarterly series we set it to 9/19 of the residual variance of an AR(4) model for its
+quarterly growth rates, because under the aggregation above, independent monthly growth rates with
+variance $`\sigma^2`$ give quarterly growth rates with variance $`19\sigma^2/9`$.
 
 The volatility path is drawn in blocks of 36 months, each from its conditional distribution given
 the rest of the path, with the accept-reject Metropolis-Hastings step of Chan (2017)

@@ -46,11 +46,11 @@ those whose target quarter falls before 2020, and the vertical scales differ acr
 ## The Three Models
 
 All three are reduced-form VARs with four lags. The first is homoskedastic, with
-$`\mathbf{u}_t \sim N(\mathbf{0}, \boldsymbol{\Sigma})`$ under the natural conjugate prior. The
-second is VAR-CSV,
+$`\mathbf{u}_t \sim \mathcal{N}(\mathbf{0}, \boldsymbol{\Sigma})`$ under the natural conjugate
+prior. The second is VAR-CSV,
 
 ```math
-\mathbf{u}_t \sim N(\mathbf{0}, \mathrm{e}^{h_t}\boldsymbol{\Sigma}), \qquad
+\mathbf{u}_t \sim \mathcal{N}(\mathbf{0}, \mathrm{e}^{h_t}\boldsymbol{\Sigma}), \qquad
 h_t = \phi h_{t-1} + \varepsilon_t,
 ```
 

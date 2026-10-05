@@ -53,7 +53,7 @@ probability passes one half in 2008Q4, 2020Q2 and 2020Q3.*
 
 All five models have the same conditional mean, a reduced-form VAR with $`p`$ lags,
 
-$$\mathbf{y}_t = \mathbf{a}_0 + \mathbf{A}_1\mathbf{y}_{t-1} + \cdots + \mathbf{A}_p\mathbf{y}_{t-p} + \boldsymbol{\varepsilon}_t, \qquad \boldsymbol{\varepsilon}_t \sim N(\mathbf{0}, \boldsymbol{\Sigma}_t),$$
+$$\mathbf{y}_t = \mathbf{a}_0 + \mathbf{A}_1\mathbf{y}_{t-1} + \cdots + \mathbf{A}_p\mathbf{y}_{t-p} + \boldsymbol{\varepsilon}_t, \qquad \boldsymbol{\varepsilon}_t \sim \mathcal{N}(\mathbf{0}, \boldsymbol{\Sigma}_t),$$
 
 and differ in the covariance matrix $`\boldsymbol{\Sigma}_t`$ of the innovations and in the prior
 on the VAR coefficients. Write
@@ -75,10 +75,10 @@ marginal likelihood available in closed form.
 VAR-CSV (Carriero, Clark and Marcellino, 2016) scales one covariance matrix by a common
 volatility, $`\boldsymbol{\Sigma}_t = \mathrm{e}^{h_t}\boldsymbol{\Sigma}`$, where the
 log-volatility follows a stationary AR(1) process $`h_t = \phi h_{t-1} + u_t^h`$ with
-$`u_t^h \sim N(0,\sigma^2)`$. Its unconditional mean is zero for identification, since the level
-of the volatility is absorbed by $`\boldsymbol{\Sigma}`$. All error variances then move in
-proportion, and the correlations are constant. The natural conjugate prior keeps estimation fast
-even for large $`n`$.
+$`u_t^h \sim \mathcal{N}(0,\sigma^2)`$. Its unconditional mean is zero for identification, since
+the level of the volatility is absorbed by $`\boldsymbol{\Sigma}`$. All error variances then move
+in proportion, and the correlations are constant. The natural conjugate prior keeps estimation
+fast even for large $`n`$.
 
 VAR-SV, the Cholesky stochastic volatility of Cogley and Sargent (2005) and Carriero, Clark and
 Marcellino (2019), gives each equation its own volatility:
@@ -89,10 +89,10 @@ variances and the correlations move separately.
 
 VAR-FSV takes the innovations to load on $`r`$ latent factors,
 $`\boldsymbol{\varepsilon}_t = \mathbf{L}\mathbf{f}_t + \mathbf{u}_t`$, where
-$`\mathbf{u}_t \sim N(\mathbf{0}, \mathbf{D}_t)`$ and
-$`\mathbf{f}_t \sim N(\mathbf{0}, \mathbf{G}_t)`$ are independent, $`\mathbf{L}`$ is $`n\times r`$
-and lower triangular with ones on the diagonal, and $`\mathbf{G}_t`$ collects $`r`$ further
-volatilities. The covariance
+$`\mathbf{u}_t \sim \mathcal{N}(\mathbf{0}, \mathbf{D}_t)`$ and
+$`\mathbf{f}_t \sim \mathcal{N}(\mathbf{0}, \mathbf{G}_t)`$ are independent, $`\mathbf{L}`$ is
+$`n\times r`$ and lower triangular with ones on the diagonal, and $`\mathbf{G}_t`$ collects $`r`$
+further volatilities. The covariance
 $`\boldsymbol{\Sigma}_t = \mathbf{L}\mathbf{G}_t\mathbf{L}' + \mathbf{D}_t`$ is driven by
 $`n + r`$ volatility processes.
 
@@ -100,9 +100,9 @@ VAR-SVO extends VAR-SV with the outlier component of Stock and Watson (2016), wh
 Clark, Marcellino and Mertens (2024) use for the pandemic observations. A scale $`o_t`$ multiplies
 the innovations, so $`o_t^2`$ multiplies the covariance matrix: $`o_t = 1`$ with probability
 $`1 - p_o`$, and with probability $`p_o`$ it is drawn from a uniform distribution on $`(2, 20)`$,
-discretized to 31 points. The outlier probability has a $`B(2.5, 37.5)`$ prior, calibrated to one
-outlier every four years in quarterly data. Section 14.2 of *Bayesian Macroeconometrics* gives
-the same component to VAR-CSV.
+discretized to 31 points. The outlier probability has a $`\mathcal{B}(2.5, 37.5)`$ prior,
+calibrated to one outlier every four years in quarterly data. Section 14.2 of *Bayesian
+Macroeconometrics* gives the same component to VAR-CSV.
 
 Both $`\mathbf{B}_0`$ and $`\mathbf{L}`$ are unit lower triangular, so the order of the variables
 is part of each specification. In VAR-FSV the first $`r`$ variables carry a loading of one, which

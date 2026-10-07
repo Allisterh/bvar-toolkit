@@ -1,4 +1,4 @@
-# bvar-toolkit
+# bvar-toolkit <img src=".github/logo.png" align="right" height="139" alt="bvar-toolkit logo" />
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22804032.svg)](https://doi.org/10.5281/zenodo.22804032)
 

@@ -1,6 +1,6 @@
 # bvar-toolkit <img src=".github/logo.png" align="right" height="139" alt="bvar-toolkit logo" />
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22804032.svg)](https://doi.org/10.5281/zenodo.22804032)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22804032.svg)](https://doi.org/10.5281/zenodo.22804032) [![View on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://www.mathworks.com/matlabcentral/fileexchange/184885-bvar-toolkit-large-bayesian-vars)
 
 A MATLAB library for large Bayesian VARs: samplers, shrinkage priors, stochastic volatility,
 marginal likelihoods and forecasting. The repository archives fourteen replication packages from

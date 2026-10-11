@@ -32,7 +32,7 @@ Five commands, from the root of the repository:
 | `run tutorials/forecasting/forecast_now.m` | a forecast of the quarters after the sample, with intervals and an event probability | about a minute |
 | `run tutorials/forecasting/bench_density.m` | the two ways of scoring a multi-step density, on identical draws | about a minute |
 | `run tutorials/forecasting/check_stability.m` | the same quantities from chains of other seeds and four times the length | ten minutes |
-| `run tutorials/forecasting/build.m` | the forecast comparison: Tables 1 to 4 and Figures 1 and 2 | 23 minutes |
+| `run tutorials/forecasting/build.m` | every table and figure of the forecast comparison | 23 minutes |
 
 This workflow needs MATLAB with the Statistics and Machine Learning Toolbox.
 

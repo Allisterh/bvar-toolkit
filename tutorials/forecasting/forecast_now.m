@@ -5,7 +5,7 @@
 % does the other thing: it estimates through the final observation and reports
 % the forecasts of the quarters that have not happened yet.
 %
-% For each model it prints the predictive mean, the 68 and 90 per cent intervals
+% For each model it prints the predictive mean, the 68 and 90 percent intervals
 % and the probability of an event the settings name - by default that quarterly
 % GDP growth is negative. Those come from the predictive distribution itself,
 % which is an equally weighted mixture of normals, one per posterior draw:

@@ -32,7 +32,7 @@ Five commands, from the root of the repository:
 | `run tutorials/forecasting/forecast_now.m` | a forecast of the quarters after the sample, with intervals and an event probability | about a minute |
 | `run tutorials/forecasting/bench_density.m` | the two ways of scoring a multi-step density, on identical draws | about a minute |
 | `run tutorials/forecasting/check_stability.m` | the same quantities from chains of other seeds and four times the length | ten minutes |
-| `run tutorials/forecasting/build.m` | every number and figure on this page | 23 minutes |
+| `run tutorials/forecasting/build.m` | the forecast comparison: Tables 1 to 4 and Figures 1 and 2 | 23 minutes |
 
 This workflow needs MATLAB with the Statistics and Machine Learning Toolbox.
 
@@ -146,10 +146,11 @@ log predictive likelihood, per quarter.*
 | | 4 | targets through 2019 | 117 | 20.4% | 1.61 |
 | | 4 | targets 2020 onwards | 20 | 8.7% | 4.81 |
 
-The density gains are largest for pandemic targets, by a factor of twenty at one quarter and of
-four to seven at four quarters. They are not confined to those quarters: multiplying each block's
-mean by its count, the calm block accounts for 24 percent of VAR-CSV's total one-quarter gain and
-34 percent of VAR-OISV's, and 46 and 66 percent of the four-quarter gains.
+The density gains are largest for pandemic targets: the mean gain for targets from 2020 is 19 and
+12 times that for earlier targets at one quarter, for VAR-CSV and VAR-OISV, and 7 and 3 times at
+four quarters. They are not confined to those quarters: multiplying each block's mean by its
+count, the calm block accounts for 24 percent of VAR-CSV's total one-quarter gain and 34 percent
+of VAR-OISV's, and 46 and 66 percent of the four-quarter gains.
 
 The two volatility models also separate by period. For targets through 2019 VAR-OISV has the
 larger density gain at both horizons, 2.21 against 1.63 at one quarter and 1.61 against 1.43 at
@@ -326,19 +327,21 @@ it. The script writes the scores to `outdir`, which defaults to `tempdir`.
 
 ## Reproducing the Results
 
-To reproduce all results on this page, run the build script from the root of the repository:
+To reproduce the forecast comparison, run the build script from the root of the repository:
 
 ```matlab
 run tutorials/forecasting/build.m
 ```
 
 The computation takes 23.0 minutes using MATLAB R2025b on a computer with an Intel Core Ultra 7
-255U processor and 32 GB of RAM. The script prints every result on this page, or the numbers they
-are computed from, and saves the figures in the same folder. The scores of every individual
-forecast, with the quarter in which it is made and the quarter it is for, are in
-`scores_by_origin.mat`, so that a regrouping or a question about a single quarter requires no
-rerun. Neither [`bench_density.m`](bench_density.m) nor [`check_stability.m`](check_stability.m)
-is part of the build.
+255U processor and 32 GB of RAM. The script prints Tables 1 to 4, the simulation check and the
+inefficiency factors, and saves Figures 1 and 2 in the same folder. It also saves the scores of
+every individual forecast, with the quarter in which it is made and the quarter it is for, in
+`scores_by_origin.mat`; the other numbers of the comparison are computed from that file, and a
+regrouping or a question about a single quarter requires no rerun. Table 5 and Figure 3 come from
+[`forecast_now.m`](forecast_now.m), and the numbers of the density benchmark and of the stability
+check from [`bench_density.m`](bench_density.m) and [`check_stability.m`](check_stability.m); none
+of the three is part of the build.
 
 ## References
 
@@ -350,9 +353,6 @@ application to inflation modeling. *Journal of Business and Economic Statistics*
 
 Chan, J. C. C. (2020). Large Bayesian VARs: a flexible Kronecker error covariance structure.
 *Journal of Business and Economic Statistics*, 38(1): 68-79.
-
-Chan, J. C. C. (2023). Comparing stochastic volatility specifications for large Bayesian VARs.
-*Journal of Econometrics*, 235(2): 1419-1446.
 
 Chan, J. C. C., Koop, G. and Yu, X. (2024). Large order-invariant Bayesian VARs with stochastic
 volatility. *Journal of Business and Economic Statistics*, 42(2): 825-837.

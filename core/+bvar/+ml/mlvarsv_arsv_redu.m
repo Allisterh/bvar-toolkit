@@ -28,7 +28,7 @@
 % the weights to be right.
 %
 % Core used: bvar.priors.minn (n0pre = 4), bvar.priors.impact_B0,
-% bvar.util.tnormrnd, bvar.util.vec, bvar.util.ldet, bvar.ml.isden_arss.
+% bvar.util.tnormrnd, bvar.util.vec, bvar.util.kron_gram, bvar.ml.isden_arss.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large

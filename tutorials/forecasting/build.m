@@ -71,8 +71,8 @@ psd = nan(no, n, 2, nm);          % predictive standard deviation
 actual = nan(no, n, 2);
 lpl_exact = nan(no, n, 2);        % the homoskedastic model scored without simulation
 pit = nan(no, n, 2, nm);          % the predictive cdf at the realized value
-w80 = nan(no, n, 2, nm);          % width of the 80 per cent interval
-w95 = nan(no, n, 2, nm);          % and of the 95 per cent one
+w80 = nan(no, n, 2, nm);          % width of the 80 percent interval
+w95 = nan(no, n, 2, nm);          % and of the 95 percent one
 
 for io = 1:no
     t = origins(io);

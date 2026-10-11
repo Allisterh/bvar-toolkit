@@ -29,7 +29,7 @@ Two commands, from the root of the repository:
 | Command | What it produces | Time |
 |---|---|---|
 | `run tutorials/sv_specification/your_data.m` | the comparison on the same five series with short chains, and the exported report | under a minute |
-| `run tutorials/sv_specification/build.m` | every number and figure on this page | 14 minutes |
+| `run tutorials/sv_specification/build.m` | every number and figure on this page | 13 minutes |
 
 The short demonstration checks that the workflow runs end to end. Its chains are far too short to
 rank the specifications, and every number below comes from the full build. Its settings block is
@@ -226,10 +226,10 @@ VAR-CSV (Table 3 of the paper).
 
 The outlier component gives each quarter a scale $`o_t`$ whose square multiplies the covariance
 matrix, with a prior frequency of one outlier every four years. Two summaries describe how often
-the data want one. The outlier probability $`p_o`$ has a posterior mean of 0.026, under half the
-prior mean. The expected number of outlier quarters, the sum of the posterior probabilities that
-$`o_t > 1`$, is 4.0 of 208. The beta posterior of $`p_o`$ ties the two together as
-$`(2.5 + 4.0)/(40 + 208) = 0.026`$.
+the posterior places an outlier. The outlier probability $`p_o`$ has a posterior mean of 0.026,
+under half the prior mean. The expected number of outlier quarters, the sum of the posterior
+probabilities that $`o_t > 1`$, is 4.0 of 208. The beta posterior of $`p_o`$ ties the two
+together as $`(2.5 + 4.0)/(40 + 208) = 0.026`$.
 
 Three quarters carry almost all of that. The component marks 2008Q4 with probability 1.00 and a
 posterior mean scale of 7.7, and the two pandemic quarters 2020Q2 and 2020Q3 with probabilities
@@ -254,8 +254,7 @@ covers the target. How reliable a finite run is depends on the fit: a density th
 can leave both the estimate and its batch standard error too small.
 
 The second check is a repeat of every run from a second seed, which redraws the chain, refits the
-importance density and redraws the weights, together with two summaries of how concentrated those
-weights are.
+importance density and redraws the weights.
 
 *Table 3: Every specification estimated twice, from two seeds.*
 

@@ -47,7 +47,7 @@ rotations whose impact responses have the signs the economic theory requires, an
 accepted rotations is the object of inference.
 
 The rejection algorithm of Rubio-Ramírez, Waggoner and Zha (2010) draws $`\mathbf{Q}`$ uniformly
-and asks whether column $`i`$ satisfies the restrictions of shock $`i`$, for every restricted
+and checks whether column $`i`$ satisfies the restrictions of shock $`i`$, for every restricted
 shock. That test fixes a labeling of the columns, and the labeling is arbitrary: a rotation whose
 third column satisfies the monetary restrictions gives the same structural model as one whose
 first column does. With $`m`$ restricted shocks among $`n`$ variables there are $`n!/(n-m)!`$ ways

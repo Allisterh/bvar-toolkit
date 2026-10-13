@@ -1,8 +1,9 @@
 % bvar.ml.kron_bvar - log marginal likelihood of the standard (homoskedastic,
-% natural-conjugate) BVAR of Chan (2020, JBES): fully analytic - the ML
-% identity llike + lpri - lpost is evaluated exactly at the posterior mean
-% pair A = Ahat, Sig = Shat/(T+nu0), with both NIW ordinates in closed form.
-% Every piece sits at the same (A,Sig). No rng is consumed.
+% natural-conjugate) BVAR of Chan (2020, JBES), in closed form: the identity
+% llike + lpri - lpost, with both NIW ordinates exact, evaluated at A = Ahat,
+% the posterior mean, and Sig = Shat/(T+nu0), the inverse of the posterior
+% mean of inv(Sig). The identity holds at any point, so the choice of point
+% affects only rounding. No rng is consumed.
 %
 %   [ML, out] = bvar.ml.kron_bvar(shortY, X, pri, est)
 %

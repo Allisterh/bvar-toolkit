@@ -6,7 +6,7 @@ A MATLAB library for large Bayesian VARs: samplers, shrinkage priors, stochastic
 marginal likelihoods and forecasting. The repository archives fourteen replication packages from
 [joshuachan.org](https://joshuachan.org/code.html) exactly as published and factors their shared
 machinery into the library, where unit tests check it against the published code. The
-[examples](examples/) and [tutorials](tutorials/) show how to use it.
+[how-to guides](guides/), [examples](examples/) and [tutorials](tutorials/) show how to use it.
 
 ```matlab
 run setup.m                 % adds core/ and third_party/ to the path
@@ -19,6 +19,16 @@ for the Optimization and System Identification Toolboxes, which a few functions 
 use, and names what each missing one would break.
 
 ## Learn the Methods
+
+The [how-to guides](guides/) show how to use the core functions, one step at a time, on a small
+example with generated data. The first series, Getting Started with Bayesian VARs, stacks the
+equations of a VAR, draws its coefficients under the Minnesota prior, estimates it by Gibbs
+sampling, and chooses its shrinkage by the marginal likelihood:
+
+- [How to Stack the Equations of a VAR](guides/var_stacking/)
+- [How to Draw the VAR Coefficients under the Minnesota Prior](guides/coefficient_draw/)
+- [How to Estimate a VAR by Gibbs Sampling](guides/gibbs_sampler/)
+- [How to Choose the Shrinkage of a VAR by the Marginal Likelihood](guides/natural_conjugate_ml/)
 
 The [tutorials](tutorials/) each answer one research question with the settings of a paper, on
 the data of its replication package, of the book or of FRED, and can be read without MATLAB.
@@ -132,8 +142,8 @@ improvement has a test of its own. New functions, such as `bvar.models.var_sv`, 
 against the code they replace. The marginal likelihood code of two packages, Chan (2020, JBES)
 and Chan (2023, JoE), contains defects; the library corrects them by default and reproduces the
 published computation with `'bugcompat', true`. On every push, CI checks the archived packages
-against their `as-published` tags and runs the unit suite, `setup.m`, the examples and the
-tutorials' `your_data.m` scripts. To run the tests locally:
+against their `as-published` tags and runs the unit suite, `setup.m`, the examples, each
+tutorial's `your_data.m` and each guide's `guide.m`. To run the tests locally:
 
 ```matlab
 run tests/unit/run_unit_tests.m

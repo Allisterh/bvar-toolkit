@@ -283,6 +283,25 @@ equation by equation.
 }
 ```
 
+### Chan (forthcoming)
+
+Chan, J. C. C. (forthcoming). *Bayesian Macroeconometrics: Methods and Applications*. Chapman &
+Hall/CRC.
+[Sample chapters](https://joshuachan.org/papers/BayesMacroBook_sample.pdf) ·
+Code: [bayesian-macroeconometrics](https://github.com/joshuaccchan/bayesian-macroeconometrics)
+
+The textbook treatment of the models and samplers in this repository, and the reference for the
+how-to guides.
+
+```bibtex
+@book{chan-bmar,
+  author    = {Chan, Joshua C. C.},
+  title     = {Bayesian Macroeconometrics: Methods and Applications},
+  publisher = {Chapman \& Hall/CRC},
+  note      = {Forthcoming}
+}
+```
+
 ### Chan and Eisenstat (2018)
 
 Chan, J. C. C. and Eisenstat, E. (2018). Bayesian Model Comparison for Time-Varying Parameter

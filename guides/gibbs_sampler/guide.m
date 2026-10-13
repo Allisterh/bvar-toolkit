@@ -101,10 +101,11 @@ ncp = [reshape(ncp_A, k*n, nsim)', reshape(ncp_Sig(repmat(low, 1, 1, nsim)), [],
 exact_mean = [Ahat(:); ESig(low)];
 se_ncp = bvar.diag.mcse(ncp, L);
 fprintf('\nnatural conjugate prior, Gibbs against the closed form:\n');
-fprintf('  posterior means: largest gap %.2f Monte Carlo standard errors\n', ...
-    max(abs(mean(ncp)' - exact_mean)./se_ncp'));
-fprintf('  posterior sd of the coefficients: largest relative gap %.3f\n', ...
-    max(abs(std(ncp(:, 1:k*n))'./sdA - 1)));
+zgap = max(abs(mean(ncp)' - exact_mean)./se_ncp');
+sdgap = max(abs(std(ncp(:, 1:k*n))'./sdA - 1));
+fprintf('  posterior means: largest gap %.2f Monte Carlo standard errors\n', zgap);
+fprintf('  posterior sd of the coefficients: largest relative gap %.3f\n', sdgap);
+assert(zgap < 4.5 && sdgap < .05, 'the Gibbs sampler disagrees with the closed-form posterior');
 
 %% 5. a forecast of y_{T+1} from the draws: the adaptation
 xT1 = [1, Y(end, :), Y(end-1, :)];   % x_{T+1}' = (1, y_T', y_{T-1}')

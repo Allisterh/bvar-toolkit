@@ -28,7 +28,7 @@ Yfull = Yfull(burn+1:end, :);   % y_{-1}, y_0, y_1, ..., y_T
 %% 2. the two forms: the code to adapt
 [Y, Z] = bvar.util.build_lags(Yfull, p);   % T x n and T x k, k = 1 + n*p
 k = size(Z, 2);
-Ahat = (Z'*Z)\(Z'*Y);   % least squares, one column per equation
+Ahat = Z\Y;   % least squares, one column per equation
 U = Y - Z*Ahat;
 Sighat = U'*U/T;
 
@@ -46,14 +46,19 @@ lam = abs(eig([A1 A2; eye(n) zeros(n)]));   % the companion matrix
 fprintf('\na VAR(%d) of %d variables, T = %d: k = %d regressors per equation, %d coefficients\n', ...
     p, n, T, k, n*k);
 fprintf('largest modulus of the companion eigenvalues: %.3f\n', max(lam));
-fprintf('Y and Z against direct indexing: %g, %g (largest difference)\n', ...
-    max(abs(Y - Yfull(p+1:end,:)), [], 'all'), max(abs(Z - Zbyhand), [], 'all'));
+dYZ = [max(abs(Y - Yfull(p+1:end,:)), [], 'all'), max(abs(Z - Zbyhand), [], 'all')];
+fprintf('Y and Z against direct indexing: %g, %g (largest difference)\n', dYZ);
 fprintf('X: %d x %d with %d nonzero entries, %d per period\n', size(X,1), size(X,2), nnz(X), nnz(X)/T);
-fprintf('X*vec(A) against vec((Z*A)''): %.1e (relative)\n', rel(X*beta, reshape((Z*A)', [], 1)));
+gapX = rel(X*beta, reshape((Z*A)', [], 1));
+fprintf('X*vec(A) against vec((Z*A)''): %.1e (relative)\n', gapX);
+ll = [loglik_mat(A, Sig), loglik_vec(beta, Sig); ...         % matrix form, stacked form
+      loglik_mat(Ahat, Sighat), loglik_vec(Ahat(:), Sighat)];
 fprintf('log likelihood at the true parameters:     %.6f (matrix form), %.6f (stacked form)\n', ...
-    loglik_mat(A, Sig), loglik_vec(beta, Sig));
+    ll(1, :));
 fprintf('log likelihood at the least squares values: %.6f (matrix form), %.6f (stacked form)\n', ...
-    loglik_mat(Ahat, Sighat), loglik_vec(Ahat(:), Sighat));
+    ll(2, :));
+assert(all(dYZ == 0) && gapX < 1e-12 && max(abs(ll(:, 1) - ll(:, 2))) < 1e-8, ...
+    'the matrix form and the stacked form disagree');
 fprintf('least squares estimates: largest error %.3f, mean absolute error %.3f\n', ...
     max(abs(Ahat - A), [], 'all'), mean(abs(Ahat - A), 'all'));
 fprintf('the intercepts and lag-1 coefficients of equation 1 (true, then estimated):\n');
@@ -67,16 +72,21 @@ bgls = XWX\XWy;
 
 %% 3. the checks
 fprintf('\ngeneralized least squares on the stacked form\n');
+gapK = [rel(XWX, kron(inv(Sig), Z'*Z)), rel(XWy, reshape(Z'*Y/Sig, [], 1))];
 fprintf('X''*W*X against kron(inv(Sig), Z''*Z): %.1e; X''*W*y against vec(Z''*Y*inv(Sig)): %.1e\n', ...
-    rel(XWX, kron(inv(Sig), Z'*Z)), rel(XWy, reshape(Z'*Y/Sig, [], 1)));
+    gapK);
 SigR = cov(randn(10, n));
-for S = {Sig, eye(n), SigR}
-    WS = kron(speye(T), inv(S{1}));
+Slist = {Sig, eye(n), SigR}; gapG = zeros(1, 3);
+for j = 1:3
+    WS = kron(speye(T), inv(Slist{j}));
+    gapG(j) = rel((X'*WS*X)\(X'*WS*y), Ahat(:));
     fprintf('GLS with %s against least squares by equation: %.1e (relative)\n', ...
-        ifelse_name(S{1}, Sig), rel((X'*WS*X)\(X'*WS*y), Ahat(:)));
+        ifelse_name(Slist{j}, Sig), gapG(j));
 end
 Xd = full(X); Wd = full(W);
-fprintf('the shortcut against dense algebra: %.1e\n', rel(full(XWX), Xd'*Wd*Xd));
+gapD = rel(full(XWX), Xd'*Wd*Xd);
+fprintf('the shortcut against dense algebra: %.1e\n', gapD);
+assert(all(gapK < 1e-12) && all(gapG < 1e-10) && gapD < 1e-12, 'the Kronecker shortcut fails');
 
 %% 4. one equation with fewer regressors: the adaptation
 keep = setdiff(1:n*k, [3 4 6 7]);   % equation 1 drops the lags of variables 2, 3
@@ -86,9 +96,12 @@ br_ols = [Z(:, [1 2 5])\Y(:,1); reshape(Ahat(:, 2:n), [], 1)];   % equation by e
 Wdiag = kron(speye(T), diag(1./diag(Sig)));   % the same variances, no correlation
 br_gls_diag = (Xr'*Wdiag*Xr)\(Xr'*Wdiag*y);
 fprintf('\nequation 1 without the lags of variables 2 and 3: %d coefficients\n', numel(keep));
+gapR = [max(abs(br_gls(1:3) - br_ols(1:3))), max(abs(br_gls(4:end) - br_ols(4:end))), ...
+    max(abs(br_gls_diag - br_ols))];
 fprintf('GLS against least squares by equation, largest difference: %.1e in equation 1, %.3f in equations 2 and 3\n', ...
-    max(abs(br_gls(1:3) - br_ols(1:3))), max(abs(br_gls(4:end) - br_ols(4:end))));
-fprintf('the same with a diagonal Sig: %.1e\n', max(abs(br_gls_diag - br_ols)));
+    gapR(1:2));
+fprintf('the same with a diagonal Sig: %.1e\n', gapR(3));
+assert(gapR(1) < 1e-10 && gapR(3) < 1e-10, 'GLS differs from least squares where the two agree');
 
 %% the figure
 fig = figure('Visible', 'off', 'Units', 'centimeters', 'Position', [2 2 16 6.5]);

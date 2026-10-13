@@ -35,7 +35,7 @@ nu0 = n + 2; S0 = diag(s2);                    % Sig ~ IW(nu0, S0)
 c3 = 10^2;                                     % the intercepts
 VA = @(c1) [c3; kron(1./(1:p)'.^2, c1./s2)];   % the diagonal of V_A
 lml = @(c1) ncp_lml(Y, Z, VA(c1), nu0, S0);
-lc = fminbnd(@(lc) -lml(exp(lc)), log(1e-4), log(10));   % maximize over log(c1)
+lc = fminbnd(@(lc) -lml(exp(lc)), log(1e-3), log(10));   % maximize over log(c1)
 c1hat = exp(lc);
 
 %% 3. the marginal likelihood over a grid, and the posterior means
@@ -55,10 +55,12 @@ fprintf('\nthe chosen c1: %.4f (grid maximum at %.4f), log ML %.2f\n', c1hat, c1
 fprintf('prior standard deviation of the first own lags, sqrt(c1): %.3f\n', sqrt(c1hat));
 fprintf('log ML at c1 = 0.04: %.2f; at c1 = 0.001: %.2f; at c1 = 10: %.2f\n', lml_std, ...
     lml(1e-3), lml(10));
-fprintf('on the grid, the log ML rises up to its maximum and falls after it: %d\n', ...
-    all(diff(lmlgrid(1:jmax)) > 0) && all(diff(lmlgrid(jmax:end)) < 0));
-fprintf('at c1 = 10, largest gap between the posterior means and least squares: %.1e\n', ...
+onepeak = all(diff(lmlgrid(1:jmax)) > 0) && all(diff(lmlgrid(jmax:end)) < 0);
+fprintf('on the grid, the log ML rises up to its maximum and falls after it: %d\n', onepeak);
+fprintf('at c1 = 10, lag coefficients against least squares, largest gap: %.1e\n', ...
     max(abs(pathA(2:end, :, end) - Ols(2:end, :)), [], 'all'));
+assert(onepeak && abs(log10(c1hat/c1grid(jmax))) <= 4/160, ...
+    'the maximum of fminbnd is not the single peak of the grid');
 fprintf('first own lags: least squares %s, chosen c1 %s, c1 = 0.04 %s\n', ...
     mat2str(diag(Ols(2:n+1, :))', 3), mat2str(diag(Ahat(2:n+1, :))', 3), ...
     mat2str(diag(Astd(2:n+1, :))', 3));
@@ -73,7 +75,7 @@ for r = 1:R
     [Yr1, Zr] = bvar.util.build_lags(Yr(3:end, :), p);
     [~, ~, s2r] = bvar.priors.minn(p, .2^2, .1^2, 10^2, Yr(1:4, :), Yr1, 4);
     VAr = @(c1) [c3; kron(1./(1:p)'.^2, c1./s2r)];
-    lcr = fminbnd(@(lc) -ncp_lml(Yr1, Zr, VAr(exp(lc)), nu0, diag(s2r)), log(1e-4), log(10));
+    lcr = fminbnd(@(lc) -ncp_lml(Yr1, Zr, VAr(exp(lc)), nu0, diag(s2r)), log(1e-3), log(10));
     [~, Bhat] = ncp_lml(Yr1, Zr, VAr(exp(lcr)), nu0, diag(s2r));
     [~, Bstd] = ncp_lml(Yr1, Zr, VAr(.04), nu0, diag(s2r));
     mc(r, :) = [exp(lcr), mae((Zr'*Zr)\(Zr'*Yr1)), mae(Bhat), mae(Bstd)];
@@ -103,13 +105,16 @@ fprintf('\nclosed form against bvar.ml.kron_bvar, over the grid: largest gap %.1
 fprintf('at the true values, log p(Y | A, Sig) + log p(A, Sig) - log p(A, Sig | Y) = %.6f\n', ...
     llike + lpri - lpost);
 fprintf('  against the closed form %.6f: gap %.1e\n', l, llike + lpri - lpost - l);
+assert(max(abs(gap)) < 1e-8 && abs(llike + lpri - lpost - l) < 1e-8, ...
+    'the closed form disagrees with the identity of the marginal likelihood');
 
 %% 6. the lag length: the adaptation
 pmax = 4; lmlp = zeros(pmax, 1); c1p = zeros(pmax, 1);
 for q = 1:pmax
     [Yq, Zq] = bvar.util.build_lags(Yfull(5-q:end, :), q);   % the same T rows of Y for every q
+    assert(isequal(Yq, Y), 'the lag lengths explain different observations');
     VAq = @(c1) [c3; kron(1./(1:q)'.^2, c1./s2)];
-    [lcq, f] = fminbnd(@(lc) -ncp_lml(Yq, Zq, VAq(exp(lc)), nu0, S0), log(1e-4), log(10));
+    [lcq, f] = fminbnd(@(lc) -ncp_lml(Yq, Zq, VAq(exp(lc)), nu0, S0), log(1e-3), log(10));
     c1p(q) = exp(lcq); lmlp(q) = -f;
 end
 fprintf('\nlag length: chosen c1 %s, log ML %s\n', mat2str(c1p', 3), mat2str(lmlp', 5));
@@ -142,7 +147,9 @@ function [lml, Ahat, KA, Shat] = ncp_lml(Y, Z, VA, nu0, S0)
 [T, n] = size(Y);
 KA = diag(1./VA) + Z'*Z;
 Ahat = KA\(Z'*Y);
-Shat = S0 + Y'*Y - Ahat'*KA*Ahat;
+E = Y - Z*Ahat;                        % the residuals at the posterior mean
+Shat = S0 + E'*E + Ahat'*(Ahat./VA);   % S0 + Y'*Y - Ahat'*KA*Ahat, without the cancellation
+Shat = (Shat + Shat')/2;
 lml = -n*T/2*log(pi) - n/2*(sum(log(VA)) + bvar.util.ldet(KA)) ...
     + nu0/2*bvar.util.ldet(S0) - (nu0 + T)/2*bvar.util.ldet(Shat) ...
     + bvar.util.mgammaln(n, (nu0 + T)/2) - bvar.util.mgammaln(n, nu0/2);

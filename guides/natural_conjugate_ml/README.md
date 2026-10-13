@@ -93,15 +93,23 @@ function [lml, Ahat, KA, Shat] = ncp_lml(Y, Z, VA, nu0, S0)
 [T, n] = size(Y);
 KA = diag(1./VA) + Z'*Z;
 Ahat = KA\(Z'*Y);
-Shat = S0 + Y'*Y - Ahat'*KA*Ahat;
+E = Y - Z*Ahat;                        % the residuals at the posterior mean
+Shat = S0 + E'*E + Ahat'*(Ahat./VA);   % S0 + Y'*Y - Ahat'*KA*Ahat, without the cancellation
+Shat = (Shat + Shat')/2;
 lml = -n*T/2*log(pi) - n/2*(sum(log(VA)) + bvar.util.ldet(KA)) ...
     + nu0/2*bvar.util.ldet(S0) - (nu0 + T)/2*bvar.util.ldet(Shat) ...
     + bvar.util.mgammaln(n, (nu0 + T)/2) - bvar.util.mgammaln(n, nu0/2);
 end
 ```
 
-As $`c_1`$ grows, two parts of the formula move in opposite directions. The posterior mean
-$`\hat{\mathbf{A}}`$ moves from zero toward least squares, the fit improves and
+The function computes $`\hat{\mathbf{S}}`$ in the equivalent form
+$`\mathbf{S}_0 + \hat{\mathbf{E}}'\hat{\mathbf{E}} + \hat{\mathbf{A}}'\mathbf{V}_{\mathbf{A}}^{-1}\hat{\mathbf{A}}`$,
+with $`\hat{\mathbf{E}} = \mathbf{Y} - \mathbf{Z}\hat{\mathbf{A}}`$. This form avoids subtracting
+two large matrices when the data are persistent or large in scale, and it keeps
+$`\hat{\mathbf{S}}`$ positive definite.
+
+As $`c_1`$ grows, two parts of the formula move in opposite directions. The lag coefficients in
+$`\hat{\mathbf{A}}`$ move from zero toward least squares, the fit improves and
 $`|\hat{\mathbf{S}}|`$ falls, which raises the marginal likelihood. At the same time
 $`|\mathbf{V}_{\mathbf{A}}||\mathbf{K}_{\mathbf{A}}| = |\mathbf{I}_k + \mathbf{V}_{\mathbf{A}}\mathbf{Z}'\mathbf{Z}|`$
 grows, which lowers it: a prior with larger variances places less mass near the coefficients that
@@ -110,11 +118,11 @@ fit the data. The maximum of the marginal likelihood balances the two effects.
 ## Step 3: Maximize over the Hyperparameter
 
 Since $`c_1`$ is positive, we maximize over $`\log c_1`$ with MATLAB's `fminbnd`, for $`c_1`$
-between $`10^{-4}`$ and 10:
+between $`10^{-3}`$ and 10, the range of the grid in Figure 1:
 
 ```matlab
 lml = @(c1) ncp_lml(Y, Z, VA(c1), nu0, S0);
-lc = fminbnd(@(lc) -lml(exp(lc)), log(1e-4), log(10));   % maximize over log(c1)
+lc = fminbnd(@(lc) -lml(exp(lc)), log(1e-3), log(10));   % maximize over log(c1)
 c1hat = exp(lc);
 ```
 
@@ -123,9 +131,8 @@ first own lags, against 0.2 under the commonly used $`c_1 = 0.2^2 = 0.04`$. The 
 likelihood is −817.73 at the maximum and −819.97 at $`c_1 = 0.04`$. Figure 1 plots it over a grid
 of 161 values from 0.001 to 10. It rises steeply up to the maximum, from −935.98 at
 $`c_1 = 0.001`$, and falls slowly after it, to −851.30 at $`c_1 = 10`$, where the posterior means
-are within 0.0004 of least squares. The curve has a single peak, so `fminbnd`, which finds a local
-maximum, finds the global one; the largest value on the grid is at 0.079, the grid point nearest
-to it.
+of the lag coefficients are within 0.0004 of their least squares estimates. On the grid the curve
+has a single peak, at 0.079, the grid point nearest to the maximum that `fminbnd` finds.
 
 ![The log marginal likelihood and the posterior means of the lag coefficients against c1](fig_marglik.png)
 
@@ -148,13 +155,16 @@ densities,
 $$p(\mathbf{Y} \mid c_1) = \prod_{t=1}^{T} p(\mathbf{y}_t \mid \mathbf{y}_1, \ldots, \mathbf{y}_{t-1}, c_1),$$
 
 so maximizing it over $`c_1`$ maximizes the sum of the log predictive densities of the
-observations, each evaluated one step ahead (Giannone, Lenza and Primiceri, 2015). The estimation
-error of the coefficients is a different criterion. Second, the choice is stable from one sample
-to the next. Over 200 further datasets generated from the same VAR, the chosen $`c_1`$ has a
-median of 0.077, and half the values lie between 0.070 and 0.085. The chosen value gives a
-smaller error than least squares in 197 of the 200 datasets and a smaller error than
-$`c_1 = 0.04`$ in 33. The average errors are 0.051 under the chosen $`c_1`$, 0.060 for least
-squares and 0.048 under $`c_1 = 0.04`$.
+observations, each evaluated one step ahead (Giannone, Lenza and Primiceri, 2015). The
+factorization holds for a fixed prior. Here the variances $`s_i^2`$ in $`\mathbf{S}_0`$ and
+$`\mathbf{V}_{\mathbf{A}}`$ come from the whole sample, and so does the choice of $`c_1`$, so the
+criterion is an in-sample, empirical Bayes one. A real-time forecast evaluation would compute both
+from the data available at each forecast origin. The estimation error of the coefficients is a
+different criterion. Second, the choice is stable from one sample to the next. Over 200 further
+datasets generated from the same VAR, the chosen $`c_1`$ has a median of 0.077, and half the
+values lie between 0.070 and 0.085. The chosen value gives a smaller error than least squares in
+197 of the 200 datasets and a smaller error than $`c_1 = 0.04`$ in 33. The average errors are
+0.051 under the chosen $`c_1`$, 0.060 for least squares and 0.048 under $`c_1 = 0.04`$.
 
 ## How We Check It
 
@@ -165,13 +175,13 @@ By Bayes' theorem, at every point $`(\mathbf{A}, \boldsymbol{\Sigma})`$,
 
 $$\log p(\mathbf{Y} \mid c_1) = \log p(\mathbf{Y} \mid \mathbf{A}, \boldsymbol{\Sigma}) + \log p(\mathbf{A}, \boldsymbol{\Sigma} \mid c_1) - \log p(\mathbf{A}, \boldsymbol{\Sigma} \mid \mathbf{Y}, c_1),$$
 
-where the prior and the posterior densities are normal-inverse-Wishart. If
-$`\hat{\mathbf{A}}`$, $`\mathbf{K}_{\mathbf{A}}`$ or $`\hat{\mathbf{S}}`$ were wrong, the right
-side would change with the point. [`bvar.ml.kron_bvar`](../../core/+bvar/+ml/kron_bvar.m)
-evaluates the right side at $`\mathbf{A} = \hat{\mathbf{A}}`$ and
-$`\boldsymbol{\Sigma} = \hat{\mathbf{S}}/\hat{\nu}`$, and over the grid of Figure 1 it agrees with
-`ncp_lml` to within 1.0e-12. At the true values of $`\mathbf{A}`$ and $`\boldsymbol{\Sigma}`$ and
-the chosen $`c_1`$, the right side is −817.731707, within 1.1e-13 of the closed form.
+where the prior and the posterior densities are normal-inverse-Wishart. If $`\hat{\mathbf{A}}`$,
+$`\mathbf{K}_{\mathbf{A}}`$ or $`\hat{\mathbf{S}}`$ were wrong, the right side would change with
+the point. [`bvar.ml.kron_bvar`](../../core/+bvar/+ml/kron_bvar.m) evaluates the right side at
+$`\mathbf{A} = \hat{\mathbf{A}}`$ and $`\boldsymbol{\Sigma} = \hat{\mathbf{S}}/\hat{\nu}`$, and
+over the grid of Figure 1 it agrees with `ncp_lml` to within 4.5e-13. At the true values of
+$`\mathbf{A}`$ and $`\boldsymbol{\Sigma}`$ and the chosen $`c_1`$, the right side is −817.731707,
+equal to the closed form to machine precision.
 
 </details>
 
@@ -193,8 +203,9 @@ $`p`$, and the shorter lag lengths leave some of them unused.
 pmax = 4; lmlp = zeros(pmax, 1); c1p = zeros(pmax, 1);
 for q = 1:pmax
     [Yq, Zq] = bvar.util.build_lags(Yfull(5-q:end, :), q);   % the same T rows of Y for every q
+    assert(isequal(Yq, Y), 'the lag lengths explain different observations');
     VAq = @(c1) [c3; kron(1./(1:q)'.^2, c1./s2)];
-    [lcq, f] = fminbnd(@(lc) -ncp_lml(Yq, Zq, VAq(exp(lc)), nu0, S0), log(1e-4), log(10));
+    [lcq, f] = fminbnd(@(lc) -ncp_lml(Yq, Zq, VAq(exp(lc)), nu0, S0), log(1e-3), log(10));
     c1p(q) = exp(lcq); lmlp(q) = -f;
 end
 ```

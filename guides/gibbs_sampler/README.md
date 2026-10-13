@@ -108,10 +108,10 @@ factor of a parameter is approximately the number of draws that carry the inform
 independent draw. Computed by
 [`bvar.diag.inefficiency_factor`](../../core/+bvar/+diag/inefficiency_factor.m) with Bartlett
 weights up to lag 100, the inefficiency factors lie between 0.94 and 1.14 for the 21 coefficients
-and between 1.00 and 1.11 for the six distinct elements of $`\boldsymbol{\Sigma}`$, so successive
-draws are close to independent. The Monte Carlo standard error of a posterior mean, which
-[`bvar.diag.mcse`](../../core/+bvar/+diag/mcse.m) computes, is then close to the posterior standard
-deviation over $`\sqrt{20{,}000}`$.
+and between 1.00 and 1.11 for the six distinct elements of $`\boldsymbol{\Sigma}`$, so each
+posterior mean is estimated almost as precisely as from independent draws. The Monte Carlo
+standard error of a posterior mean, which [`bvar.diag.mcse`](../../core/+bvar/+diag/mcse.m)
+computes, is then close to the posterior standard deviation over $`\sqrt{20{,}000}`$.
 
 The diagnostic of Geweke (1992), [`bvar.diag.geweke`](../../core/+bvar/+diag/geweke.m), compares
 the mean of the first 10% of the chain with the mean of its second half; if the chain is
@@ -119,7 +119,7 @@ stationary, the statistic is approximately standard normal. It exceeds 1.96 in a
 3 of the 27 parameters, against 1.35 expected by chance. Its largest value, 3.29, for the
 coefficient on the first lag of variable 3 in equation 1, is large for 27 tests, and ten runs of
 the sampler from other seeds give largest values between 1.66 and 2.36. With inefficiency factors
-near one, the value of 3.29 is a chance event of this run.
+near one, the value of 3.29 is consistent with a chance event of this run.
 
 | | True value | Posterior mean | 90% interval | Inefficiency factor | MCSE |
 |---|---|---|---|---|---|
@@ -159,7 +159,9 @@ $`E(\boldsymbol{\Sigma} \mid \mathbf{y}) = \hat{\mathbf{S}}/(\nu_0 + T - n - 1)`
 $`\hat{\mathbf{S}} = \mathbf{S}_0 + \mathbf{Y}'\mathbf{Y} - \hat{\mathbf{A}}'\mathbf{K}_{\mathbf{A}}\hat{\mathbf{A}}`$.
 Over 20,000 draws, the Gibbs means of the 27 parameters differ from these by at most 2.68 Monte
 Carlo standard errors, and the standard deviations of the coefficient draws differ from the exact
-posterior standard deviations by at most 1.3%.
+posterior standard deviations by at most 1.3%. The check verifies the two draws of the loop,
+`var_coef_joint` and the inverse-Wishart step, under a prior whose posterior is known; the
+posterior under the independent prior of Step 3 has no closed form to compare with.
 
 </details>
 

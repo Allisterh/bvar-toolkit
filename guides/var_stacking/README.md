@@ -61,10 +61,13 @@ $$\mathbf{Y} = \mathbf{Z}\mathbf{A} + \mathbf{U},$$
 where $`\mathbf{A} = (\mathbf{a}, \mathbf{A}_1, \ldots, \mathbf{A}_p)'`$ is $`k \times n`$ and
 row $`t`$ of $`\mathbf{U}`$ is $`\boldsymbol{\varepsilon}_t'`$. Column $`i`$ of
 $`\mathbf{A}`$ holds the coefficients of equation $`i`$, and every equation has the same
-regressors $`\mathbf{Z}`$. Least squares estimates all the equations at once:
+regressors $`\mathbf{Z}`$. Least squares estimates all the equations at once,
+$`\hat{\mathbf{A}} = (\mathbf{Z}'\mathbf{Z})^{-1}\mathbf{Z}'\mathbf{Y}`$. MATLAB's backslash
+computes it from a QR factorization of $`\mathbf{Z}`$, without forming $`\mathbf{Z}'\mathbf{Z}`$,
+which is more accurate when the regressors are nearly collinear:
 
 ```matlab
-Ahat = (Z'*Z)\(Z'*Y);   % least squares, one column per equation
+Ahat = Z\Y;   % least squares, one column per equation
 U = Y - Z*Ahat;
 Sighat = U'*U/T;
 ```
@@ -160,16 +163,18 @@ to within 4e-14 for all three covariance matrices.
 ## Adapt It Yourself
 
 Suppose the first variable is block exogenous: its equation drops the lags of the other two
-variables, as the equation of a foreign variable in a small open economy model might. Which form
-still works, and is least squares equation by equation still generalized least squares?
+variables, as the equation of a foreign variable in a small open economy model might. How do you
+estimate the restricted VAR, and is least squares equation by equation still generalized least
+squares?
 
 <details>
 <summary>Answer</summary>
 
-The equations no longer share their regressors, so the matrix form, with one $`\mathbf{Z}`$ for
-every equation, no longer holds. The stacked form does: delete the columns of $`\mathbf{X}`$ that
-hold the dropped coefficients, here columns 3, 4, 6 and 7, the lags of variables 2 and 3 in the
-block of equation 1.
+The matrix form still holds, with zeros in the entries of $`\mathbf{A}`$ for the dropped
+coefficients, but the least squares formula $`(\mathbf{Z}'\mathbf{Z})^{-1}\mathbf{Z}'\mathbf{Y}`$
+does not impose them. In the stacked form, deleting the columns of $`\mathbf{X}`$ that hold the
+dropped coefficients, here columns 3, 4, 6 and 7, the lags of variables 2 and 3 in the block of
+equation 1, leaves exactly the free coefficients.
 
 ```matlab
 keep = setdiff(1:n*k, [3 4 6 7]);   % equation 1 drops the lags of variables 2, 3

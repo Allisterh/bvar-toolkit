@@ -105,11 +105,18 @@ forecasts (Chan, 2020).
 Figure 1 sets the posterior mean of each lag coefficient against its least squares estimate. The
 first own lags, with a prior standard deviation of 0.2 and estimates of 0.521, 0.370 and 0.429,
 move by at most 0.017; in absolute value their posterior means sum to 1.01 times the least squares
-estimates. The other groups shrink more as their prior variances fall: the second own lags to 0.90
-of the least squares size, the first lags of other variables to 0.75, and their second lags to
-0.39. The intercepts grow by 16%, since with smaller lag coefficients, larger intercepts give the
-same means of the series. Against the true coefficients, the mean absolute error of the lag
-coefficients falls from 0.061 for least squares to 0.036 for the posterior mean.
+estimates. Two of them move away from zero, to 0.525 and 0.446, so a posterior mean need not lie
+between zero and its least squares estimate. The lags of other variables are shrunk strongly, and
+since they are correlated with the own lags, part of their effect moves to the own lags; the first
+lags of variables 1 and 2, for example, have a correlation of 0.64. With $`c_2 = 100`$, which
+leaves the lags of other variables almost unshrunk, all three first own lags fall below their
+least squares estimates, to 0.505, 0.333 and 0.417.
+
+The other groups shrink more as their prior variances fall: the second own lags to 0.90 of the
+least squares size, the first lags of other variables to 0.75, and their second lags to 0.39. The
+intercepts grow by 16%, since with smaller lag coefficients, larger intercepts give the same means
+of the series. Against the true coefficients, the mean absolute error of the lag coefficients
+falls from 0.061 for least squares to 0.036 for the posterior mean.
 
 ![The posterior means of the lag coefficients against their least squares estimates](fig_shrinkage.png)
 

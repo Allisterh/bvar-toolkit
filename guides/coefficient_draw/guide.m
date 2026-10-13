@@ -55,8 +55,8 @@ y = reshape(Y', T*n, 1);
 W = kron(speye(T), inv(Sighat));
 K = full(diag(1./V) + X'*W*X);
 bhat = K\(X'*W*y);
-fprintf('\nthe posterior mean against dense algebra on the stacked form: %.1e (relative)\n', ...
-    rel(Ahat(:), bhat));
+gapM = rel(Ahat(:), bhat);
+fprintf('\nthe posterior mean against dense algebra on the stacked form: %.1e (relative)\n', gapM);
 R = 10000;
 B = zeros(k*n, R);
 for r = 1:R
@@ -64,26 +64,31 @@ for r = 1:R
 end
 Kinv = inv(K);
 sd = sqrt(diag(Kinv));
-fprintf('%d draws: mean against the posterior mean, largest gap %.2f posterior sd\n', R, ...
-    max(abs(mean(B, 2) - bhat)./sd));
-fprintf('%d draws: sd against the posterior sd, largest relative gap %.3f\n', R, ...
-    max(abs(std(B, 0, 2)./sd - 1)));
-fprintf('%d draws: correlations against the posterior correlations, largest gap %.3f\n', R, ...
-    max(abs(corrcoef(B') - Kinv./(sd*sd')), [], 'all'));
+dmean = max(abs(mean(B, 2) - bhat)./sd);
+dsd = max(abs(std(B, 0, 2)./sd - 1));
+dcorr = max(abs(corrcoef(B') - Kinv./(sd*sd')), [], 'all');
+fprintf('%d draws: mean against the posterior mean, largest gap %.2f posterior sd\n', R, dmean);
+fprintf('%d draws: sd against the posterior sd, largest relative gap %.3f\n', R, dsd);
+fprintf('%d draws: correlations against the posterior correlations, largest gap %.3f\n', R, dcorr);
 Aeq = zeros(k, n);                 % one regression per equation, since Sighat is diagonal
 for i = 1:n
     Ki = diag(1./Vmat(:, i)) + Z'*Z/s2(i);
     Aeq(:, i) = Ki\(Z'*Y(:, i)/s2(i));
 end
-fprintf('equation by equation against the joint posterior mean: %.1e (relative)\n', rel(Aeq, Ahat));
+gapE = rel(Aeq, Ahat);
+fprintf('equation by equation against the joint posterior mean: %.1e (relative)\n', gapE);
 Ols = (Z'*Z)\(Z'*Y);
 [~, Aloose] = bvar.samplers.var_coef_joint(Y, Z, Sighat, ones(T, 1), 1e-10*speye(k*n));
-fprintf('a nearly flat prior against least squares: %.1e (relative)\n', rel(Aloose, Ols));
+gapL = rel(Aloose, Ols);
+fprintf('a nearly flat prior against least squares: %.1e (relative)\n', gapL);
 Wtrue = kron(speye(T), inv(Sig));
 bhat_true = (diag(1./V) + X'*Wtrue*X)\(X'*Wtrue*y);
 [~, Ahat_true] = bvar.samplers.var_coef_joint(Y, Z, Sig, ones(T, 1), iV);
-fprintf('with the true, full Sig, against dense algebra: %.1e (relative)\n', ...
-    rel(Ahat_true(:), bhat_true));
+gapT = rel(Ahat_true(:), bhat_true);
+fprintf('with the true, full Sig, against dense algebra: %.1e (relative)\n', gapT);
+assert(gapM < 1e-10 && gapE < 1e-10 && gapL < 1e-8 && gapT < 1e-10, ...
+    'the posterior mean disagrees with dense algebra');
+assert(dmean < .1 && dsd < .05 && dcorr < .1, 'the draws do not match the posterior');
 
 %% 4. the posterior mean against least squares
 fprintf('\nsum of absolute values, posterior mean over least squares:\n');
@@ -96,6 +101,12 @@ for g = 1:size(groups, 1)
 end
 fprintf('first own lags: least squares %s, posterior mean %s\n', ...
     mat2str(diag(Ols(2:n+1, :))', 3), mat2str(diag(Ahat(2:n+1, :))', 3));
+[~, Vfree] = bvar.priors.minn(p, c1, 100, c3, Y0, Y, 4);   % c2 = 100: other lags almost unshrunk
+[~, Afree] = bvar.samplers.var_coef_joint(Y, Z, Sighat, ones(T, 1), ...
+    spdiags(1./Vfree, 0, k*n, k*n));
+Rz = corrcoef(Z(:, 2:end));
+fprintf('first own lags with c2 = 100: %s; correlation of the first lags of y1 and y2: %.2f\n', ...
+    mat2str(diag(Afree(2:n+1, :))', 3), Rz(1, 2));
 fprintf('estimation error, mean absolute: least squares %.3f, posterior mean %.3f\n', ...
     mean(abs(Ols(2:end,:) - A(2:end,:)), 'all'), mean(abs(Ahat(2:end,:) - A(2:end,:)), 'all'));
 
@@ -105,8 +116,10 @@ A0 = zeros(k, n); A0(2:n+1, :) = eye(n);   % one on each first own lag
 Adraw0 = A0 + G;
 Ahat0 = A0 + Ghat;
 bhat0 = K\(diag(1./V)*A0(:) + X'*W*y);
+gap0 = rel(Ahat0(:), bhat0);
 fprintf('\nprior mean of one on the first own lags, against dense algebra: %.1e (relative)\n', ...
-    rel(Ahat0(:), bhat0));
+    gap0);
+assert(gap0 < 1e-10, 'the draw with a nonzero prior mean disagrees with dense algebra');
 fprintf('posterior means of the first own lags: %s (prior mean zero), %s (prior mean one)\n', ...
     mat2str(diag(Ahat(2:n+1, :))', 3), mat2str(diag(Ahat0(2:n+1, :))', 3));
 

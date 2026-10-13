@@ -160,7 +160,7 @@ factorization holds for a fixed prior. Here the variances $`s_i^2`$ in $`\mathbf
 $`\mathbf{V}_{\mathbf{A}}`$ come from the whole sample, and so does the choice of $`c_1`$, so the
 criterion is an in-sample, empirical Bayes one. A real-time forecast evaluation would compute both
 from the data available at each forecast origin. The estimation error of the coefficients is a
-different criterion. Second, the choice is stable from one sample to the next. Over 200 further
+different criterion. Second, the choice is stable from one sample to the next. Over 200 additional
 datasets generated from the same VAR, the chosen $`c_1`$ has a median of 0.077, and half the
 values lie between 0.070 and 0.085. The chosen value gives a smaller error than least squares in
 197 of the 200 datasets and a smaller error than $`c_1 = 0.04`$ in 33. The average errors are

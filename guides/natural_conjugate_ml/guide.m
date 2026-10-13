@@ -2,7 +2,7 @@
 % guides/var_stacking under the natural conjugate prior, whose prior variances follow the
 % Minnesota prior with one hyperparameter c1 for all lag coefficients; the log marginal likelihood
 % in closed form, its maximum over c1, and the posterior means at the chosen value; the same
-% choice on 200 further datasets; the checks against bvar.ml.kron_bvar; the choice of the lag
+% choice on 200 additional datasets; the checks against bvar.ml.kron_bvar; the choice of the lag
 % length; and the two hyperparameters of the asymmetric conjugate prior of tutorials/shrinkage.
 % Section 2 and the function ncp_lml at the end are the code to adapt. Saves fig_marglik.png next
 % to this file.
@@ -67,7 +67,7 @@ fprintf('first own lags: least squares %s, chosen c1 %s, c1 = 0.04 %s\n', ...
 fprintf('estimation error, mean absolute: least squares %.3f, chosen c1 %.3f, c1 = 0.04 %.3f\n', ...
     mae(Ols), mae(Ahat), mae(Astd));
 
-%% 4. the same choice on 200 further datasets
+%% 4. the same choice on 200 additional datasets
 rng(2, 'twister');
 R = 200; mc = zeros(R, 4);   % chosen c1, then the error of least squares, chosen c1, c1 = 0.04
 for r = 1:R
@@ -80,7 +80,7 @@ for r = 1:R
     [~, Bstd] = ncp_lml(Yr1, Zr, VAr(.04), nu0, diag(s2r));
     mc(r, :) = [exp(lcr), mae((Zr'*Zr)\(Zr'*Yr1)), mae(Bhat), mae(Bstd)];
 end
-fprintf('\n%d further datasets: chosen c1 median %.3f, quartiles %.3f and %.3f\n', R, ...
+fprintf('\n%d additional datasets: chosen c1 median %.3f, quartiles %.3f and %.3f\n', R, ...
     median(mc(:, 1)), quantile(mc(:, 1), .25), quantile(mc(:, 1), .75));
 fprintf('  average error: least squares %.3f, chosen c1 %.3f, c1 = 0.04 %.3f\n', mean(mc(:, 2:4)));
 fprintf('  chosen c1 more accurate than least squares in %d, than c1 = 0.04 in %d\n', ...

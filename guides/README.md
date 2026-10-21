@@ -16,6 +16,18 @@ The guides use the same generated VAR(2) of three variables.
 | [How to Estimate a VAR by Gibbs Sampling](gibbs_sampler/) | Draw the coefficients and the error covariance matrix in turn, and check the chain | `bvar.samplers.var_coef_joint`, `bvar.diag.inefficiency_factor`, `bvar.diag.mcse`, `bvar.diag.geweke` |
 | [How to Choose the Shrinkage of a VAR by the Marginal Likelihood](natural_conjugate_ml/) | Choose the shrinkage and the lag length by the closed-form marginal likelihood | `bvar.util.ldet`, `bvar.util.mgammaln`, `bvar.ml.kron_bvar` |
 
+## Forecasting with a VAR
+
+The guides use data simulated from a VAR(4) fitted to US real GDP growth, PCE inflation and the
+unemployment rate, 1960Q1 to 2019Q4.
+
+| Guide | What it shows | Core functions |
+|---|---|---|
+| [How to Simulate Data from an Estimated VAR](var_simulation/) | Simulate data from a VAR fitted to US GDP growth, inflation and unemployment | `bvar.util.build_lags`, `bvar.util.simulate_var` |
+| [How to Forecast with a Bayesian VAR](var_forecast/) | Forecast from posterior draws, and compare with the true model's forecasts | `bvar.util.simulate_var`, `bvar.forecast.predictive`, `bvar.forecast.mixquantile` |
+| [How to Evaluate Forecasts Out of Sample](var_forecast_evaluation/) | Score forecasts made at each quarter with the data of the time | `bvar.forecast.predictive`, `bvar.util.logsumexp` |
+| [How to Choose the Lag Length and the Shrinkage for Forecasting](var_lag_shrinkage/) | Choose the lag length and the shrinkage by the marginal likelihood at each forecast origin | `bvar.util.build_lags`, `bvar.util.ldet`, `bvar.util.mgammaln` |
+
 The [examples](../examples/) run the core functions on additional models, with real and generated
 data, and the [tutorials](../tutorials/) answer empirical questions with the settings of published
 papers.

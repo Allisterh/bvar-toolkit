@@ -150,7 +150,7 @@ coefficients is 0.052 under the chosen $`c_1`$, 0.061 for least squares and 0.05
 $`c_1 = 0.04`$.
 
 We note two points. First, the marginal likelihood factors into one-step-ahead predictive
-densities,
+densities (Geweke, 2001),
 
 $$p(\mathbf{Y} \mid c_1) = \prod_{t=1}^{T} p(\mathbf{y}_t \mid \mathbf{y}_1, \ldots, \mathbf{y}_{t-1}, c_1),$$
 
@@ -258,6 +258,9 @@ Hall/CRC. [Code repository](https://github.com/joshuaccchan/bayesian-macroeconom
 Chan, J. C. C., Jacobi, L. and Zhu, D. (2020). Efficient Selection of Hyperparameters in Large
 Bayesian VARs Using Automatic Differentiation. *Journal of Forecasting*, 39(6): 934-943.
 [doi:10.1002/for.2660](https://doi.org/10.1002/for.2660)
+
+Geweke, J. (2001). Bayesian Econometrics and Forecasting. *Journal of Econometrics*, 100(1):
+11-15. [doi:10.1016/S0304-4076(00)00046-4](https://doi.org/10.1016/S0304-4076(00)00046-4)
 
 Giannone, D., Lenza, M. and Primiceri, G. E. (2015). Prior Selection for Vector Autoregressions.
 *Review of Economics and Statistics*, 97(2): 436-451.

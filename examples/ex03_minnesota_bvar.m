@@ -1,7 +1,7 @@
 %% ex03 - A small BVAR with a Minnesota / natural-conjugate prior
 %
 % BOOK: Chapter 12, Vector Autoregressions, in Bayesian Macroeconometrics:
-% Methods and Applications (Chapman & Hall/CRC, forthcoming).
+% Methods and Applications (Chapman & Hall/CRC, 2027).
 %
 % THE MODEL. A VAR(p) with an intercept:
 %

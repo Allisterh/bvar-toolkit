@@ -2,7 +2,7 @@
 
 *Code: [`guide.m`](guide.m), with [`bvar.util.build_lags`](../../core/+bvar/+util/build_lags.m)
 and [`bvar.util.simulate_var`](../../core/+bvar/+util/simulate_var.m). Method:
-[Chan (forthcoming)](../../CITING.md#chan-forthcoming). Data: [`macro3_Q.csv`](../data/).*
+[Chan (2027)](../../CITING.md#chan-2027). Data: [`macro3_Q.csv`](../data/).*
 
 The guides of this series show how to set up a VAR for forecasting, using simulated data.
 Simulated data come from a known model, so every forecast can be compared with the forecast made
@@ -189,11 +189,11 @@ forecasts with VARs on real data.
 ## Using This Method in Your Research
 
 Data simulated from an estimated model allow the results of a method to be compared with the
-truth. Chan (forthcoming) gives a textbook treatment of the VAR and its companion form.
+truth. Chan (2027) gives a textbook treatment of the VAR and its companion form.
 [`CITING.md`](../../CITING.md) lists the paper behind each function of the toolkit and how to cite
 the toolkit itself.
 
 ## References
 
-Chan, J. C. C. (forthcoming). *Bayesian Macroeconometrics: Methods and Applications*. Chapman &
+Chan, J. C. C. (2027). *Bayesian Macroeconometrics: Methods and Applications*. Chapman &
 Hall/CRC. [Code repository](https://github.com/joshuaccchan/bayesian-macroeconometrics)

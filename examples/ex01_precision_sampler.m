@@ -1,7 +1,7 @@
 %% ex01 - The precision sampler: drawing a whole state path in one block
 %
 % BOOK: Chapter 9, Linear Gaussian State Space Models, in Bayesian
-% Macroeconometrics: Methods and Applications (Chapman & Hall/CRC, forthcoming).
+% Macroeconometrics: Methods and Applications (Chapman & Hall/CRC, 2027).
 %
 % THE MODEL. A local-level model: y_t = tau_t + eps_t, with the random-walk
 % state tau_t = tau_{t-1} + u_t, u_t ~ N(0, sig2_tau). Stacked over t, the state

@@ -1,7 +1,7 @@
 %% ex10 - Recursive forecasting and predictive evaluation
 %
 % BOOK: Chapter 14, Large VARs with Stochastic Volatility, in Bayesian
-% Macroeconometrics: Methods and Applications (Chapman & Hall/CRC, forthcoming).
+% Macroeconometrics: Methods and Applications (Chapman & Hall/CRC, 2027).
 %
 % THE MODEL. The large BVAR with stochastic volatility of Chan (2021), in
 % structural form: A0 y_t = b + B_1 y_{t-1} + ... + B_p y_{t-p} + eps_t, with A0

@@ -65,7 +65,7 @@ Read them in order; each group builds on the ones before it.
 Timings are from one warm R2025b session on a desktop machine; treat them as orders of
 magnitude. All but ex09 and ex11 draw figures as well as printing. The chapter column
 refers to *Bayesian Macroeconometrics: Methods and Applications* (Chan, Chapman &
-Hall/CRC, forthcoming), whose [sample chapters](https://joshuachan.org/papers/BayesMacroBook_sample.pdf)
+Hall/CRC, 2027), whose [sample chapters](https://joshuachan.org/papers/BayesMacroBook_sample.pdf)
 and [code repository](https://github.com/joshuaccchan/bayesian-macroeconometrics) are
 online: 9 Linear Gaussian State Space Models, 10 Stochastic Volatility Models, 12
 Vector Autoregressions, 13 Time-Varying Vector Autoregressions, 14 Large VARs with

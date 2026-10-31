@@ -1,7 +1,7 @@
 %% ex07 - A VAR with factor stochastic volatility
 %
 % BOOK: Chapter 14, Section 14.4, in Bayesian Macroeconometrics: Methods and
-% Applications (Chapman & Hall/CRC, forthcoming); the static factor model it
+% Applications (Chapman & Hall/CRC, 2027); the static factor model it
 % builds on is Chapter 11.
 %
 % THE MODEL. The errors of the VAR load on r latent factors, and both the

@@ -1,7 +1,7 @@
 %% ex09 - Marginal likelihoods and model comparison
 %
 % BOOK: Chapter 5, Bayesian Model Comparison, in Bayesian Macroeconometrics:
-% Methods and Applications (Chapman & Hall/CRC, forthcoming).
+% Methods and Applications (Chapman & Hall/CRC, 2027).
 %
 % THE QUANTITY. The marginal likelihood p(y | M), the integral of the likelihood
 % against the prior, computed by Chib's method at theta*, the posterior means:

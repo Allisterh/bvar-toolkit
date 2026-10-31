@@ -3,7 +3,7 @@
 *Code: [`guide.m`](guide.m), with [`bvar.util.build_lags`](../../core/+bvar/+util/build_lags.m),
 [`bvar.util.ldet`](../../core/+bvar/+util/ldet.m) and
 [`bvar.util.mgammaln`](../../core/+bvar/+util/mgammaln.m). Method:
-[Chan (forthcoming)](../../CITING.md#chan-forthcoming).*
+[Chan (2027)](../../CITING.md#chan-2027).*
 
 Forecasting with a BVAR requires two settings: the lag length $`p`$ and the shrinkage
 hyperparameter $`c_1`$ of the natural conjugate prior. The marginal likelihood is the product of
@@ -207,7 +207,7 @@ hyperparameters of a BVAR maximizes its one-step-ahead forecasting performance w
 and they also integrate over the hyperparameters under a prior. Carriero, Clark and Marcellino
 (2015) choose the overall tightness and the lag length of a BVAR by maximizing the marginal
 likelihood over a grid, and find that the gains in forecast accuracy over commonly used values are
-often modest. Chan (forthcoming) gives a textbook treatment of the natural conjugate prior and its
+often modest. Chan (2027) gives a textbook treatment of the natural conjugate prior and its
 marginal likelihood. [`CITING.md`](../../CITING.md) lists the paper behind each function of the
 toolkit and how to cite the toolkit itself.
 
@@ -217,7 +217,7 @@ Carriero, A., Clark, T. E. and Marcellino, M. (2015). Bayesian VARs: Specificati
 Forecast Accuracy. *Journal of Applied Econometrics*, 30(1): 46-73.
 [doi:10.1002/jae.2315](https://doi.org/10.1002/jae.2315)
 
-Chan, J. C. C. (forthcoming). *Bayesian Macroeconometrics: Methods and Applications*. Chapman &
+Chan, J. C. C. (2027). *Bayesian Macroeconometrics: Methods and Applications*. Chapman &
 Hall/CRC. [Code repository](https://github.com/joshuaccchan/bayesian-macroeconometrics)
 
 Geweke, J. (2001). Bayesian Econometrics and Forecasting. *Journal of Econometrics*, 100(1):

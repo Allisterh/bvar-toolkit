@@ -1,7 +1,7 @@
 %% ex08 - A hybrid time-varying parameter VAR
 %
 % BOOK: Chapter 13, Section 13.2, in Bayesian Macroeconometrics: Methods and
-% Applications (Chapman & Hall/CRC, forthcoming), treats the TVP-VAR with
+% Applications (Chapman & Hall/CRC, 2027), treats the TVP-VAR with
 % stochastic volatility in reduced form. The hybrid model here is in the
 % structural form of Chan (2023), so its time-varying coefficients are
 % structural ones and do not correspond one to one with the book's.

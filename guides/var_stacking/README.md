@@ -2,7 +2,7 @@
 
 *Code: [`guide.m`](guide.m), with [`bvar.util.build_lags`](../../core/+bvar/+util/build_lags.m) and
 [`bvar.util.surform2`](../../core/+bvar/+util/surform2.m). Method:
-[Chan (forthcoming)](../../CITING.md#chan-forthcoming).*
+[Chan (2027)](../../CITING.md#chan-2027).*
 
 A VAR is a system of regressions in which every equation has the same regressors, and it can be
 stacked in two ways. The matrix form $`\mathbf{Y} = \mathbf{Z}\mathbf{A} + \mathbf{U}`$ keeps one
@@ -125,7 +125,7 @@ $`\mathbf{x}_t`$ in every equation, the two products reduce to
 
 $$\mathbf{X}'(\mathbf{I}_T \otimes \boldsymbol{\Sigma}^{-1})\mathbf{X} = \sum_{t=1}^{T}\boldsymbol{\Sigma}^{-1} \otimes \mathbf{x}_t\mathbf{x}_t' = \boldsymbol{\Sigma}^{-1} \otimes \mathbf{Z}'\mathbf{Z}, \qquad \mathbf{X}'(\mathbf{I}_T \otimes \boldsymbol{\Sigma}^{-1})\mathbf{y} = \mathrm{vec}(\mathbf{Z}'\mathbf{Y}\boldsymbol{\Sigma}^{-1}),$$
 
-the Kronecker shortcut (Chan, forthcoming). It follows that
+the Kronecker shortcut (Chan, 2027). It follows that
 
 $$\hat{\boldsymbol{\beta}}_{\mathrm{GLS}} = \left(\boldsymbol{\Sigma} \otimes (\mathbf{Z}'\mathbf{Z})^{-1}\right)\mathrm{vec}(\mathbf{Z}'\mathbf{Y}\boldsymbol{\Sigma}^{-1}) = \mathrm{vec}\left((\mathbf{Z}'\mathbf{Z})^{-1}\mathbf{Z}'\mathbf{Y}\right) = \mathrm{vec}(\hat{\mathbf{A}})$$
 
@@ -201,11 +201,11 @@ Minnesota and natural conjugate priors.
 
 ## Using This Method in Your Research
 
-Both forms are standard, and Chan (forthcoming) gives their textbook treatment.
+Both forms are standard, and Chan (2027) gives their textbook treatment.
 [`CITING.md`](../../CITING.md) lists the paper behind each function of the toolkit and how to cite
 the toolkit itself.
 
 ## References
 
-Chan, J. C. C. (forthcoming). *Bayesian Macroeconometrics: Methods and Applications*. Chapman &
+Chan, J. C. C. (2027). *Bayesian Macroeconometrics: Methods and Applications*. Chapman &
 Hall/CRC. [Code repository](https://github.com/joshuaccchan/bayesian-macroeconometrics)

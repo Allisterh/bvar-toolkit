@@ -77,7 +77,7 @@ the output of a sampler (ex13), and missing data and mixed frequencies (ex14).
 functions it calls.
 
 The methods are developed in the book *Bayesian Macroeconometrics: Methods and Applications*
-(Chapman & Hall/CRC, forthcoming): see the
+(Chapman & Hall/CRC, 2027): see the
 [sample chapters](https://joshuachan.org/papers/BayesMacroBook_sample.pdf) and
 [its code repository](https://github.com/joshuaccchan/bayesian-macroeconometrics), with
 MATLAB, R and Python for all fourteen chapters. [`RELATED.md`](RELATED.md) maps the models here

@@ -2,7 +2,7 @@
 
 Many of the models in this repository can also be estimated in R and Python, with the code of
 the book *Bayesian Macroeconometrics: Methods and Applications* (Chapman & Hall/CRC,
-forthcoming). Four of the models of [Chan (2020a)](CITING.md#chan-2020a) are also in the R
+2027). Four of the models of [Chan (2020a)](CITING.md#chan-2020a) are also in the R
 package `bvars`, and the precision sampler of Chan and Jeliazkov (2009) is a MATLAB function in
 statespace-toolkit.
 

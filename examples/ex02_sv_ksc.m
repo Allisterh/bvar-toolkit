@@ -2,7 +2,7 @@
 %
 % BOOK: Chapter 10, Stochastic Volatility Models, in Bayesian
 % Macroeconometrics: Methods and Applications (Chapman & Hall/CRC,
-% forthcoming); see Chapter 4 for mixture models.
+% 2027); see Chapter 4 for mixture models.
 %
 % THE MODEL. Random-walk stochastic volatility with a known initial value:
 %

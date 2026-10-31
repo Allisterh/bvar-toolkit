@@ -1,7 +1,7 @@
 %% ex13 - Diagnostics for MCMC output: how well do the VAR-SV samplers mix?
 %
 % BOOK: Chapter 6, Section 6.5, in Bayesian Macroeconometrics: Methods and
-% Applications (Chapman & Hall/CRC, forthcoming).
+% Applications (Chapman & Hall/CRC, 2027).
 %
 % The two samplers of ex06, the Cholesky and the order-invariant VAR with
 % stochastic volatility, are run by bvar.models.var_sv with their parameter

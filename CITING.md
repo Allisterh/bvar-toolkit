@@ -283,9 +283,9 @@ equation by equation.
 }
 ```
 
-### Chan (forthcoming)
+### Chan (2027)
 
-Chan, J. C. C. (forthcoming). *Bayesian Macroeconometrics: Methods and Applications*. Chapman &
+Chan, J. C. C. (2027). *Bayesian Macroeconometrics: Methods and Applications*. Chapman &
 Hall/CRC.
 [Sample chapters](https://joshuachan.org/papers/BayesMacroBook_sample.pdf) ·
 Code: [bayesian-macroeconometrics](https://github.com/joshuaccchan/bayesian-macroeconometrics)
@@ -298,7 +298,7 @@ how-to guides.
   author    = {Chan, Joshua C. C.},
   title     = {Bayesian Macroeconometrics: Methods and Applications},
   publisher = {Chapman \& Hall/CRC},
-  note      = {Forthcoming}
+  year      = {2027}
 }
 ```
 

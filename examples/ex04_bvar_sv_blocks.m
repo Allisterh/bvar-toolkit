@@ -1,7 +1,7 @@
 %% ex04 - A reduced-form BVAR with stochastic volatility, equation by equation
 %
 % BOOK: Chapter 14, Large VARs with Stochastic Volatility, in Bayesian
-% Macroeconometrics: Methods and Applications (Chapman & Hall/CRC, forthcoming).
+% Macroeconometrics: Methods and Applications (Chapman & Hall/CRC, 2027).
 %
 % THE MODEL. The sampler of replications/chan2023_joe_mlvarsv/legacy/
 % VAR_ARSV_redu.m:

@@ -3,7 +3,7 @@
 *Code: [`guide.m`](guide.m), with
 [`bvar.forecast.predictive`](../../core/+bvar/+forecast/predictive.m) and
 [`bvar.util.logsumexp`](../../core/+bvar/+util/logsumexp.m). Method:
-[Chan (forthcoming)](../../CITING.md#chan-forthcoming).*
+[Chan (2027)](../../CITING.md#chan-2027).*
 
 A forecasting model is judged by the forecasts it would have made in the past, each from the data
 available at the time. In this guide we evaluate the BVAR of
@@ -206,10 +206,10 @@ with stochastic volatility on real data in the same way, by the same two scores.
 
 Recursive evaluation out of sample, with the RMSFE for point forecasts and the log predictive
 likelihood for density forecasts, is the standard way to compare forecasting models. Chan
-(forthcoming) gives a textbook treatment of both scores. [`CITING.md`](../../CITING.md) lists the
+(2027) gives a textbook treatment of both scores. [`CITING.md`](../../CITING.md) lists the
 paper behind each function of the toolkit and how to cite the toolkit itself.
 
 ## References
 
-Chan, J. C. C. (forthcoming). *Bayesian Macroeconometrics: Methods and Applications*. Chapman &
+Chan, J. C. C. (2027). *Bayesian Macroeconometrics: Methods and Applications*. Chapman &
 Hall/CRC. [Code repository](https://github.com/joshuaccchan/bayesian-macroeconometrics)

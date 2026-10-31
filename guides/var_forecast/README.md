@@ -4,7 +4,7 @@
 [`bvar.util.simulate_var`](../../core/+bvar/+util/simulate_var.m),
 [`bvar.forecast.predictive`](../../core/+bvar/+forecast/predictive.m) and
 [`bvar.forecast.mixquantile`](../../core/+bvar/+forecast/mixquantile.m). Method:
-[Chan (forthcoming)](../../CITING.md#chan-forthcoming).*
+[Chan (2027)](../../CITING.md#chan-2027).*
 
 The forecast of a Bayesian VAR is the predictive distribution of the future values given the data.
 It accounts for the shocks to come and for the uncertainty about the parameters. In this guide we
@@ -226,11 +226,11 @@ forecasts with VARs on real data.
 The predictive distribution integrates over the posterior of the parameters, so its intervals
 account for the estimation error that plug-in forecasts leave out. Simulating one path per
 posterior draw works for any model whose posterior can be sampled. With stochastic volatility,
-each path also includes a simulated path of the volatility. Chan (forthcoming) gives a textbook
+each path also includes a simulated path of the volatility. Chan (2027) gives a textbook
 treatment of forecasting with Bayesian VARs. [`CITING.md`](../../CITING.md) lists the paper behind
 each function of the toolkit and how to cite the toolkit itself.
 
 ## References
 
-Chan, J. C. C. (forthcoming). *Bayesian Macroeconometrics: Methods and Applications*. Chapman &
+Chan, J. C. C. (2027). *Bayesian Macroeconometrics: Methods and Applications*. Chapman &
 Hall/CRC. [Code repository](https://github.com/joshuaccchan/bayesian-macroeconometrics)

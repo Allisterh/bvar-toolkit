@@ -16,7 +16,7 @@
 % The draws come from randn: n*p for the initial values when they are drawn, then n per period.
 %
 % See:
-% Chan, J.C.C. (forthcoming). Bayesian Macroeconometrics: Methods and Applications. Chapman &
+% Chan, J.C.C. (2027). Bayesian Macroeconometrics: Methods and Applications. Chapman &
 % Hall/CRC.
 
 function [Y, Y0] = simulate_var(A, Sig, T, Y0)

@@ -5,7 +5,7 @@
 [`bvar.diag.inefficiency_factor`](../../core/+bvar/+diag/inefficiency_factor.m),
 [`bvar.diag.mcse`](../../core/+bvar/+diag/mcse.m) and
 [`bvar.diag.geweke`](../../core/+bvar/+diag/geweke.m). Method:
-[Chan (forthcoming)](../../CITING.md#chan-forthcoming) and
+[Chan (2027)](../../CITING.md#chan-2027) and
 [Geweke (1992)](../../CITING.md#geweke-1992).*
 
 A Gibbs sampler draws the unknowns of a model in blocks, each from its distribution given the data
@@ -206,13 +206,13 @@ path scale the whole covariance matrix of the VAR.
 ## Using This Method in Your Research
 
 The independent normal and inverse-Wishart prior and its Gibbs sampler are standard, and
-Chan (forthcoming) gives a textbook treatment. The diagnostics of Step 4 are due to Geweke (1992).
+Chan (2027) gives a textbook treatment. The diagnostics of Step 4 are due to Geweke (1992).
 [`CITING.md`](../../CITING.md) lists the paper behind each function of the toolkit and how to cite
 the toolkit itself.
 
 ## References
 
-Chan, J. C. C. (forthcoming). *Bayesian Macroeconometrics: Methods and Applications*. Chapman &
+Chan, J. C. C. (2027). *Bayesian Macroeconometrics: Methods and Applications*. Chapman &
 Hall/CRC. [Code repository](https://github.com/joshuaccchan/bayesian-macroeconometrics)
 
 Geweke, J. (1992). Evaluating the Accuracy of Sampling-Based Approaches to the Calculation of

@@ -3,7 +3,7 @@
 *Code: [`guide.m`](guide.m), with [`bvar.util.ldet`](../../core/+bvar/+util/ldet.m),
 [`bvar.util.mgammaln`](../../core/+bvar/+util/mgammaln.m) and
 [`bvar.ml.kron_bvar`](../../core/+bvar/+ml/kron_bvar.m). Method:
-[Chan (forthcoming)](../../CITING.md#chan-forthcoming) and
+[Chan (2027)](../../CITING.md#chan-2027) and
 [Chan, Jacobi and Zhu (2020)](../../CITING.md#chan-jacobi-and-zhu-2020).*
 
 In [How to Draw the VAR Coefficients under the Minnesota Prior](../coefficient_draw/) and
@@ -72,7 +72,7 @@ $`\boldsymbol{\Sigma}`$ integrated out:
 $$p(\mathbf{Y} \mid c_1) = \int\int p(\mathbf{Y} \mid \mathbf{A}, \boldsymbol{\Sigma})\, p(\mathbf{A}, \boldsymbol{\Sigma} \mid c_1)\, \mathrm{d}\mathbf{A}\, \mathrm{d}\boldsymbol{\Sigma}.$$
 
 Like the likelihood, it conditions on the initial observations in $`\mathbf{Z}`$. Under the
-natural conjugate prior, the integral has the closed form (Chan, forthcoming)
+natural conjugate prior, the integral has the closed form (Chan, 2027)
 
 $$p(\mathbf{Y} \mid c_1) = \pi^{-\frac{nT}{2}} |\mathbf{V}_{\mathbf{A}}|^{-\frac{n}{2}} |\mathbf{K}_{\mathbf{A}}|^{-\frac{n}{2}} \frac{\Gamma_n(\hat{\nu}/2)}{\Gamma_n(\nu_0/2)} \frac{|\mathbf{S}_0|^{\nu_0/2}}{|\hat{\mathbf{S}}|^{\hat{\nu}/2}},$$
 
@@ -239,7 +239,7 @@ times that prior. Carriero, Clark and Marcellino (2015) choose the overall tight
 length of a BVAR by maximizing the marginal likelihood over a grid, and find that the gains in
 forecast accuracy over commonly used values are often modest. Chan, Jacobi and Zhu (2020)
 maximize the marginal likelihood of large VARs under the natural conjugate prior by automatic
-differentiation, and Chan (forthcoming) gives a textbook treatment of the prior and its marginal
+differentiation, and Chan (2027) gives a textbook treatment of the prior and its marginal
 likelihood. [`CITING.md`](../../CITING.md) lists the paper behind each function of the toolkit and
 how to cite the toolkit itself.
 
@@ -252,7 +252,7 @@ Forecast Accuracy. *Journal of Applied Econometrics*, 30(1): 46-73.
 Chan, J. C. C. (2022). Asymmetric Conjugate Priors for Large Bayesian VARs. *Quantitative
 Economics*, 13(3): 1145-1169. [doi:10.3982/QE1381](https://doi.org/10.3982/QE1381)
 
-Chan, J. C. C. (forthcoming). *Bayesian Macroeconometrics: Methods and Applications*. Chapman &
+Chan, J. C. C. (2027). *Bayesian Macroeconometrics: Methods and Applications*. Chapman &
 Hall/CRC. [Code repository](https://github.com/joshuaccchan/bayesian-macroeconometrics)
 
 Chan, J. C. C., Jacobi, L. and Zhu, D. (2020). Efficient Selection of Hyperparameters in Large

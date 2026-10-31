@@ -1,7 +1,7 @@
 %% ex06 - Variable ordering in a VAR with stochastic volatility
 %
 % BOOK: Chapter 13, Section 13.1.3, and Chapter 14, Section 14.3, in Bayesian
-% Macroeconometrics: Methods and Applications (Chapman & Hall/CRC, forthcoming).
+% Macroeconometrics: Methods and Applications (Chapman & Hall/CRC, 2027).
 %
 % Two models of the reduced-form covariance, each estimated in the published
 % variable order and in the reverse order:

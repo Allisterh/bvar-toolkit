@@ -1,7 +1,7 @@
 %% ex05 - A BVAR with common stochastic volatility
 %
 % BOOK: Chapter 14, Large VARs with Stochastic Volatility, in Bayesian
-% Macroeconometrics: Methods and Applications (Chapman & Hall/CRC, forthcoming).
+% Macroeconometrics: Methods and Applications (Chapman & Hall/CRC, 2027).
 %
 % THE MODEL. One log-volatility path scales the whole covariance matrix:
 %

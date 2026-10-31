@@ -1,10 +1,20 @@
 # Related Implementations
 
-Many of the models in this repository can also be estimated in R and Python, with the code of
-the book *Bayesian Macroeconometrics: Methods and Applications* (Chapman & Hall/CRC,
-2027). Four of the models of [Chan (2020a)](CITING.md#chan-2020a) are also in the R
-package `bvars`, and the precision sampler of Chan and Jeliazkov (2009) is a MATLAB function in
-statespace-toolkit.
+Every core function of this repository has a Python twin in bvar-toolkit-python. Many of the
+models can also be estimated in R and Python with the code of the book *Bayesian
+Macroeconometrics: Methods and Applications* (Chapman & Hall/CRC, 2027). Four of the models of
+[Chan (2020a)](CITING.md#chan-2020a) are also in the R package `bvars`, and the precision
+sampler of Chan and Jeliazkov (2009) is a MATLAB function in statespace-toolkit.
+
+## The Python Version bvar-toolkit-python
+
+[bvar-toolkit-python](https://github.com/joshuaccchan/bvar-toolkit-python) has the 118
+functions of `core/` under the same names and with the same arguments: `bvar.util.build_lags`
+here is `bvt.util.build_lags` there, after `import bvar_toolkit as bvt`. Its tests compare each
+function with test cases exported from this repository, including draws on a stream of random
+numbers shared by the two languages, and its `PARITY.md` lists how closely each one agrees. It
+also has the six tutorials and the eight how-to guides, with Python code. The replication
+packages and the examples are not ported.
 
 ## The Book's R and Python Code
 

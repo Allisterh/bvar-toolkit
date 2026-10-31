@@ -8,8 +8,7 @@
 %                                        kappa,z_psi1,z_psi2,z_kappa)
 %
 % Caller contract: the Psi reassembly, Psi(idx_kappa1) = psi_kappa1 and
-% Psi(idx_kappa2) = psi_kappa2, stays with the caller. It consumes no rng and
-% Psi is not read here, so its placement in the sweep is draw-neutral.
+% Psi(idx_kappa2) = psi_kappa2, stays with the caller.
 %
 % rng consumption, in order: gamrnd n*p-vector (psi1), gamrnd (n-1)*n*p-vector
 % (psi2), gamrnd n*p-vector (z_psi1), gamrnd (n-1)*n*p-vector (z_psi2), two

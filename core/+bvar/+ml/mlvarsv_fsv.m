@@ -10,9 +10,8 @@
 %                 50; lml is the mean of the 50 batch log marginal likelihoods
 %                 and lmlstd their standard error
 %   flag_marg   - 1 or 2; any other value raises an error. 2 also integrates out
-%                 the log-volatility variances and is what run_ml passes by
-%                 default; VAR-FSV is the only model in this family that
-%                 implements 1
+%                 the log-volatility variances; VAR-FSV is the only model in this
+%                 family that implements 1
 %   Hyper: alp0, Valp, c0, nuh, Sh, mu0, Vmu, phi0, Vphi, l0, Vl. Valp is
 %          recomputed inside from each kappa draw before any read, so whichever
 %          version the caller passes is irrelevant.

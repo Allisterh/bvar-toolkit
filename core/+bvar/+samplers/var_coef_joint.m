@@ -12,9 +12,7 @@
 %   A    : k x n draw, y_t' = x_t'*A + e_t'
 %   Ahat : k x n posterior mean, computed only when asked for
 %
-% The posterior precision of vec(A) is iVb + kron(Sig^{-1}, X'*W*X), W = diag(w); one lower
-% Cholesky factor gives the draw. One call consumes kn standard normals. Written for this
-% toolkit.
+% One call consumes kn standard normals. Written for this toolkit.
 
 function [A, Ahat] = var_coef_joint(Y, X, Sig, w, iVb)
 [k, n] = deal(size(X,2), size(Y,2));

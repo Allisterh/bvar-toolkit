@@ -1,5 +1,5 @@
 % bvar.structural.reduced_form - map stored structural-form draws of the
-% asymmetric-conjugate VAR to their reduced form, one draw at a time.
+% asymmetric-conjugate VAR to their reduced form.
 %
 %   [store_Btilde,store_Sigtilde] = bvar.structural.reduced_form(store_alp, ...
 %       store_beta, store_Sig)
@@ -14,8 +14,7 @@
 %
 % The structural form is A y_t = B x_t + eps_t with A unit lower triangular and
 % Var(eps_t) = diag(sig). The reduced form follows by inversion:
-% Sigtilde = A^{-1} diag(sig) A^{-T} and Btilde = (A^{-1} B')'. Both are formed
-% with backslash.
+% Sigtilde = A^{-1} diag(sig) A^{-T} and Btilde = (A^{-1} B')'.
 %
 % See:
 % Chan, J.C.C. (2022). Asymmetric Conjugate Priors for Large Bayesian VARs,

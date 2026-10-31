@@ -5,8 +5,7 @@
 % Rao-Blackwellized over the stored (h, lam, rho) draws, and a rho ordinate
 % from a reduced run of nsims sweeps re-drawing (h, lam, rho) at fixed
 % (A_mean, Sig_mean, nu_mean, sigh2_mean), continuing from the final stored
-% draws. Every ordinate sits at the same starred point, so there is no
-% bugcompat flag here.
+% draws.
 %
 %   [ML, out] = bvar.ml.kron_bvar_t_csv(shortY, X, pri, est, ...)
 %

@@ -4,9 +4,7 @@
 % flat nu prior 1/(nuub-2), and posterior ordinates Rao-Blackwellized over
 % the stored lam draws - the (A,Sig) ordinate as a log-mean-exp of
 % conditional NIW densities, the nu ordinate as the mean of grid-normalized
-% conditional densities. Every ordinate is evaluated at the same
-% (A_mean, Sig_mean, nu_mean) and nothing is read outside the stores and the
-% priors: no bugcompat flag. Deterministic given the stores: consumes NO rng.
+% conditional densities. Consumes no rng.
 %
 %   [ML, out] = bvar.ml.kron_bvar_t(shortY, X, pri, est)
 %

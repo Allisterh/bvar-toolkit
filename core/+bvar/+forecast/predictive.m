@@ -1,8 +1,6 @@
 % bvar.forecast.predictive - mean and standard deviation of the h-step predictive
 % distribution of a reduced-form VAR, one row per posterior draw. Given the
-% coefficients and the error covariance matrix the h-step forecast is Gaussian:
-% the mean iterates the VAR, and the variance is the sum of Psi_j*Sig*Psi_j' over
-% j = 0 to h-1, with Psi_j the moving-average matrices.
+% coefficients and the error covariance matrix, the h-step forecast is Gaussian.
 %
 %   [mu, sd] = bvar.forecast.predictive(A, Sig, ylag, H)
 %   [mu, sd] = bvar.forecast.predictive(A, Sig, ylag, H, tgt)
@@ -16,9 +14,8 @@
 %   tgt   : variables to return (default 1:n)
 %   mu,sd : nsim x numel(tgt) x H
 %
-% Each row conditions on one draw of the parameters, so the spread of mu over rows
-% is parameter uncertainty and sd is the width of the conditional forecast density.
-% The predictive density of a variable is the mixture over rows.
+% The predictive density of a variable is the mixture over rows, whose quantiles
+% bvar.forecast.mixquantile computes.
 %
 % See:
 % Chan, J.C.C. (forthcoming). Bayesian Macroeconometrics: Methods and

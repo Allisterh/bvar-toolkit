@@ -13,11 +13,9 @@
 %
 % Two shocks are separated when some variable is restricted with the same sign
 % under both and another with opposite signs, or when the same pair of variables
-% is ranked one way for one shock and the other way for the other. Either makes
-% their admissible columns disjoint, which is what lets sign_assign draw each
-% shock's column independently of the others; where it fails, two shocks can
-% draw the same column and sign_assign errors. Call this once before the
-% rejection loop, since sign_assign runs once per candidate rotation.
+% is ranked one way for one shock and the other way for the other. When a pair is
+% not separated, sign_assign can raise an error. Call this once before the
+% rejection loop.
 %
 % Called with S alone it reports the pairs the ranking restrictions are
 % carrying.

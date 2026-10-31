@@ -10,8 +10,7 @@
 %   Xi        : T x ki regressors, [X2, -Y(:,1:ii-1)] - lags then the
 %               contemporaneous variables of the preceding equations
 %   thetai0   : ki x 1 constant part of the state (the equation's intercept-level
-%               coefficients); Sigthetai the ki x 1 state innovation SDs SQUARED
-%               (the caller stores variances and this function takes sqrt)
+%               coefficients); Sigthetai the ki x 1 variances of the state innovations
 %   hi        : T x 1 log-volatility path;  p0i : 2 x 1 prior inclusion
 %               probabilities;  k : number of beta (VAR-coefficient) columns, so
 %               m = ki - k is the number of alpha columns
@@ -26,9 +25,7 @@
 %
 % rng consumption, in order: one rand for the gam draw (only when is_gamfixed is
 % false), then randn(T*ki,1) for gam = (1,1), randn(T*k,1) for (1,0),
-% randn(T*m,1) for (0,1), and nothing at all for (0,0). The count depends on the
-% drawn configuration, so equivalence tests must compare whole chains instead of
-% single blocks.
+% randn(T*m,1) for (0,1), and nothing at all for (0,0).
 %
 % See:
 % Chan, J.C.C. (2023). Large Hybrid Time-Varying Parameter VARs, Journal of

@@ -13,8 +13,7 @@
 %   h    : T x n log-volatilities
 %   Valp : n*(n-1)/2 x 1 stacked prior variances, rows ordered (2,1),
 %          (3,1),(3,2), (4,1),... - row-major lower triangle
-%   o    : T x 1 outlier scales, optional; default ones(T,1), which leaves the
-%          weights bit-for-bit unchanged (division by 1)
+%   o    : T x 1 outlier scales, optional; default ones(T,1)
 %   alp  : 1 x n*(n-1)/2 ROW vector of draws; callers that want a column (as
 %          ml_varsv does) transpose it themselves
 %

@@ -14,9 +14,6 @@
 %
 %       sig2 = bvar.util.igrnd(nu0 + T/2, S0 + sum(e.^2)/2);
 %
-% which is the update repeated in the state-equation variance draws of the SV
-% and TVP samplers.
-%
 % Requires the Statistics and Machine Learning Toolbox (gamrnd).
 
 function x = igrnd(nu, S)

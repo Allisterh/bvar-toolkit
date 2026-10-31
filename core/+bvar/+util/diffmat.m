@@ -9,10 +9,8 @@
 %   a : scalar autoregressive coefficient (default 1)
 %   H : T x T sparse lower bidiagonal matrix
 %
-% This matrix writes a state equation as one linear system in the whole path,
-% the form the precision-based samplers use: for x_t = a*x_{t-1} + u_t with
-% u ~ N(0, S), H*x = u, so the path has precision H'*inv(S)*H - banded, hence
-% an O(T) Cholesky. See examples/ex01_precision_sampler.m.
+% For x_t = a*x_{t-1} + u_t with u ~ N(0, S), H*x = u, so the path has the
+% banded precision H'*inv(S)*H. See examples/ex01_precision_sampler.m.
 %
 % Sign conventions in this toolkit, both of which appear in the papers:
 %   AR(1) / random-walk state:  H_rho  = I - rho*L   ->  diffmat(T, rho)

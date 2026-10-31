@@ -1,16 +1,14 @@
 % bvar.samplers.eq_var_redu_tri - equation-by-equation Gaussian draw of the VAR
 % coefficient matrix A (k x n, intercept first) in the reduced-form VAR-SV with
-% a unit-lower-triangular impact matrix B0. Equation ii zeroes A(:,ii), stacks
-% only rows ii:n of the rotated system (rows 1..ii-1 have B0(j,ii) = 0, so they
-% contribute nothing), and draws A(:,ii) from its Gaussian conditional.
+% a unit-lower-triangular impact matrix B0. Equation ii stacks only rows ii:n of
+% the rotated system and draws A(:,ii) from its Gaussian conditional.
 %
 %   A = bvar.samplers.eq_var_redu_tri(Y, X, B0, h, A, Valp, alp0)      % VAR-SV
 %   A = bvar.samplers.eq_var_redu_tri(Y, X, B0, h, A, Valp, alp0, o)   % VAR-SVO
 %
 %   Valp : k*n x 1 stacked prior variances
 %   alp0 : k*n x 1 stacked prior means
-%   o    : T x 1 outlier scales, optional; default ones(T,1), which leaves the
-%          row scaling bit-for-bit unchanged (multiplication by 1)
+%   o    : T x 1 outlier scales, optional; default ones(T,1)
 %
 % Sibling of bvar.samplers.eq_svar_oi (order-invariant SVAR-SV), which stacks all
 % n rows, has no prior-mean term and no o. Do not merge the two.

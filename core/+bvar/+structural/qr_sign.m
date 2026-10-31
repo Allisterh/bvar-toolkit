@@ -4,12 +4,9 @@
 %
 %   [Q,R] = bvar.structural.qr_sign(A)
 %
-% MATLAB's qr returns a decomposition unique only up to the signs of the columns
-% of Q and the rows of R. Multiplying both by diag(sign(diag(R))) fixes those
-% signs, so a random A gives a rotation drawn from the uniform (Haar) measure on
-% the orthogonal group; without the normalization Q is an arbitrary member of a
-% sign-equivalence class. Callers draw A = randn(n,n) and use Q to rotate the Cholesky factor of
-% the reduced-form covariance.
+% For A = randn(n,n), Q is drawn from the uniform (Haar) measure on the
+% orthogonal group. Callers use it to rotate the Cholesky factor of the
+% reduced-form covariance.
 %
 % See:
 % Chan, J.C.C. (2022). Asymmetric Conjugate Priors for Large Bayesian VARs,

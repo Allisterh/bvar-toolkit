@@ -7,17 +7,12 @@
 %   [intlike,store_llike] = ...
 %       bvar.ml.intlike_csv_t_ma(shortY,X,A,Sig,psi,rho,sigh2,nu,R)
 %
-% Known quirk (kept verbatim in both bugcompat and corrected ML modes - it is
-% a likelihood-formula property, not an evaluation-point inconsistency):
-% unlike the Gaussian intlike_csv_ma, whose deny_h scales the first
-% observation by (1+psi^2)exp(h_1) and carries the -n/2*log(1+psi^2)
-% constant, this function's deny_h receives the already-transformed Utld and
-% applies NO (1+psi^2) first-observation correction and NO -n/2*log(1+psi^2)
-% term - the first transformed observation is treated as t with scale
-% exp(h_1)*Sig, whereas the Gibbs sampler it pairs with gives it variance
-% (1+psi^2)*exp(h_1)*lam_1*Sig. A one-observation (out of T) mismatch between
-% the estimated model and this likelihood ordinate; the published
-% BVAR-CSV-t-MA marginal likelihood includes it.
+% Known quirk, kept in both modes of bvar.ml.kron_bvar_csv_t_ma: unlike
+% bvar.ml.intlike_csv_ma, this function treats the first transformed observation
+% as t with scale exp(h_1)*Sig, with no (1+psi^2) factor and no
+% -n/2*log(1+psi^2) term, whereas the Gibbs sampler it pairs with gives it
+% variance (1+psi^2)*exp(h_1)*lam_1*Sig. The published BVAR-CSV-t-MA marginal
+% likelihood includes this one-observation mismatch.
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

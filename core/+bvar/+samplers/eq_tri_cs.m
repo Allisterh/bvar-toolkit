@@ -13,12 +13,8 @@
 %
 % THIS IS THE CORRECTED TRIANGULAR ALGORITHM of Carriero, Chan, Clark and
 % Marcellino (2022), the corrigendum to Carriero, Clark and Marcellino (2019).
-% The original algorithm drew equation j from a conditional that omitted part of
-% the information - it conditioned on y(1),...,y(j-1) only, where the whole of y is
-% needed - so it did not sample the intended triangular factorization. The
-% corrigendum keeps that factorization and restores the missing term at the same
-% O(n^4) cost. Stacking rows ii:n above is that correction; the original used
-% equation ii alone.
+% Stacking rows ii:n above is the correction; the original algorithm used equation
+% ii alone and so did not draw from the intended conditional.
 %
 % See:
 % Carriero, A., Chan, J.C.C., Clark, T.E. and Marcellino, M. (2022). Corrigendum

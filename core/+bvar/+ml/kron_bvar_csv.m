@@ -5,8 +5,7 @@
 % ordinates for (A,Sig) and sigh2 Rao-Blackwellized over the stored (h, rho)
 % draws, and a rho ordinate from a REDUCED MCMC RUN of nsims sweeps that
 % re-draws (h, rho) at fixed (A_mean, Sig_mean, sigh2_mean), continuing the
-% chain from the final stored draws. Every ordinate sits at the same starred
-% point: no bugcompat flag.
+% chain from the final stored draws.
 %
 %   [ML, out] = bvar.ml.kron_bvar_csv(shortY, X, pri, est, ...)
 %

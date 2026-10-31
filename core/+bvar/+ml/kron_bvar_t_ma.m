@@ -5,8 +5,7 @@
 % a psi ordinate from a reduced run of nsims sweeps re-drawing (lam, psi) at
 % fixed (A_mean, Sig_mean, nu_mean), continuing from the final stored psi
 % draw with the psi-MH proposal warm-started at the ESTIMATION run's final
-% mode psihat. Every ordinate sits at the same starred point: no bugcompat
-% flag.
+% mode psihat.
 %
 %   [ML, out] = bvar.ml.kron_bvar_t_ma(shortY, X, pri, est)
 %

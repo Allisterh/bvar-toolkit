@@ -19,12 +19,10 @@
 %           an exact reparameterization, tested in tests/unit/test_eq_var_oi.m)
 %
 % bvar.samplers.eq_svar_oi draws from the same conditional with the same rng
-% consumption, randn(k,1) per equation in order, and stays the bitwise anchor
-% for replicating Chan, Koop and Yu (2024): it must never be edited for speed.
-% Use this function in new code. The "svar" in that name refers to the
-% structural parameterization of the error covariance; the coefficients are
-% reduced-form in both. Measured ratios, and the shapes they were measured at,
-% are tabulated in tests/variant_map.md.
+% consumption, randn(k,1) per equation in order. It follows the code of Chan,
+% Koop and Yu (2024) and must never be edited for speed. Use this function in new
+% code. Measured ratios, and the shapes they were measured at, are tabulated in
+% tests/variant_map.md.
 %
 % See:
 % Chan, J.C.C., Koop, G. and Yu, X. (2024). Large Order-Invariant Bayesian

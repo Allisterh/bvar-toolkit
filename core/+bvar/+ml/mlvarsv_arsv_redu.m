@@ -27,9 +27,6 @@
 % the sampler draws kappa1 from row 1, so rows 1 and 2 of c0 must be equal for
 % the weights to be right.
 %
-% Core used: bvar.priors.minn (n0pre = 4), bvar.priors.impact_B0,
-% bvar.util.tnormrnd, bvar.util.vec, bvar.util.kron_gram, bvar.ml.isden_arss.
-%
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large
 % Bayesian VARs, Journal of Econometrics, 235(2), 1419-1446.

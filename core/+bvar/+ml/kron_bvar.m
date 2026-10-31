@@ -8,8 +8,9 @@
 %   [ML, out] = bvar.ml.kron_bvar(shortY, X, pri, est)
 %
 %   pri: A0, VA0 (k x 1), nu0, S0        [replication preset, cited there]
-%   est: Ahat, Shat, KA                  [run_all model 1 output]
-%   out: llike, A, Sig                   [the evaluation point used]
+%   est: Ahat, Shat, KA, the posterior mean of A, the inverse-Wishart posterior
+%        scale and the posterior precision of each column of A
+%   out: llike, and the evaluation point A, Sig
 %
 % See:
 % Chan, J.C.C. (2020). Large Bayesian VARs: A flexible Kronecker error

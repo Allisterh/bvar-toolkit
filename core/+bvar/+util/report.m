@@ -1,7 +1,6 @@
 % bvar.util.report - write a comparison table to <outdir>/<name>.csv and the same
 % table with a settings struct to <outdir>/<name>.mat, and print the paths. outdir
-% defaults to tempdir, so a script that calls this leaves the working tree and a
-% CI checkout clean.
+% defaults to tempdir.
 %
 %   f = bvar.util.report(name, tbl, meta)
 %   f = bvar.util.report(name, tbl, meta, outdir)
@@ -9,8 +8,6 @@
 %   name : base name of the files
 %   tbl  : one table, or a struct of tables when the run produces more than one
 %          shape of result, written one csv per field as <name>_<field>.csv.
-%          Settings that differ by row belong in the columns; a csv holds its
-%          table alone, so that reading it needs no convention beyond readtable.
 %   meta : struct describing the run (data file, sample, seeds, chain lengths,
 %          hyperparameters). It gains the run time, the MATLAB version and the
 %          last warning raised, which is the caller's to clear with lastwarn('')

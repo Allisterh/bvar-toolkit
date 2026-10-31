@@ -1,11 +1,8 @@
 % bvar.samplers.eq_svar_oi - equation-by-equation Gaussian draw of the VAR
 % coefficient matrix A (k x n, intercept first) in the ORDER-INVARIANT
-% structural SVAR-SV model: for each equation ii the column A(:,ii) is zeroed,
-% the standardized system yi = vec((Y-X*A)*B0')./Lambda with regressors
-% kron(B0(:,ii),X)./Lambda (Lambda = vec(exp(h/2))) is formed, and
-% A(:,ii) is drawn from its Gaussian conditional. Prior variances enter as the
-% stacked k*n vector tmpdV, which the caller supplies; the Vbeta output of
-% bvar.priors.vtheta produces it.
+% structural SVAR-SV model, one column A(:,ii) at a time from its Gaussian
+% conditional. Prior variances enter as the stacked k*n vector tmpdV, which the
+% Vbeta output of bvar.priors.vtheta provides.
 %
 %   A = bvar.samplers.eq_svar_oi(Y, X, B0, h, A, tmpdV)
 %

@@ -28,9 +28,8 @@
 % ONLY THE VOLATILITY IS SIMULATED. The data path is integrated out
 % analytically, so lden and ljoint are exact given the simulated volatility
 % path. Averaging exp(lden) over draws integrates over the parameters and the
-% volatility together. With 'gauss' the result equals bvar.forecast.predictive,
-% which covers the constant-covariance case, for the same draw to machine
-% precision at every horizon.
+% volatility together. With 'gauss' the result equals that of
+% bvar.forecast.predictive for the same draw.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing Stochastic Volatility Specifications for Large

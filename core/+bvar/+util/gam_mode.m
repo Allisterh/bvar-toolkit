@@ -9,10 +9,9 @@
 %   store_gam : nsim x nmodel matrix of 0/1 draws
 %   gam_mode  : 1 x nmodel row, the most frequent configuration
 %
-% Each row is keyed by its binary expansion gam*2.^(0:nmodel-1)', counts are
-% accumulated by growing a table, and ties are broken by whichever configuration
-% sortrows leaves on top. Cost is O(nsim x distinct configurations): quick at
-% the sizes used here, slow for a long chain over many equations.
+% Ties go to whichever configuration sortrows leaves on top. Cost is
+% O(nsim x distinct configurations): quick at the sizes used here, slow for a
+% long chain over many equations.
 %
 % See:
 % Chan, J.C.C. (2023). Large Hybrid Time-Varying Parameter VARs, Journal of

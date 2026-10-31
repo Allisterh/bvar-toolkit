@@ -1,5 +1,5 @@
 % bvar.ml.mlvarsv_csv - log marginal likelihood of the VAR-CSV model by adaptive
-% importance sampling (not the Chib decomposition of the Kronecker family).
+% importance sampling.
 % (A,Sig) and the log-volatility variance sigh2 are integrated out analytically;
 % h, phi and kappa are drawn from importance densities fitted to the posterior
 % draws - h from bvar.ml.isden_arss, phi truncated normal, kappa gamma by
@@ -16,10 +16,6 @@
 %   store_hpara - nsim x 2, columns [phi sig2]
 %   store_kappa - nsim x 1
 %   out: store_w, bigml (the 50 batch values), and the fitted IS parameters
-%
-% Core used: bvar.priors.niw('mlvarsv_ncp'), bvar.util.tnormrnd, bvar.util.ldet,
-% bvar.util.mgammaln, bvar.ml.isden_arss, bvar.ml.lgampdf / ltnormpdf /
-% lmvnpdf_pcn.
 %
 % See:
 % Chan, J.C.C. (2023). Comparing stochastic volatility specifications for large

@@ -39,13 +39,11 @@
 % e_t ~ N(0, exp(h_t)*Sig) and h_t a zero-mean AR(1). Priors: the coefficients independent
 % normal with mean zero and variances kappa_1/l^2 on own lags, kappa_2*s_i^2/(l^2*s_j^2)
 % on lag l of variable j in equation i, and 100*s_i^2 on the intercepts;
-% Sig ~ IW(n+3, I_n); sigh2 ~ IG(10, .004); phi ~ N(.98, .05^2) on |phi| < 1. Chan, Poon
-% and Zhu (2023) give phi this truncated normal prior without its mean and variance; the
-% values here are those of bvar.models.var_csv. Each sweep draws the missing values
-% (bvar.samplers.missing_var), the coefficients jointly (bvar.samplers.var_coef_joint),
-% Sig, h (bvar.sv.csv_armh_block) and (phi, sigh2) (bvar.sv.sv0_params, truncated
-% candidate). The draws of h, here in blocks, and of (phi, sigh2) follow the algorithm of
-% Chan (2020). Written for this toolkit.
+% Sig ~ IW(n+3, I_n); sigh2 ~ IG(10, .004); phi ~ N(.98, .05^2) on |phi| < 1. Each sweep
+% draws the missing values (bvar.samplers.missing_var), the coefficients jointly
+% (bvar.samplers.var_coef_joint), Sig, h (bvar.sv.csv_armh_block) and (phi, sigh2)
+% (bvar.sv.sv0_params, truncated candidate). The draws of h, here in blocks, and of
+% (phi, sigh2) follow the algorithm of Chan (2020). Written for this toolkit.
 %
 % See:
 % Chan, J.C.C., Poon, A. and Zhu, D. (2023). High-Dimensional Conditionally Gaussian
@@ -131,6 +129,7 @@ for i = 1:n
 end
 iVb = sparse(1:k*n, 1:k*n, 1./V(:));
 nu0 = n + 3;  S0 = eye(n);
+% phi0 and Vphi, which Chan, Poon and Zhu (2023) do not give, are those of bvar.models.var_csv
 Hyper = struct('nuh', 10, 'Sh', .004, 'phi0', .98, 'Vphi', .05^2);
 Te = T - p;
 

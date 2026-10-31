@@ -10,10 +10,8 @@
 %           sign of that response on impact, NaN leaves it free
 %   Rineq : m x n x k ranking restrictions, k per shock, each a linear
 %           combination of impact responses required to be <= 0 for that shock's
-%           column; an m x n matrix when k = 1. The test is <= 0, so a row of
-%           zeros imposes nothing and zeros(m,n) means sign restrictions only.
-%           sign_restrict tests the same quantity strictly, where a zero row
-%           rejects every candidate, so pass an empty Ridx there instead
+%           column; an m x n matrix when k = 1. A row of zeros imposes nothing,
+%           so zeros(m,n) means sign restrictions only
 %   k     : number of ranking restrictions per shock
 %   ok    : true when an admissible assignment exists
 %   L     : on acceptance, column i is the shock-i column, with signs flipped

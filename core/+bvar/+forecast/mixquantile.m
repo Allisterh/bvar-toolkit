@@ -1,6 +1,5 @@
 % bvar.forecast.mixquantile - quantiles of an equally weighted mixture of normals,
-% which is what a Bayesian predictive distribution is once the draws are in hand:
-% each draw contributes a normal, and the predictive density is their average.
+% such as a predictive density that averages one normal per posterior draw.
 %
 %   q = bvar.forecast.mixquantile(mu, sd, p)
 %
@@ -10,14 +9,7 @@
 %   p      : probabilities in (0,1), any shape
 %   q      : the quantiles, the same shape as p
 %
-% The mixture cdf, mean(normcdf((x - mu)./sd)), is continuous and increasing, so
-% the quantile is found by bisection from a bracket that covers every component.
-% Averaging the component quantiles instead would be wrong, and so would fitting
-% one normal to the mixture's mean and variance: the mixture is skewed and
-% fat-tailed whenever the draws disagree, which is the case worth reporting.
-%
-% For the probability of an event, the cdf is one line:
-% mean(normcdf((x - mu)./sd)) is the predictive probability of falling below x.
+% The predictive probability of falling below x is mean(normcdf((x - mu)./sd)).
 
 function q = mixquantile(mu, sd, p)
 mu = mu(:);  sd = sd(:);

@@ -6,8 +6,7 @@
 % iteration - and rho / psi ordinates from a reduced run of nsims2 sweeps
 % re-drawing (h, rho, psi) at fixed (A_mean, Sig_mean, sigh2_mean),
 % continuing from the last stored draws with the psi-MH warm-started at the
-% estimation run's final psihat. Every ordinate sits at the same starred
-% point: no bugcompat flag.
+% estimation run's final psihat.
 %
 %   [ML, out] = bvar.ml.kron_bvar_csv_ma(shortY, X, pri, est, ...)
 %

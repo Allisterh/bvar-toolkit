@@ -11,13 +11,10 @@
 %   nstep  : number of horizons returned, counting the impact period
 %   response(:,:,it) : responses at horizon it-1, so response(:,:,1) = impact
 %
-% HORIZON INDEXING. response(:,:,1) is the impact response L(:,1:nshock), and
-% response(:,:,it) for it >= 2 applies the (1:n,1:n) block of the companion
-% matrix raised to the (it-1)th power. Two other copies of this routine in the
-% wider codebase start the loop at the wrong index and so report every response
-% shifted one period; this package's copy is the corrected one and is canonical
-% here. Anyone comparing figures with an older run should check which copy
-% produced them.
+% Two other copies of this routine in the wider codebase start the loop at the
+% wrong index and so report every response shifted one period; this package's
+% copy is the corrected one and is canonical here. Anyone comparing figures with
+% an older run should check which copy produced them.
 %
 % See:
 % Chan, J.C.C. (2022). Asymmetric Conjugate Priors for Large Bayesian VARs,

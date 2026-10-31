@@ -18,6 +18,10 @@ The code needs MATLAB with the Statistics and Machine Learning Toolbox. `setup.m
 for the Optimization and System Identification Toolboxes, which a few functions and drivers
 use, and names what each missing one would break.
 
+A Python version, [bvar-toolkit-python](https://github.com/joshuaccchan/bvar-toolkit-python), has
+the same functions under the same names, each tested against its MATLAB twin, and the tutorials
+and how-to guides with Python code.
+
 ## Learn the Methods
 
 The [how-to guides](guides/) show how to use the core functions, one step at a time, on a small

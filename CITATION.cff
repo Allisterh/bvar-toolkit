@@ -19,9 +19,10 @@ abstract: >-
   forecasting routines, and marginal-likelihood estimators. Most library
   functions began as extractions from the packages, and unit tests check that
   they still reproduce the original code draw for draw under a fixed seed, at
-  their default settings. Short examples show how to use each piece, and six
-  tutorials answer questions from applied work with the settings of a
-  published paper, with scripts that run the same analysis on other data.
+  their default settings. How-to guides and short examples show how to use
+  each piece, and six tutorials answer questions from applied work with the
+  settings of a published paper, with scripts that run the same analysis on
+  other data.
 keywords:
   - Bayesian econometrics
   - vector autoregression
@@ -32,6 +33,6 @@ keywords:
   - macroeconomic forecasting
   - MATLAB
 license: MIT
-version: 1.1.0
+version: 1.2.0
 doi: 10.5281/zenodo.22804032
-date-released: "2026-09-24"
+date-released: "2026-10-30"
